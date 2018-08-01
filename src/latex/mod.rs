@@ -163,6 +163,6 @@ fn read_pngs(path: &Path) -> IResult<()> {
 }
 
 fn white_transparent(col: Color) -> Color {
-    let max_channel = col.r.max(col.g).max(col.b);
+    let max_channel = col.r.min(col.g).min(col.b);
     Color { r: col.r, g: col.g, b: col.b, a: 255 - max_channel }
 }

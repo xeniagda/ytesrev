@@ -33,7 +33,7 @@ struct MyScene {
 impl MyScene {
     fn new() -> MyScene {
         let dist_i = latex::register_equation(r#"z^2 = x^2 + y^2"#);
-        let col_i = latex::register_equation(r#"\frac{x}{\sqrt{x^2 + y^2}}"#);
+        let col_i = latex::register_equation(r#"\frac{\textcolor{green}x}{\sqrt{x^2 + y^2}}"#);
 
         latex::render_all_eqations();
 

@@ -48,9 +48,9 @@ impl PngImage {
 
                     let sdl_col = transform(sdl_col);
 
-                    data[(y * width + x) * 4 + 0] = sdl_col.r;
+                    data[(y * width + x) * 4 + 0] = sdl_col.b;
                     data[(y * width + x) * 4 + 1] = sdl_col.g;
-                    data[(y * width + x) * 4 + 2] = sdl_col.b;
+                    data[(y * width + x) * 4 + 2] = sdl_col.r;
                     data[(y * width + x) * 4 + 3] = sdl_col.a;
                 }
             }
