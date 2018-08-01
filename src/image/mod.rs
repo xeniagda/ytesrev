@@ -5,7 +5,7 @@ extern crate png;
 use sdl2::pixels::Color;
 use sdl2::render::{Canvas, BlendMode};
 use sdl2::video::Window;
-use sdl2::rect::Rect;
+use sdl2::rect::{Rect, Point};
 
 use self::png::{Decoder, ColorType, DecodingError};
 
@@ -66,21 +66,25 @@ impl PngImage {
 }
 
 impl Drawable for PngImage {
-    fn draw(&self, canvas: &mut Canvas<Window>) {
+    fn draw(&self, canvas: &mut Canvas<Window>, point: &Point) {
         let creator = canvas.texture_creator();
         let mut texture = creator
-                .create_texture_target(
-                    None,
-                    self.width  as u32,
-                    self.height as u32).expect("Can't make texture");
-
+            .create_texture_target(None, self.width as u32, self.height as u32)
+            .expect("Can't make texture");
 
         //println!("Color mod: {}", texture.alpha_mod());
         texture.set_blend_mode(BlendMode::Blend);
 
-        texture.update(None, self.data.as_slice(), 4 * self.width).expect("Can't update");
+        texture
+            .update(None, self.data.as_slice(), 4 * self.width)
+            .expect("Can't update");
 
-        canvas.copy(&texture, None, Rect::new(0, 0, self.width as u32, self.height as u32)).expect("Can't copy");
-
+        canvas
+            .copy(
+                &texture,
+                None,
+                Rect::new(point.x, point.y, self.width as u32, self.height as u32),
+            )
+            .expect("Can't copy");
     }
 }

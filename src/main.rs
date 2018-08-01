@@ -13,7 +13,7 @@ mod latex;
 use window::WindowManager;
 use scene::{Scene, Drawable};
 
-
+use sdl2::rect::Point;
 
 
 fn main() {
@@ -54,10 +54,13 @@ impl Scene for MyScene {
         scene::Action::Continue
     }
     fn draw(&self, canvas: &mut sdl2::render::Canvas<sdl2::video::Window>) {
+        let point = Point::new(
+                (((self.t * 0.8).sin() / 2. + 0.5) * canvas.window().size().0 as f64) as i32,
+                (((self.t * 1.3).sin() / 2. + 0.5) * canvas.window().size().1 as f64) as i32);
         if self.t % 2. > 1. {
-            self.dist.draw(canvas);
+            self.dist.draw(canvas, &point);
         } else {
-            self.col.draw(canvas);
+            self.col.draw(canvas, &point);
         }
     }
 }
