@@ -3,6 +3,7 @@ extern crate sdl2;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use sdl2::render::Canvas;
+use sdl2::pixels::Color;
 use sdl2::video::Window;
 use sdl2::EventPump;
 
@@ -17,7 +18,7 @@ pub struct WindowManager<'a> {
     pub canvas: Canvas<Window>,
     pub event_pump: EventPump,
 
-    pub scene: &'a dyn Scene,
+    pub scene: &'a mut dyn Scene,
 
     time_manager: TimeManager,
 }
@@ -30,7 +31,7 @@ struct TimeManager {
 }
 
 impl <'a> WindowManager<'a> {
-    pub fn init_window(scene: &dyn Scene) -> WindowManager {
+    pub fn init_window(scene: &mut dyn Scene) -> WindowManager {
         let sdl_context = sdl2::init().unwrap();
         let video_subsystem = sdl_context.video().unwrap();
 
@@ -57,6 +58,7 @@ impl <'a> WindowManager<'a> {
     pub fn process_events(&mut self) -> bool {
         let dt = self.time_manager.dt();
 
+        self.scene.update(dt);
 
         for event in self.event_pump.poll_iter() {
             match event {
@@ -72,6 +74,10 @@ impl <'a> WindowManager<'a> {
     }
 
     pub fn draw(&mut self) {
+
+        self.canvas.set_draw_color(Color::RGBA(0, 0, 0, 255));
+        self.canvas.clear();
+
         self.scene.draw(&mut self.canvas);
 
         self.canvas.present();

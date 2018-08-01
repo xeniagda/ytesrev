@@ -13,10 +13,11 @@ use std::io::Read;
 
 use scene::Drawable;
 
+#[derive(Clone)]
 pub struct PngImage {
-    width: usize,
-    height: usize,
-    data: Vec<u8>,
+    pub width: usize,
+    pub height: usize,
+    pub data: Vec<u8>,
 }
 
 impl PngImage {
@@ -70,8 +71,8 @@ impl Drawable for PngImage {
         let mut texture = creator
                 .create_texture_target(
                     None,
-                    self.height as u32,
-                    self.width  as u32).expect("Can't make texture");
+                    self.width  as u32,
+                    self.height as u32).expect("Can't make texture");
 
 
         texture.update(None, self.data.as_slice(), 4 * self.width).expect("Can't update");
