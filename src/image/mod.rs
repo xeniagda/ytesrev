@@ -21,6 +21,12 @@ pub struct PngImage {
 
 impl PngImage {
     pub fn load_from_path<R: Read>(r: R) -> Result<Self, DecodingError> {
+        PngImage::load_from_path_transform(r, |x| x)
+    }
+
+    pub fn load_from_path_transform<R: Read, F: Fn(Color) -> Color>(r: R, transform: F)
+            -> Result<Self, DecodingError>
+    {
         let (info, mut reader) = Decoder::new(r).read_info()?;
 
         let (width, height) = (info.width as usize, info.height as usize);
@@ -34,15 +40,17 @@ impl PngImage {
                 for (x, col) in row.chunks(info.color_type.samples()).enumerate() {
 
                     let sdl_col = match info.color_type {
-                        ColorType::RGB => { Color::RGB(col[0], col[1], col[2]) },
+                        ColorType::RGB  => { Color::RGB(col[0], col[1], col[2]) },
                         ColorType::RGBA => { Color::RGBA(col[0], col[1], col[2], col[3]) },
                         _ => { unimplemented!() }
                     };
 
-                    data[(y * width + x) * 4 + 0] = sdl_col.a;
-                    data[(y * width + x) * 4 + 1] = sdl_col.b;
-                    data[(y * width + x) * 4 + 2] = sdl_col.g;
-                    data[(y * width + x) * 4 + 3] = sdl_col.r;
+                    let sdl_col = transform(sdl_col);
+
+                    data[(y * width + x) * 4 + 0] = sdl_col.r;
+                    data[(y * width + x) * 4 + 1] = sdl_col.g;
+                    data[(y * width + x) * 4 + 2] = sdl_col.b;
+                    data[(y * width + x) * 4 + 3] = sdl_col.a;
                 }
             }
         }
