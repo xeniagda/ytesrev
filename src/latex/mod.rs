@@ -1,3 +1,7 @@
+extern crate sdl2;
+
+use sdl2::pixels::Color;
+
 use std::collections::HashMap;
 use std::sync::Mutex;
 
@@ -126,6 +130,8 @@ fn render_tex(tex_path: &Path, pdf_path: &Path, crop_path: &Path, raw_path: &Pat
     let out = Command::new("pdftoppm")
             .arg(crop_path.as_os_str())
             .arg(raw_path.as_os_str())
+            .arg("-r")
+            .arg("300")
             .arg("-png")
             .output()
             .expect("Can't make command");
@@ -146,10 +152,17 @@ fn read_pngs(path: &Path) -> IResult<()> {
             img_path.push(format!("tmp-crop-{}.png", i + 1));
 
             *im = Some(
-                PngImage::load_from_path(File::open(img_path)?)
-                    .map_err(|e| Error::new(ErrorKind::InvalidData, e))
-                    ?);
+                PngImage::load_from_path_transform(
+                    File::open(img_path)?,
+                    white_transparent)
+                .map_err(|e| Error::new(ErrorKind::InvalidData, e))
+                ?);
         }
     }
     Ok(())
+}
+
+fn white_transparent(col: Color) -> Color {
+    let max_channel = col.r.max(col.g).max(col.b);
+    Color { r: col.r, g: col.g, b: col.b, a: 255 - max_channel }
 }

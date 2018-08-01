@@ -3,7 +3,7 @@ extern crate png;
 
 
 use sdl2::pixels::Color;
-use sdl2::render::Canvas;
+use sdl2::render::{Canvas, BlendMode};
 use sdl2::video::Window;
 use sdl2::rect::Rect;
 
@@ -74,6 +74,9 @@ impl Drawable for PngImage {
                     self.width  as u32,
                     self.height as u32).expect("Can't make texture");
 
+
+        //println!("Color mod: {}", texture.alpha_mod());
+        texture.set_blend_mode(BlendMode::Blend);
 
         texture.update(None, self.data.as_slice(), 4 * self.width).expect("Can't update");
 

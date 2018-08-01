@@ -75,7 +75,7 @@ impl <'a> WindowManager<'a> {
 
     pub fn draw(&mut self) {
 
-        self.canvas.set_draw_color(Color::RGBA(0, 0, 0, 255));
+        self.canvas.set_draw_color(Color::RGBA(255, 255, 255, 255));
         self.canvas.clear();
 
         self.scene.draw(&mut self.canvas);
