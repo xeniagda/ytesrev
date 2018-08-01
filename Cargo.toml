@@ -1,0 +1,9 @@
+[package]
+name = "sdl2"
+version = "0.1.0"
+authors = ["loovjo <jonathan.loov@gmail.com>"]
+
+[dependencies]
+sdl2 = "0.31.0"
+rand = "0.5.4"
+png = "0.12.0"
