@@ -13,9 +13,6 @@ use scene::Scene;
 
 const SIZE: (usize, usize) = (800, 600);
 
-const SQUARE_SIZE: (usize, usize) = (100, 100);
-
-
 pub struct WindowManager<'a> {
     pub canvas: Canvas<Window>,
     pub event_pump: EventPump,
@@ -86,7 +83,7 @@ impl <'a> WindowManager<'a> {
             if !self.process_events() {
                 break;
             }
-            sleep(Duration::from_millis(20));
+            sleep(Duration::from_millis(5));
         }
     }
 }
@@ -107,7 +104,7 @@ impl TimeManager {
         self.last_time = now;
 
         self.durs.push(diff);
-        if now - self.last_fps_print > Duration::from_secs(1) {
+        if now - self.last_fps_print > Duration::from_secs(5) {
             let num_dur = self.durs.len() as u32;
 
             let avg_dur: Duration = self.durs.drain(..).sum::<Duration>() / num_dur;

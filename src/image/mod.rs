@@ -74,9 +74,9 @@ impl Drawable for PngImage {
                     self.width  as u32).expect("Can't make texture");
 
 
-        texture.update(None, self.data.as_slice(), 4 * self.width);
+        texture.update(None, self.data.as_slice(), 4 * self.width).expect("Can't update");
 
-        canvas.copy(&texture, None, Rect::new(0, 0, self.width as u32, self.height as u32));
+        canvas.copy(&texture, None, Rect::new(0, 0, self.width as u32, self.height as u32)).expect("Can't copy");
 
     }
 }
