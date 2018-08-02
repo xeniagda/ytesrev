@@ -22,7 +22,7 @@ pub struct WindowManager<'a> {
     pub other_scenes: Vec<&'a mut dyn Scene>,
     pub curr_scene: &'a mut dyn Scene,
 
-    time_manager: TimeManager,
+    time_manager: Option<TimeManager>,
 }
 
 
@@ -51,7 +51,6 @@ impl <'a> WindowManager<'a> {
 
         let event_pump = sdl_context.event_pump().unwrap();
 
-        let time_manager = TimeManager::new();
 
         // Load everything
 
@@ -72,22 +71,29 @@ impl <'a> WindowManager<'a> {
             event_pump: event_pump,
             other_scenes: other_scenes,
             curr_scene: curr_scene,
-            time_manager: time_manager,
+            time_manager: None,
         }
     }
 
     pub fn process_events(&mut self) -> bool {
-        let dt = self.time_manager.dt();
+        match &mut self.time_manager {
+            Some(ref mut tm) => {
+                let dt = tm.dt();
 
-        self.curr_scene.update(dt);
+                self.curr_scene.update(dt);
 
-        for event in self.event_pump.poll_iter() {
-            match event {
-                Event::Quit {..} |
-                Event::KeyDown { keycode: Some(Keycode::Escape), .. } => {
-                    return false
-                },
-                _ => {}
+                for event in self.event_pump.poll_iter() {
+                    match event {
+                        Event::Quit {..} |
+                        Event::KeyDown { keycode: Some(Keycode::Escape), .. } => {
+                            return false
+                        },
+                        _ => {}
+                    }
+                }
+            },
+            None => {
+                self.time_manager = Some(TimeManager::new());
             }
         }
 

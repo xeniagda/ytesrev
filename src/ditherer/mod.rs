@@ -13,7 +13,7 @@ use scene::Drawable;
 
 
 
-const DITHER_SPEED: f64 = 500.;
+const DITHER_SPEED: f64 = 20.;
 
 pub struct Ditherer<T: ImageContainer> {
     pub inner: T,
@@ -31,7 +31,7 @@ impl <T: ImageContainer> Ditherer<T> {
             inner: inner,
             dither: dither,
             cached: Cell::new(Vec::new()),
-            t: -3.
+            t: 0.
         }
     }
 }
