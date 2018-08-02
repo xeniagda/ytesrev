@@ -5,11 +5,13 @@ extern crate lazy_static;
 
 extern crate sdl2;
 extern crate png;
+extern crate rand;
 
 mod window;
 mod image;
 mod scene;
 mod latex;
+mod ditherer;
 #[macro_use]
 mod loadable;
 
@@ -31,20 +33,20 @@ fn main() {
 }
 
 struct MyScene {
-    dist: LatexObj,
+    title: ditherer::Ditherer<LatexObj>,
     col: LatexObj,
     t: f64,
 }
 
-impl_loadable!{MyScene, dist, col}
+impl_loadable!{MyScene, title, col}
 
 impl MyScene {
     fn new() -> MyScene {
-        let dist = LatexObj::new(r#"z^2 = x^2 + y^2"#);
+        let title = ditherer::Ditherer::new(LatexObj::new(r#"\text{Dithering sample text}"#));
         let col = LatexObj::new(r#"\frac{\textcolor{green}x}{\sqrt{x^2 + y^2}}"#);
 
         MyScene {
-            dist: dist,
+            title: title,
             col: col,
             t: 0.,
         }
@@ -55,6 +57,9 @@ impl MyScene {
 impl Scene for MyScene {
     fn update(&mut self, dt: f64) -> scene::Action {
         self.t += dt;
+        self.title.update(dt);
+        self.col.update(dt);
+
         scene::Action::Continue
     }
     fn event(&mut self, _event: sdl2::event::Event) -> scene::Action {
@@ -62,12 +67,12 @@ impl Scene for MyScene {
     }
     fn draw(&self, canvas: &mut sdl2::render::Canvas<sdl2::video::Window>) {
         let point = Point::new(
-                (((self.t * 0.8).sin() / 2. + 0.5) * canvas.window().size().0 as f64) as i32,
-                (((self.t * 1.3).sin() / 2. + 0.5) * canvas.window().size().1 as f64) as i32);
-        if self.t % 2. > 1. {
-            self.dist.draw(canvas, &point);
-        } else {
-            self.col.draw(canvas, &point);
-        }
+                (((self.t * 0.8).sin() / 4. + 0.5) * canvas.window().size().0 as f64) as i32,
+                (((self.t * 1.3).sin() / 4. + 0.5) * canvas.window().size().1 as f64) as i32);
+
+
+        self.title.draw(canvas, &Point::new(100, 100));
+
+        self.col.draw(canvas, &point);
     }
 }

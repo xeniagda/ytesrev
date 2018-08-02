@@ -1,7 +1,7 @@
 extern crate sdl2;
 
 use sdl2::{render::Canvas, video::Window, pixels::Color, rect::Rect, rect::Point};
-use image::PngImage;
+use image::{PngImage, ImageContainer};
 use loadable::Loadable;
 use scene::Drawable;
 use super::render::{register_equation, read_image, LatexIdx};
@@ -11,6 +11,44 @@ pub struct LatexObj {
     pub inner: Option<PngImage>,
     pub id: Option<LatexIdx>,
     pub expr: &'static str,
+}
+
+impl ImageContainer for LatexObj {
+    fn get_data(&self) -> &Vec<u8> {
+        if let Some(ref inner) = self.inner {
+            inner.get_data()
+        } else {
+            panic!("Use of imagecontainer on unloaded LatexObj");
+        }
+    }
+    fn get_data_mut(&mut self) -> &mut Vec<u8> {
+        if let Some(ref mut inner) = self.inner {
+            inner.get_data_mut()
+        } else {
+            panic!("Use of imagecontainer on unloaded LatexObj");
+        }
+    }
+    fn into_data(self) -> Vec<u8> {
+        if let Some(inner) = self.inner {
+            inner.into_data()
+        } else {
+            panic!("Use of imagecontainer on unloaded LatexObj");
+        }
+    }
+    fn width(&self)    -> usize {
+        if let Some(ref inner) = self.inner {
+            inner.width()
+        } else {
+            panic!("Use of imagecontainer on unloaded LatexObj");
+        }
+    }
+    fn height(&self)   -> usize {
+        if let Some(ref inner) = self.inner {
+            inner.height()
+        } else {
+            panic!("Use of imagecontainer on unloaded LatexObj");
+        }
+    }
 }
 
 impl LatexObj {

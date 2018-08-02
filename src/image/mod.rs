@@ -12,6 +12,7 @@ use self::png::{Decoder, ColorType, DecodingError};
 use std::io::Read;
 
 use scene::Drawable;
+use loadable::Loadable;
 
 #[derive(Clone)]
 pub struct PngImage {
@@ -89,4 +90,24 @@ impl Drawable for PngImage {
             )
             .expect("Can't copy");
     }
+}
+
+impl Loadable for PngImage {
+    fn load(&mut self) {}
+}
+
+pub trait ImageContainer: Loadable + Drawable {
+    fn get_data(&self) -> &Vec<u8>;
+    fn get_data_mut(&mut self) -> &mut Vec<u8>;
+    fn into_data(self) -> Vec<u8>;
+    fn width(&self) -> usize;
+    fn height(&self) -> usize;
+}
+
+impl ImageContainer for PngImage {
+    fn get_data(&self)         -> &Vec<u8>     { &self.data }
+    fn get_data_mut(&mut self) -> &mut Vec<u8> { &mut self.data }
+    fn into_data(self)         -> Vec<u8>      { self.data }
+    fn width(&self)            -> usize        { self.width }
+    fn height(&self)           -> usize        { self.height }
 }

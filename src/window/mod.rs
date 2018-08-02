@@ -138,7 +138,7 @@ impl TimeManager {
 
             let fps = Duration::from_secs(1).as_millis() as f64 / avg_dur.as_millis() as f64;
 
-            println!("FPS: {:.2}", fps);
+            eprintln!("FPS: {:.2}", fps);
 
             self.last_fps_print = now;
         }
