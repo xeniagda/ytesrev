@@ -13,7 +13,7 @@ use scene::Drawable;
 
 
 
-const DITHER_SPEED: f64 = 20.;
+const DITHER_SPEED: f64 = 200.;
 
 pub struct Ditherer<T: ImageContainer> {
     pub inner: T,
@@ -110,18 +110,15 @@ impl <T: ImageContainer> Loadable for Ditherer<T> {
         let mut rng = thread_rng();
 
         // Spread the selection
-        for i in 0..100 {
+        for _ in 0..100 {
             let mut dither_next = dither.clone();
 
 
             for y in 0..self.inner.height() {
                 for x in 0..self.inner.width() {
-                    //if dither[y][x] > 0 {
-                        //continue;
-                    //}
 
                     let alpha = self.inner.get_data()[(y * self.inner.width() + x) * 4 + 3];
-                    if alpha < 10 {
+                    if alpha == 0 {
                         continue;
                     }
 
