@@ -1,9 +1,9 @@
 extern crate sdl2;
 
-use sdl2::{render::Canvas, video::Window, pixels::Color, rect::Rect, rect::Point};
+use sdl2::{render::Canvas, video::Window, pixels::Color, rect::Rect};
 use image::{PngImage, ImageContainer};
 use loadable::Loadable;
-use scene::Drawable;
+use scene::{Drawable, Position};
 use super::render::{register_equation, read_image, LatexIdx};
 
 
@@ -83,12 +83,19 @@ impl Loadable for LatexObj {
 }
 
 impl Drawable for LatexObj {
-    fn draw(&self, canvas: &mut Canvas<Window>, position: &Point) {
+    fn draw(&self, canvas: &mut Canvas<Window>, position: &Position) {
         if let Some(ref img) = self.inner {
             img.draw(canvas, position);
         } else {
             canvas.set_draw_color(Color::RGB(255, 0, 255));
-            canvas.fill_rect(Rect::new(position.x, position.y, 100, 100)).expect("Can't draw");
+            match position {
+                Position::TopLeftCorner(point) => {
+                    canvas.fill_rect(Rect::new(point.x, point.y, 100, 100)).expect("Can't draw");
+                }
+                Position::Center(point) => {
+                    canvas.fill_rect(Rect::new(point.x - 50, point.y - 50, 100, 100)).expect("Can't draw");
+                }
+            }
         }
     }
 }

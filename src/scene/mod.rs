@@ -12,9 +12,15 @@ pub enum Action {
     Exit
 }
 
+#[derive(Clone, Copy, PartialEq, Debug)]
+pub enum Position {
+    TopLeftCorner(Point),
+    Center(Point),
+}
+
 pub trait Drawable {
     fn update(&mut self, _dt: f64) {}
-    fn draw(&self, _canvas: &mut Canvas<Window>, _position: &Point);
+    fn draw(&self, _canvas: &mut Canvas<Window>, _position: &Position);
 }
 
 pub trait Scene: Loadable {
@@ -35,7 +41,8 @@ impl <T: Drawable> Loadable for DrawableWrapper<T> {
 impl <T: Drawable> Scene for DrawableWrapper<T> {
     fn update(&mut self, _dt: f64) -> Action { Action::Continue }
     fn event(&mut self, _event: Event) -> Action { Action::Continue }
+
     fn draw(&self, canvas: &mut Canvas<Window>) {
-        self.0.draw(canvas, &Point::new(0, 0));
+        self.0.draw(canvas, &Position::TopLeftCorner(Point::new(0, 0)));
     }
 }

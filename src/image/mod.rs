@@ -5,13 +5,13 @@ extern crate png;
 use sdl2::pixels::Color;
 use sdl2::render::{Canvas, BlendMode};
 use sdl2::video::Window;
-use sdl2::rect::{Rect, Point};
+use sdl2::rect::Rect;
 
 use self::png::{Decoder, ColorType, DecodingError};
 
 use std::io::Read;
 
-use scene::Drawable;
+use scene::{Drawable, Position};
 use loadable::Loadable;
 
 #[derive(Clone)]
@@ -69,24 +69,38 @@ impl PngImage {
 }
 
 impl Drawable for PngImage {
-    fn draw(&self, canvas: &mut Canvas<Window>, point: &Point) {
+    fn draw(&self, canvas: &mut Canvas<Window>, pos: &Position) {
         let creator = canvas.texture_creator();
         let mut texture = creator
             .create_texture_target(None, self.width as u32, self.height as u32)
             .expect("Can't make texture");
 
-        //println!("Color mod: {}", texture.alpha_mod());
         texture.set_blend_mode(BlendMode::Blend);
 
         texture
             .update(None, self.data.as_slice(), 4 * self.width)
             .expect("Can't update");
 
+        let rect =
+            match pos {
+                Position::TopLeftCorner(point) => {
+                    Rect::new(point.x, point.y, self.width as u32, self.height as u32)
+                }
+                Position::Center(point) => {
+                    Rect::new(
+                        point.x - self.width  as i32 / 2,
+                        point.y - self.height as i32 / 2,
+                        self.width as u32,
+                        self.height as u32
+                    )
+                }
+            };
+
         canvas
             .copy(
                 &texture,
                 None,
-                Rect::new(point.x, point.y, self.width as u32, self.height as u32),
+                rect,
             )
             .expect("Can't copy");
     }

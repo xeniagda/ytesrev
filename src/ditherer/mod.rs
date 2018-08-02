@@ -2,15 +2,14 @@ use std::cell::Cell;
 use std::u64;
 
 use sdl2::render::{Canvas, BlendMode};
-use sdl2::rect::{Point, Rect};
+use sdl2::rect::Rect;
 use sdl2::video::Window;
 
 use super::rand::{thread_rng, Rng};
 
 use image::ImageContainer;
 use loadable::Loadable;
-use scene::Drawable;
-
+use scene::{Drawable, Position};
 
 
 const DITHER_SPEED: f64 = 200.;
@@ -154,7 +153,7 @@ impl <T: ImageContainer> Drawable for Ditherer<T> {
         self.t += dt;
     }
 
-    fn draw(&self, canvas: &mut Canvas<Window>, point: &Point) {
+    fn draw(&self, canvas: &mut Canvas<Window>, pos: &Position) {
         if let Some(ref dither) = self.dither {
             let mut cached = self.cached.take();
 
@@ -185,15 +184,31 @@ impl <T: ImageContainer> Drawable for Ditherer<T> {
 
             self.cached.set(cached);
 
+            let rect =
+                match pos {
+                    Position::TopLeftCorner(point) => {
+                        Rect::new(point.x, point.y, self.inner.width() as u32, self.inner.height() as u32)
+                    }
+                    Position::Center(point) => {
+                        Rect::new(
+                            point.x - self.inner.width()  as i32 / 2,
+                            point.y - self.inner.height() as i32 / 2,
+                            self.inner.width() as u32,
+                            self.inner.height() as u32
+                        )
+                    }
+                };
+
+
             canvas
                 .copy(
                     &texture,
                     None,
-                    Rect::new(point.x, point.y, self.inner.width() as u32, self.inner.height() as u32),
+                    rect,
                 )
                 .expect("Can't copy");
         } else {
-            self.inner.draw(canvas, point);
+            self.inner.draw(canvas, pos);
         }
     }
 }

@@ -20,6 +20,7 @@ use scene::{Scene, Drawable};
 use latex::latex_obj::LatexObj;
 
 use loadable::Loadable;
+use scene::Position;
 
 use sdl2::rect::Point;
 
@@ -66,13 +67,15 @@ impl Scene for MyScene {
         scene::Action::Continue
     }
     fn draw(&self, canvas: &mut sdl2::render::Canvas<sdl2::video::Window>) {
+        let (width, height) = canvas.window().size();
+
         let point = Point::new(
-                (((self.t * 0.8).sin() / 4. + 0.5) * canvas.window().size().0 as f64) as i32,
-                (((self.t * 1.3).sin() / 4. + 0.5) * canvas.window().size().1 as f64) as i32);
+                (((self.t * 0.8).sin() / 4. + 0.5) * width as f64) as i32,
+                (((self.t * 1.3).sin() / 4. + 0.5) * height as f64) as i32);
 
 
-        self.title.draw(canvas, &Point::new(100, 100));
+        self.title.draw(canvas, &Position::Center(Point::new(width as i32 / 2, height as i32 / 2)));
 
-        self.col.draw(canvas, &point);
+        self.col.draw(canvas, &Position::Center(point));
     }
 }

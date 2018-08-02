@@ -7,6 +7,7 @@ use std::process::{Command, exit};
 use std::fs::{File, create_dir, remove_dir_all};
 use std::path::{Path, PathBuf};
 use std::io::{Result as IResult, Error, ErrorKind, Write};
+use std::time::Instant;
 
 use image::PngImage;
 
@@ -76,11 +77,16 @@ pub fn render_all_eqations() -> IResult<()> {
     let mut raw_path = path.clone();
     raw_path.push("tmp-crop");
 
+    let start = Instant::now();
+
     create_tex(&tex_path)?;
 
     render_tex(&tex_path, &pdf_path, &crop_path, &raw_path)?;
 
     read_pngs(&path)?;
+
+    let diff = Instant::now() - start;
+    eprintln!("Rendering took {:.2?}", diff);
 
     Ok(())
 }
