@@ -1,4 +1,4 @@
-#![feature(duration_as_u128, nll)]
+#![feature(duration_as_u128, nll, specialization)]
 
 #[macro_use]
 extern crate lazy_static;
@@ -10,8 +10,14 @@ mod window;
 mod image;
 mod scene;
 mod latex;
+#[macro_use]
+mod loadable;
+
 use window::WindowManager;
 use scene::{Scene, Drawable};
+use latex::latex_obj::LatexObj;
+
+use loadable::Loadable;
 
 use sdl2::rect::Point;
 
@@ -19,31 +25,32 @@ use sdl2::rect::Point;
 fn main() {
     let scene = &mut MyScene::new();
 
-    let mut wmng = WindowManager::init_window(scene);
+    let mut wmng = WindowManager::init_window(scene, vec![]);
 
     wmng.start();
 }
 
 struct MyScene {
-    dist: image::PngImage,
-    col: image::PngImage,
+    dist: LatexObj,
+    col: LatexObj,
     t: f64,
 }
 
+impl_loadable!{MyScene, dist, col}
+
 impl MyScene {
     fn new() -> MyScene {
-        let dist_i = latex::register_equation(r#"z^2 = x^2 + y^2"#);
-        let col_i = latex::register_equation(r#"\frac{\textcolor{green}x}{\sqrt{x^2 + y^2}}"#);
-
-        latex::render_all_eqations();
+        let dist = LatexObj::new(r#"z^2 = x^2 + y^2"#);
+        let col = LatexObj::new(r#"\frac{\textcolor{green}x}{\sqrt{x^2 + y^2}}"#);
 
         MyScene {
-            dist: latex::read_image(dist_i).unwrap(),
-            col: latex::read_image(col_i).unwrap(),
+            dist: dist,
+            col: col,
             t: 0.,
         }
     }
 }
+
 
 impl Scene for MyScene {
     fn update(&mut self, dt: f64) -> scene::Action {

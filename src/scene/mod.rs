@@ -5,6 +5,8 @@ use sdl2::render::Canvas;
 use sdl2::rect::Point;
 use sdl2::video::Window;
 
+use loadable::Loadable;
+
 pub enum Action {
     Continue,
     Exit
@@ -15,14 +17,20 @@ pub trait Drawable {
     fn draw(&self, _canvas: &mut Canvas<Window>, _position: &Point);
 }
 
-pub trait Scene {
+pub trait Scene: Loadable {
     fn update(&mut self, _dt: f64) -> Action;
     fn event(&mut self, _event: Event) -> Action;
     fn draw(&self, canvas: &mut Canvas<Window>);
 }
 
 
+#[allow(unused)]
 pub struct DrawableWrapper<T: Drawable>(pub T);
+
+impl <T: Drawable> Loadable for DrawableWrapper<T> {
+    fn register(&mut self) {}
+    fn load(&mut self) {}
+}
 
 impl <T: Drawable> Scene for DrawableWrapper<T> {
     fn update(&mut self, _dt: f64) -> Action { Action::Continue }

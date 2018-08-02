@@ -21,10 +21,12 @@ pub struct PngImage {
 }
 
 impl PngImage {
+    #[allow(unused)]
     pub fn load_from_path<R: Read>(r: R) -> Result<Self, DecodingError> {
         PngImage::load_from_path_transform(r, |x| x)
     }
 
+    #[allow(unused)]
     pub fn load_from_path_transform<R: Read, F: Fn(Color) -> Color>(r: R, transform: F)
             -> Result<Self, DecodingError>
     {

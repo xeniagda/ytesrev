@@ -11,6 +11,7 @@ use std::time::{Duration, Instant};
 use std::thread::sleep;
 
 use scene::Scene;
+use latex::render_all_eqations;
 
 const SIZE: (usize, usize) = (800, 600);
 
@@ -18,10 +19,12 @@ pub struct WindowManager<'a> {
     pub canvas: Canvas<Window>,
     pub event_pump: EventPump,
 
-    pub scene: &'a mut dyn Scene,
+    pub other_scenes: Vec<&'a mut dyn Scene>,
+    pub curr_scene: &'a mut dyn Scene,
 
     time_manager: TimeManager,
 }
+
 
 struct TimeManager {
     last_time: Instant,
@@ -31,7 +34,10 @@ struct TimeManager {
 }
 
 impl <'a> WindowManager<'a> {
-    pub fn init_window(scene: &mut dyn Scene) -> WindowManager {
+    pub fn init_window(
+            curr_scene: &'a mut dyn Scene,
+            mut other_scenes: Vec<&'a mut dyn Scene>
+    ) -> WindowManager<'a> {
         let sdl_context = sdl2::init().unwrap();
         let video_subsystem = sdl_context.video().unwrap();
 
@@ -47,10 +53,25 @@ impl <'a> WindowManager<'a> {
 
         let time_manager = TimeManager::new();
 
+        // Load everything
+
+        curr_scene.register();
+        for scene in other_scenes.iter_mut() {
+            scene.register();
+        }
+
+        render_all_eqations().expect("Can't render!");
+
+        curr_scene.load();
+        for scene in other_scenes.iter_mut() {
+            scene.load();
+        }
+
         WindowManager {
             canvas: canvas,
             event_pump: event_pump,
-            scene: scene,
+            other_scenes: other_scenes,
+            curr_scene: curr_scene,
             time_manager: time_manager,
         }
     }
@@ -58,7 +79,7 @@ impl <'a> WindowManager<'a> {
     pub fn process_events(&mut self) -> bool {
         let dt = self.time_manager.dt();
 
-        self.scene.update(dt);
+        self.curr_scene.update(dt);
 
         for event in self.event_pump.poll_iter() {
             match event {
@@ -78,7 +99,7 @@ impl <'a> WindowManager<'a> {
         self.canvas.set_draw_color(Color::RGBA(255, 255, 255, 255));
         self.canvas.clear();
 
-        self.scene.draw(&mut self.canvas);
+        self.curr_scene.draw(&mut self.canvas);
 
         self.canvas.present();
     }
