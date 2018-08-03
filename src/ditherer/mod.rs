@@ -19,19 +19,32 @@ pub struct Ditherer<T: ImageContainer> {
     pub dither: Option<Vec<Vec<u64>>>,
     cached: Cell<Vec<u8>>,
     pub t: f64,
+    pub dithering: bool,
 }
 
+impl <T: ImageContainer> ImageContainer for Ditherer<T> {
+    fn get_data(&self) -> &Vec<u8> { self.inner.get_data() }
+    fn get_data_mut(&mut self) -> &mut Vec<u8> { self.inner.get_data_mut() }
+    fn into_data(self) -> Vec<u8> { self.inner.into_data() }
+    fn width(&self) -> usize { self.inner.width() }
+    fn height(&self) -> usize { self.inner.height() }
+}
 
 impl <T: ImageContainer> Ditherer<T> {
-    pub fn new(inner: T) -> Ditherer<T> {
+    pub fn new(inner: T, dither_init: bool) -> Ditherer<T> {
         let dither = None;
 
         Ditherer {
             inner: inner,
             dither: dither,
             cached: Cell::new(Vec::new()),
-            t: 0.
+            t: 0.,
+            dithering: dither_init,
         }
+    }
+
+    pub fn start_dither(&mut self) {
+        self.dithering = true;
     }
 }
 
@@ -150,7 +163,9 @@ impl <T: ImageContainer> Loadable for Ditherer<T> {
 
 impl <T: ImageContainer> Drawable for Ditherer<T> {
     fn update(&mut self, dt: f64) {
-        self.t += dt;
+        if self.dithering {
+            self.t += dt;
+        }
     }
 
     fn draw(&self, canvas: &mut Canvas<Window>, pos: &Position) {

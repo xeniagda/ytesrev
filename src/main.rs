@@ -21,8 +21,10 @@ use latex::latex_obj::LatexObj;
 
 use loadable::Loadable;
 use scene::Position;
+use image::ImageContainer;
 
 use sdl2::rect::Point;
+use sdl2::event::Event;
 
 
 fn main() {
@@ -35,19 +37,22 @@ fn main() {
 
 struct MyScene {
     title: ditherer::Ditherer<LatexObj>,
+    subtitle: ditherer::Ditherer<LatexObj>,
     col: LatexObj,
     t: f64,
 }
 
-impl_loadable!{MyScene, title, col}
+impl_loadable!{MyScene, title, subtitle, col}
 
 impl MyScene {
     fn new() -> MyScene {
-        let title = ditherer::Ditherer::new(LatexObj::new(r#"\text{Dithering sample text}"#));
+        let title = ditherer::Ditherer::new(LatexObj::new(r#"\text{Title text}"#), true);
+        let subtitle = ditherer::Ditherer::new(LatexObj::new(r#"\small\text{Subtitle}"#), false);
         let col = LatexObj::new(r#"\frac{\textcolor{green}x}{\sqrt{x^2 + y^2}}"#);
 
         MyScene {
             title: title,
+            subtitle: subtitle,
             col: col,
             t: 0.,
         }
@@ -59,11 +64,18 @@ impl Scene for MyScene {
     fn update(&mut self, dt: f64) -> scene::Action {
         self.t += dt;
         self.title.update(dt);
+        self.subtitle.update(dt);
         self.col.update(dt);
 
         scene::Action::Continue
     }
-    fn event(&mut self, _event: sdl2::event::Event) -> scene::Action {
+    fn event(&mut self, event: Event) -> scene::Action {
+        match event {
+            Event::MouseButtonDown { .. } => {
+                self.subtitle.start_dither();
+            }
+            _ => {}
+        }
         scene::Action::Continue
     }
     fn draw(&self, canvas: &mut sdl2::render::Canvas<sdl2::video::Window>) {
@@ -74,7 +86,11 @@ impl Scene for MyScene {
                 (((self.t * 1.3).sin() / 4. + 0.5) * height as f64) as i32);
 
 
-        self.title.draw(canvas, &Position::Center(Point::new(width as i32 / 2, height as i32 / 2)));
+        self.title.draw(canvas, &Position::Center(Point::new(width as i32 / 2, height as i32 / 4)));
+        self.subtitle.draw(
+            canvas,
+            &Position::Center(Point::new(width as i32 / 2, height as i32 / 4 + self.title.height() as i32))
+        );
 
         self.col.draw(canvas, &Position::Center(point));
     }
