@@ -14,6 +14,8 @@ mod latex;
 mod ditherer;
 #[macro_use]
 mod loadable;
+#[macro_use]
+mod state;
 
 use window::{WindowManager, YEvent};
 use scene::{Scene, Drawable};
@@ -34,12 +36,20 @@ fn main() {
     wmng.start();
 }
 
+create_state! {
+    MyState {
+        Start,
+        SubtitleDitherIn,
+        SubtitleDitherOut
+    }
+}
+
 struct MyScene {
     title: ditherer::Ditherer<LatexObj>,
     subtitle: ditherer::Ditherer<LatexObj>,
     col: LatexObj,
     t: f64,
-    state: u64,
+    state: MyState,
 }
 
 impl_loadable!{MyScene, title, subtitle, col}
@@ -57,7 +67,7 @@ impl MyScene {
             subtitle: subtitle,
             col: col,
             t: 0.,
-            state: 0,
+            state: MyState::Start,
         }
     }
 }
@@ -75,16 +85,20 @@ impl Scene for MyScene {
     fn event(&mut self, event: YEvent) -> scene::Action {
         match event {
             YEvent::Step { .. } => {
-                match self.state {
-                    0 => {
-                        self.subtitle.start_dither();
-                        self.state += 1;
+                if let Some(next) = self.state.next() {
+                    self.state = next;
+
+                    match self.state {
+                        MyState::SubtitleDitherIn => {
+                            self.subtitle.start_dither();
+                        }
+                        MyState::SubtitleDitherOut => {
+                            self.subtitle.fade_out();
+                        }
+                        _ => {}
                     }
-                    1 => {
-                        self.subtitle.fade_out();
-                        self.state += 1;
-                    }
-                    _ => {}
+                } else {
+                    return scene::Action::Next;
                 }
             }
             YEvent::Next => {

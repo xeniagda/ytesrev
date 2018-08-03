@@ -14,7 +14,7 @@ use scene::Scene;
 use latex::render_all_eqations;
 
 const SIZE: (usize, usize) = (800, 600);
-const BACKGROUND: (u8, u8, u8) = (255, 248, 226);
+const BACKGROUND: (u8, u8, u8) = (255, 248, 234);
 
 pub enum YEvent {
     Step,
