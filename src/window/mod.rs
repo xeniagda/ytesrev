@@ -14,6 +14,7 @@ use scene::Scene;
 use latex::render_all_eqations;
 
 const SIZE: (usize, usize) = (800, 600);
+const BACKGROUND: (u8, u8, u8) = (255, 248, 226);
 
 pub struct WindowManager<'a> {
     pub canvas: Canvas<Window>,
@@ -104,7 +105,7 @@ impl <'a> WindowManager<'a> {
 
     pub fn draw(&mut self) {
 
-        self.canvas.set_draw_color(Color::RGBA(255, 255, 255, 255));
+        self.canvas.set_draw_color(Color::RGBA(BACKGROUND.0, BACKGROUND.1, BACKGROUND.2, 255));
         self.canvas.clear();
 
         self.curr_scene.draw(&mut self.canvas);
