@@ -13,6 +13,7 @@ use scene::{Drawable, Position};
 
 
 const DITHER_SPEED: f64 = 200.;
+const DITHER_ALPHA_SPEED: f64 = 120.;
 
 #[derive(PartialEq, Copy, Clone)]
 enum DitherState {
@@ -26,7 +27,8 @@ pub struct Ditherer<T: ImageContainer> {
     pub dither: Option<Vec<Vec<u64>>>,
     max_time: u64,
     cached: Cell<Vec<u8>>,
-    pub t: f64,
+    pub dither_in_time: f64,
+    pub dither_out_time: f64,
     dithering: DitherState,
 }
 
@@ -47,7 +49,8 @@ impl <T: ImageContainer> Ditherer<T> {
             dither: dither,
             max_time: 0,
             cached: Cell::new(Vec::new()),
-            t: 0.,
+            dither_in_time: 0.,
+            dither_out_time: 0.,
             dithering: DitherState::Nothing,
         }
     }
@@ -58,7 +61,6 @@ impl <T: ImageContainer> Ditherer<T> {
 
     pub fn fade_out(&mut self) {
         self.dithering = DitherState::DitherOut;
-        self.t = 0.;
     }
 }
 
@@ -178,8 +180,10 @@ impl <T: ImageContainer> Loadable for Ditherer<T> {
 
 impl <T: ImageContainer> Drawable for Ditherer<T> {
     fn update(&mut self, dt: f64) {
-        if self.dithering != DitherState::Nothing {
-            self.t += dt;
+        match self.dithering {
+            DitherState::DitherIn  => { self.dither_in_time += dt }
+            DitherState::DitherOut => { self.dither_out_time += dt }
+            DitherState::Nothing   => {}
         }
     }
 
@@ -190,14 +194,14 @@ impl <T: ImageContainer> Drawable for Ditherer<T> {
             for y in 0..self.inner.height() {
                 for x in 0..self.inner.width() {
 
-                    let mult;
-                    if self.dithering == DitherState::DitherOut {
-                        let diff = dither[y][x] as f64 - (self.t * DITHER_SPEED);
-                        mult = (diff / 100. + 1.).min(1.).max(0.);
-                    } else {
-                        let diff = (self.t * DITHER_SPEED) - dither[y][x] as f64;
-                        mult = (diff / 100.).min(1.).max(0.);
-                    }
+                    let mut mult = 1.;
+
+                    let diff_out = dither[y][x] as f64 - (self.dither_out_time * DITHER_SPEED);
+                    mult *= (diff_out / DITHER_ALPHA_SPEED + 1.).min(1.).max(0.);
+
+                    let diff_in = (self.dither_in_time * DITHER_SPEED) - dither[y][x] as f64;
+                    mult *= (diff_in  / DITHER_ALPHA_SPEED).min(1.).max(0.);
+
                     let idx = (y * self.inner.width() + x) * 4;
 
                     let data = self.inner.get_data();
