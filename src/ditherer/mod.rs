@@ -181,8 +181,13 @@ impl <T: ImageContainer> Loadable for Ditherer<T> {
 impl <T: ImageContainer> Drawable for Ditherer<T> {
     fn update(&mut self, dt: f64) {
         match self.dithering {
-            DitherState::DitherIn  => { self.dither_in_time += dt }
-            DitherState::DitherOut => { self.dither_out_time += dt }
+            DitherState::DitherIn  => {
+                self.dither_in_time += dt;
+            }
+            DitherState::DitherOut => {
+                self.dither_in_time += dt;
+                self.dither_out_time += dt;
+            }
             DitherState::Nothing   => {}
         }
     }
