@@ -11,6 +11,7 @@ pub struct LatexObj {
     pub inner: Option<PngImage>,
     pub id: Option<LatexIdx>,
     pub expr: &'static str,
+    pub is_text: bool,
 }
 
 impl ImageContainer for LatexObj {
@@ -52,18 +53,28 @@ impl ImageContainer for LatexObj {
 }
 
 impl LatexObj {
-    pub fn new(expr: &'static str) -> LatexObj {
+    pub fn math(expr: &'static str) -> LatexObj {
         LatexObj {
             inner: None,
             id: None,
             expr: expr,
+            is_text: false,
+        }
+    }
+
+    pub fn text(expr: &'static str) -> LatexObj {
+        LatexObj {
+            inner: None,
+            id: None,
+            expr: expr,
+            is_text: true,
         }
     }
 }
 
 impl Loadable for LatexObj {
     fn register(&mut self) {
-        self.id = Some(register_equation(self.expr));
+        self.id = Some(register_equation(self.expr, self.is_text));
     }
 
     fn load(&mut self) {

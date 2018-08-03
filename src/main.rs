@@ -47,11 +47,11 @@ impl_loadable!{MyScene, title, subtitle, col}
 
 impl MyScene {
     fn new() -> MyScene {
-        let mut title = ditherer::Ditherer::new(LatexObj::new(r#"\text{\large Title text}"#));
+        let mut title = ditherer::Ditherer::new(LatexObj::text(r#"\large Title text"#));
         title.start_dither();
 
-        let subtitle = ditherer::Ditherer::new(LatexObj::new(r#"\text{\small Subtitle}"#));
-        let col = LatexObj::new(r#"\frac{\textcolor{green}x}{\sqrt{x^2 + y^2}}"#);
+        let subtitle = ditherer::Ditherer::new(LatexObj::text(r#"{\small Subtitle}"#));
+        let col = LatexObj::math(r#"\frac{\textcolor{green}x}{\sqrt{x^2 + y^2}}"#);
 
         MyScene {
             title: title,

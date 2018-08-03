@@ -27,13 +27,13 @@ impl LatexIdx {
 }
 
 lazy_static! {
-    static ref EQUATIONS: Mutex<Vec<(&'static str, Option<PngImage>)>> = Mutex::new(Vec::new());
+    static ref EQUATIONS: Mutex<Vec<(&'static str, bool, Option<PngImage>)>> = Mutex::new(Vec::new());
 }
 
-pub fn register_equation(equation: &'static str) -> LatexIdx {
+pub fn register_equation(equation: &'static str, is_text: bool) -> LatexIdx {
     if let Ok(ref mut eqs) = EQUATIONS.lock() {
         let idx = eqs.len();
-        eqs.push((equation, None));
+        eqs.push((equation, is_text, None));
         LatexIdx(idx)
     } else {
         panic!("Can't eqs");
@@ -43,8 +43,8 @@ pub fn register_equation(equation: &'static str) -> LatexIdx {
 pub fn read_image(idx: LatexIdx) -> Result<PngImage, LatexError> {
     if let Ok(ref mut eqs) = EQUATIONS.lock() {
         if let Some(ref mut x) = eqs.get_mut(idx.0) {
-            if x.1.is_some() {
-                Ok(x.1.take().unwrap())
+            if x.2.is_some() {
+                Ok(x.2.take().unwrap())
             } else {
                 Err(LatexError::NotLoaded)
             }
@@ -100,7 +100,11 @@ fn create_tex(tex_path: &Path) -> IResult<()> {
     if let Ok(eqs) = EQUATIONS.lock() {
         for ref equation in eqs.iter() {
             writeln!(tex_file, "\\begin{{equation*}}")?;
-            writeln!(tex_file, "{}", equation.0)?;
+            if equation.1 {
+                writeln!(tex_file, "\\text{{ {} }}", equation.0)?;
+            } else {
+                writeln!(tex_file, "{}", equation.0)?;
+            }
             writeln!(tex_file, "\\end{{equation*}}")?;
         }
     }
@@ -155,7 +159,7 @@ fn render_tex(tex_path: &Path, pdf_path: &Path, crop_path: &Path, raw_path: &Pat
 
 fn read_pngs(path: &Path) -> IResult<()> {
     if let Ok(ref mut eqs) = EQUATIONS.lock() {
-        for (i, (_, ref mut im)) in eqs.iter_mut().enumerate() {
+        for (i, (_, _, ref mut im)) in eqs.iter_mut().enumerate() {
             let mut img_path = path.to_path_buf();
             img_path.push(format!("tmp-crop-{}.png", i + 1));
 
