@@ -90,7 +90,9 @@ impl <'a> WindowManager<'a> {
                         },
                         _ => {}
                     }
+                    self.curr_scene.event(event);
                 }
+
             },
             None => {
                 self.time_manager = Some(TimeManager::new());
