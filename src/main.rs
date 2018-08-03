@@ -40,14 +40,17 @@ struct MyScene {
     subtitle: ditherer::Ditherer<LatexObj>,
     col: LatexObj,
     t: f64,
+    state: u64,
 }
 
 impl_loadable!{MyScene, title, subtitle, col}
 
 impl MyScene {
     fn new() -> MyScene {
-        let title = ditherer::Ditherer::new(LatexObj::new(r#"\text{Title text}"#), true);
-        let subtitle = ditherer::Ditherer::new(LatexObj::new(r#"\small\text{Subtitle}"#), false);
+        let mut title = ditherer::Ditherer::new(LatexObj::new(r#"\text{\large Title text}"#));
+        title.start_dither();
+
+        let subtitle = ditherer::Ditherer::new(LatexObj::new(r#"\text{\small Subtitle}"#));
         let col = LatexObj::new(r#"\frac{\textcolor{green}x}{\sqrt{x^2 + y^2}}"#);
 
         MyScene {
@@ -55,6 +58,7 @@ impl MyScene {
             subtitle: subtitle,
             col: col,
             t: 0.,
+            state: 0,
         }
     }
 }
@@ -72,7 +76,17 @@ impl Scene for MyScene {
     fn event(&mut self, event: Event) -> scene::Action {
         match event {
             Event::MouseButtonDown { .. } => {
-                self.subtitle.start_dither();
+                match self.state {
+                    0 => {
+                        self.subtitle.start_dither();
+                        self.state += 1;
+                    }
+                    1 => {
+                        self.subtitle.fade_out();
+                        self.state += 1;
+                    }
+                    _ => {}
+                }
             }
             _ => {}
         }
