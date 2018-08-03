@@ -1,14 +1,16 @@
 extern crate sdl2;
 
-use sdl2::event::Event;
 use sdl2::render::Canvas;
 use sdl2::rect::Point;
 use sdl2::video::Window;
+
+use window::YEvent;
 
 use loadable::Loadable;
 
 pub enum Action {
     Continue,
+    Next,
     Exit
 }
 
@@ -25,7 +27,7 @@ pub trait Drawable {
 
 pub trait Scene: Loadable {
     fn update(&mut self, _dt: f64) -> Action;
-    fn event(&mut self, _event: Event) -> Action;
+    fn event(&mut self, _event: YEvent) -> Action;
     fn draw(&self, canvas: &mut Canvas<Window>);
 }
 
@@ -40,7 +42,12 @@ impl <T: Drawable> Loadable for DrawableWrapper<T> {
 
 impl <T: Drawable> Scene for DrawableWrapper<T> {
     fn update(&mut self, _dt: f64) -> Action { Action::Continue }
-    fn event(&mut self, _event: Event) -> Action { Action::Continue }
+    fn event(&mut self, event: YEvent) -> Action {
+        match event {
+            YEvent::Next => Action::Next,
+            _ => Action::Continue
+        }
+    }
 
     fn draw(&self, canvas: &mut Canvas<Window>) {
         self.0.draw(canvas, &Position::TopLeftCorner(Point::new(0, 0)));

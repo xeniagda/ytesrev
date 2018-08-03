@@ -16,6 +16,12 @@ use latex::render_all_eqations;
 const SIZE: (usize, usize) = (800, 600);
 const BACKGROUND: (u8, u8, u8) = (255, 248, 226);
 
+pub enum YEvent {
+    Step,
+    Next,
+    Other(Event),
+}
+
 pub struct WindowManager<'a> {
     pub canvas: Canvas<Window>,
     pub event_pump: EventPump,
@@ -91,7 +97,18 @@ impl <'a> WindowManager<'a> {
                         },
                         _ => {}
                     }
-                    self.curr_scene.event(event);
+                    match event {
+                        Event::KeyDown { keycode: Some(Keycode::Return), ..} => {
+                            self.curr_scene.event(YEvent::Next);
+                        }
+                        Event::KeyDown { keycode: Some(Keycode::Space), ..}
+                        | Event::MouseButtonDown { ..} => {
+                            self.curr_scene.event(YEvent::Step);
+                        }
+                        e => {
+                            self.curr_scene.event(YEvent::Other(e));
+                        }
+                    }
                 }
 
             },

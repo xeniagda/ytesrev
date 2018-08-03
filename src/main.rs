@@ -15,7 +15,7 @@ mod ditherer;
 #[macro_use]
 mod loadable;
 
-use window::WindowManager;
+use window::{WindowManager, YEvent};
 use scene::{Scene, Drawable};
 use latex::latex_obj::LatexObj;
 
@@ -24,7 +24,6 @@ use scene::Position;
 use image::ImageContainer;
 
 use sdl2::rect::Point;
-use sdl2::event::Event;
 
 
 fn main() {
@@ -50,7 +49,7 @@ impl MyScene {
         let mut title = ditherer::Ditherer::new(LatexObj::text(r#"\large Title text"#));
         title.start_dither();
 
-        let subtitle = ditherer::Ditherer::new(LatexObj::text(r#"{\small Subtitle}"#));
+        let subtitle = ditherer::Ditherer::new(LatexObj::text(r#"\small Subtitle"#));
         let col = LatexObj::math(r#"\frac{\textcolor{green}x}{\sqrt{x^2 + y^2}}"#);
 
         MyScene {
@@ -73,9 +72,9 @@ impl Scene for MyScene {
 
         scene::Action::Continue
     }
-    fn event(&mut self, event: Event) -> scene::Action {
+    fn event(&mut self, event: YEvent) -> scene::Action {
         match event {
-            Event::MouseButtonDown { .. } => {
+            YEvent::Step { .. } => {
                 match self.state {
                     0 => {
                         self.subtitle.start_dither();
@@ -87,6 +86,9 @@ impl Scene for MyScene {
                     }
                     _ => {}
                 }
+            }
+            YEvent::Next => {
+                return scene::Action::Next;
             }
             _ => {}
         }
