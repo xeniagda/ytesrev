@@ -17,11 +17,13 @@ mod drawable;
 #[macro_use]
 mod state;
 
+use std::fs::File;
+
 use window::{WindowManager, YEvent};
 use scene::Scene;
 use drawable::{Drawable, Position};
 use latex::latex_obj::LatexObj;
-use image::ImageContainer;
+use image::{ImageContainer, PngImage};
 
 use sdl2::rect::Point;
 
@@ -43,6 +45,7 @@ create_state! {
         Point3,
         Point4,
         FadePoints,
+        Piano,
         DitherOut
     }
 }
@@ -54,6 +57,7 @@ struct MyScene {
     point2: ditherer::Ditherer<LatexObj>,
     point3: ditherer::Ditherer<LatexObj>,
     point4: ditherer::Ditherer<LatexObj>,
+    piano: ditherer::Ditherer<PngImage>,
     slut: ditherer::Ditherer<LatexObj>,
     state: MyState,
 }
@@ -63,12 +67,14 @@ impl MyScene {
         let mut title = ditherer::Ditherer::new(LatexObj::text(r#"\large Titeltext"#));
         title.start_dither();
 
-        let subtitle = ditherer::Ditherer::new(LatexObj::text(r#"\small Undertitel h\"ar"#));
+        let subtitle = ditherer::Ditherer::new(LatexObj::text(r#"\small Undertitel här"#));
 
         let point1 = ditherer::Ditherer::new(LatexObj::text(r#"$ \cdot $ Punkt 1"#));
         let point2 = ditherer::Ditherer::new(LatexObj::text(r#"$ \cdot $ Punkt 2 - En till"#));
-        let point3 = ditherer::Ditherer::new(LatexObj::text(r#"$ \cdot $ Punkt 3 - Inte slut \"an!"#));
+        let point3 = ditherer::Ditherer::new(LatexObj::text(r#"$ \cdot $ Punkt 3 - Inte slut än!"#));
         let point4 = ditherer::Ditherer::new(LatexObj::math(r#"\cdot e^{i\tau}=1"#));
+
+        let piano = ditherer::Ditherer::new(PngImage::load_from_path(File::open("piano.png").unwrap()).unwrap());
 
         let slut = ditherer::Ditherer::new(LatexObj::text(r#"\huge The End"#));
 
@@ -79,6 +85,7 @@ impl MyScene {
             point2: point2,
             point3: point3,
             point4: point4,
+            piano: piano,
             slut: slut,
             state: MyState::Start,
         }
@@ -94,6 +101,8 @@ impl Drawable for MyScene {
             &self.point2,
             &self.point3,
             &self.point4,
+            &self.piano,
+            &self.slut
         ]
     }
     fn content_mut(&mut self) -> Vec<&mut dyn Drawable> {
@@ -104,6 +113,7 @@ impl Drawable for MyScene {
             &mut self.point2,
             &mut self.point3,
             &mut self.point4,
+            &mut self.piano,
             &mut self.slut,
         ]
     }
@@ -140,6 +150,11 @@ impl Drawable for MyScene {
         self.point4.draw(
             canvas,
             &Position::TopLeftCorner(Point::new(width as i32 / 4, y))
+        );
+
+        self.piano.draw(
+            canvas,
+            &Position::Center(Point::new(width as i32 / 2, height as i32 / 2))
         );
 
         self.slut.draw(canvas, &Position::Center(Point::new(width as i32 / 2, height as i32 / 2)));
@@ -181,7 +196,11 @@ impl Scene for MyScene {
                             self.point3.fade_out();
                             self.point4.fade_out();
                         }
+                        MyState::Piano => {
+                            self.piano.start_dither();
+                        }
                         MyState::DitherOut => {
+                            self.piano.fade_out();
                             self.title.fade_out();
                             self.subtitle.fade_out();
                             self.slut.start_dither();
