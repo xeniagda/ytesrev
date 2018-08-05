@@ -189,7 +189,7 @@ impl <T: ImageContainer> Drawable for Ditherer<T> {
         }
     }
 
-    fn draw(&self, canvas: &mut Canvas<Window>, pos: &Position) {
+    fn draw(&mut self, canvas: &mut Canvas<Window>, pos: &Position) {
         if let Some(ref dither) = self.dither {
             let mut cached = self.cached.take();
 

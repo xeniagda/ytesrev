@@ -128,7 +128,7 @@ impl <'a> WindowManager<'a> {
         self.canvas.clear();
 
         let (w, h) = self.canvas.window().size();
-        self.curr_scene.as_drawable().draw(&mut self.canvas, &Position::Rect(Rect::new(0, 0, w, h)));
+        self.curr_scene.as_mut_drawable().draw(&mut self.canvas, &Position::Rect(Rect::new(0, 0, w, h)));
 
         self.canvas.present();
     }

@@ -38,7 +38,7 @@ impl <T: Drawable> Scene for DrawableWrapper<T> {
 }
 
 impl <T: Drawable> Drawable for DrawableWrapper<T> {
-    fn draw(&self, canvas: &mut Canvas<Window>, position: &Position) {
+    fn draw(&mut self, canvas: &mut Canvas<Window>, position: &Position) {
         self.0.draw(canvas, position);
     }
 

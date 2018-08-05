@@ -12,6 +12,7 @@ mod image;
 mod scene;
 mod latex;
 mod ditherer;
+mod layout;
 
 mod drawable;
 #[macro_use]
@@ -23,9 +24,10 @@ use window::{WindowManager, YEvent};
 use scene::Scene;
 use drawable::{Drawable, Position};
 use latex::latex_obj::LatexObj;
-use image::{ImageContainer, PngImage};
+use image::PngImage;
+use layout::{SplitPrec, Orientation};
 
-use sdl2::rect::Point;
+use sdl2::rect::{Point, Rect};
 
 
 fn main() {
@@ -118,44 +120,14 @@ impl Drawable for MyScene {
         ]
     }
 
-    fn draw(&self, canvas: &mut sdl2::render::Canvas<sdl2::video::Window>, _position: &Position) {
+    fn draw(&mut self, canvas: &mut sdl2::render::Canvas<sdl2::video::Window>, _position: &Position) {
         let (width, height) = canvas.window().size();
 
+        let mut title_subtitle = SplitPrec::new(0.5, Orientation::UpDown, &mut self.title, &mut self.subtitle);
+        let mut title_piano = SplitPrec::new(0.5, Orientation::RightLeft, &mut title_subtitle, &mut self.piano);
 
-        self.title.draw(canvas, &Position::Center(Point::new(width as i32 / 2, height as i32 / 5)));
-        self.subtitle.draw(
-            canvas,
-            &Position::Center(Point::new(width as i32 / 2, height as i32 / 5 + self.title.height() as i32 + 10))
-        );
 
-        let mut y = (height as f64 / 2.5) as i32;
-        self.point1.draw(
-            canvas,
-            &Position::TopLeftCorner(Point::new(width as i32 / 4, y))
-        );
-        y += self.point1.height() as i32 + 10;
-
-        self.point2.draw(
-            canvas,
-            &Position::TopLeftCorner(Point::new(width as i32 / 4, y))
-        );
-        y += self.point2.height() as i32 + 10;
-
-        self.point3.draw(
-            canvas,
-            &Position::TopLeftCorner(Point::new(width as i32 / 4, y))
-        );
-        y += self.point3.height() as i32 + 10;
-
-        self.point4.draw(
-            canvas,
-            &Position::TopLeftCorner(Point::new(width as i32 / 4, y))
-        );
-
-        self.piano.draw(
-            canvas,
-            &Position::Center(Point::new(width as i32 / 2, height as i32 / 2))
-        );
+        title_piano.draw(canvas, &Position::Rect(Rect::new(0, 0, width, height)));
 
         self.slut.draw(canvas, &Position::Center(Point::new(width as i32 / 2, height as i32 / 2)));
     }

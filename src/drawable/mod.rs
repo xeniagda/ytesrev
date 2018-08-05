@@ -32,5 +32,5 @@ pub trait Drawable {
         }
     }
 
-    fn draw(&self, _canvas: &mut Canvas<Window>, _position: &Position);
+    fn draw(&mut self, _canvas: &mut Canvas<Window>, _position: &Position);
 }
