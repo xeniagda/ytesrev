@@ -11,8 +11,8 @@ use image::ImageContainer;
 use drawable::{Drawable, Position};
 
 
-const DITHER_SPEED: f64 = 200.;
-const DITHER_ALPHA_SPEED: f64 = 120.;
+const DITHER_SPEED: f64 = 300.;
+const DITHER_ALPHA_SPEED: f64 = 140.;
 
 #[derive(PartialEq, Copy, Clone)]
 enum DitherState {
