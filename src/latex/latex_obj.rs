@@ -2,8 +2,7 @@ extern crate sdl2;
 
 use sdl2::{render::Canvas, video::Window, pixels::Color, rect::Rect};
 use image::{PngImage, ImageContainer};
-use loadable::Loadable;
-use scene::{Drawable, Position};
+use drawable::{Drawable, Position};
 use super::render::{register_equation, read_image, LatexIdx};
 
 
@@ -72,7 +71,41 @@ impl LatexObj {
     }
 }
 
-impl Loadable for LatexObj {
+impl Drawable for LatexObj {
+    fn content(&self) -> Vec<&dyn Drawable> {
+        if let Some(ref inner) = self.inner {
+            vec![ inner ]
+        } else {
+            vec![ ]
+        }
+    }
+    fn content_mut(&mut self) -> Vec<&mut dyn Drawable> {
+        if let Some(ref mut inner) = self.inner {
+            vec![ inner ]
+        } else {
+            vec![ ]
+        }
+    }
+
+    fn draw(&self, canvas: &mut Canvas<Window>, position: &Position) {
+        if let Some(ref img) = self.inner {
+            img.draw(canvas, position);
+        } else {
+            canvas.set_draw_color(Color::RGB(255, 0, 255));
+            match position {
+                Position::TopLeftCorner(point) => {
+                    canvas.fill_rect(Rect::new(point.x, point.y, 100, 100)).expect("Can't draw");
+                }
+                Position::Center(point) => {
+                    canvas.fill_rect(Rect::new(point.x - 50, point.y - 50, 100, 100)).expect("Can't draw");
+                }
+                Position::Rect(rect) => {
+                    canvas.fill_rect(*rect).expect("Can't draw");
+                }
+            }
+        }
+    }
+
     fn register(&mut self) {
         self.id = Some(register_equation(self.expr, self.is_text));
     }
@@ -89,24 +122,6 @@ impl Loadable for LatexObj {
             }
         } else {
             eprintln!("Wrong loading order!");
-        }
-    }
-}
-
-impl Drawable for LatexObj {
-    fn draw(&self, canvas: &mut Canvas<Window>, position: &Position) {
-        if let Some(ref img) = self.inner {
-            img.draw(canvas, position);
-        } else {
-            canvas.set_draw_color(Color::RGB(255, 0, 255));
-            match position {
-                Position::TopLeftCorner(point) => {
-                    canvas.fill_rect(Rect::new(point.x, point.y, 100, 100)).expect("Can't draw");
-                }
-                Position::Center(point) => {
-                    canvas.fill_rect(Rect::new(point.x - 50, point.y - 50, 100, 100)).expect("Can't draw");
-                }
-            }
         }
     }
 }

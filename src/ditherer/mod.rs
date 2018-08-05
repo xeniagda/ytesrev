@@ -8,8 +8,7 @@ use sdl2::video::Window;
 use super::rand::{thread_rng, Rng};
 
 use image::ImageContainer;
-use loadable::Loadable;
-use scene::{Drawable, Position};
+use drawable::{Drawable, Position};
 
 
 const DITHER_SPEED: f64 = 200.;
@@ -64,10 +63,10 @@ impl <T: ImageContainer> Ditherer<T> {
     }
 }
 
-impl <T: ImageContainer> Loadable for Ditherer<T> {
-    fn register(&mut self) {
-        self.inner.register();
-    }
+impl <T: ImageContainer> Drawable for Ditherer<T> {
+
+    fn     content(&    self) -> Vec<&    dyn Drawable> { vec![&    self.inner] }
+    fn content_mut(&mut self) -> Vec<&mut dyn Drawable> { vec![&mut self.inner] }
 
     fn load(&mut self) {
         self.inner.load();
@@ -176,9 +175,7 @@ impl <T: ImageContainer> Loadable for Ditherer<T> {
         self.dither = Some(dither);
         self.cached = Cell::new(self.inner.get_data().clone().into_iter().map(|_| 0).collect::<Vec<u8>>());
     }
-}
 
-impl <T: ImageContainer> Drawable for Ditherer<T> {
     fn update(&mut self, dt: f64) {
         match self.dithering {
             DitherState::DitherIn  => {
@@ -238,6 +235,14 @@ impl <T: ImageContainer> Drawable for Ditherer<T> {
                         Rect::new(
                             point.x - self.inner.width()  as i32 / 2,
                             point.y - self.inner.height() as i32 / 2,
+                            self.inner.width() as u32,
+                            self.inner.height() as u32
+                        )
+                    }
+                    Position::Rect(rect) => {
+                        Rect::new(
+                            rect.x,
+                            rect.y,
                             self.inner.width() as u32,
                             self.inner.height() as u32
                         )

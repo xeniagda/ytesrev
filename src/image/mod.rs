@@ -11,8 +11,7 @@ use self::png::{Decoder, ColorType, DecodingError};
 
 use std::io::Read;
 
-use scene::{Drawable, Position};
-use loadable::Loadable;
+use drawable::{Drawable, Position};
 
 #[derive(Clone)]
 pub struct PngImage {
@@ -69,6 +68,9 @@ impl PngImage {
 }
 
 impl Drawable for PngImage {
+    fn content(&self) -> Vec<&dyn Drawable> { vec![] }
+    fn content_mut(&mut self) -> Vec<&mut dyn Drawable> { vec![] }
+
     fn draw(&self, canvas: &mut Canvas<Window>, pos: &Position) {
         let creator = canvas.texture_creator();
         let mut texture = creator
@@ -94,6 +96,13 @@ impl Drawable for PngImage {
                         self.height as u32
                     )
                 }
+                Position::Rect(r) => {
+                    Rect::new(
+                        r.x, r.y,
+                        self.width as u32,
+                        self.height as u32
+                    )
+                }
             };
 
         canvas
@@ -105,12 +114,7 @@ impl Drawable for PngImage {
             .expect("Can't copy");
     }
 }
-
-impl Loadable for PngImage {
-    fn load(&mut self) {}
-}
-
-pub trait ImageContainer: Loadable + Drawable {
+pub trait ImageContainer: Drawable {
     fn get_data(&self) -> &Vec<u8>;
     fn get_data_mut(&mut self) -> &mut Vec<u8>;
     fn into_data(self) -> Vec<u8>;

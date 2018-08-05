@@ -12,17 +12,15 @@ mod image;
 mod scene;
 mod latex;
 mod ditherer;
-#[macro_use]
-mod loadable;
+
+mod drawable;
 #[macro_use]
 mod state;
 
 use window::{WindowManager, YEvent};
-use scene::{Scene, Drawable};
+use scene::Scene;
+use drawable::{Drawable, Position};
 use latex::latex_obj::LatexObj;
-
-use loadable::Loadable;
-use scene::Position;
 use image::ImageContainer;
 
 use sdl2::rect::Point;
@@ -52,8 +50,6 @@ struct MyScene {
     state: MyState,
 }
 
-impl_loadable!{MyScene, title, subtitle, col}
-
 impl MyScene {
     fn new() -> MyScene {
         let mut title = ditherer::Ditherer::new(LatexObj::text(r#"\large Title text"#));
@@ -72,6 +68,40 @@ impl MyScene {
     }
 }
 
+impl Drawable for MyScene {
+    fn content(&self) -> Vec<&dyn Drawable> {
+        vec![
+            &self.title,
+            &self.subtitle,
+            &self.col,
+        ]
+    }
+    fn content_mut(&mut self) -> Vec<&mut dyn Drawable> {
+        vec![
+            &mut self.title,
+            &mut self.subtitle,
+            &mut self.col,
+        ]
+    }
+
+    fn draw(&self, canvas: &mut sdl2::render::Canvas<sdl2::video::Window>, _position: &Position) {
+        let (width, height) = canvas.window().size();
+
+        let point = Point::new(
+                (((self.t * 0.8).sin() / 4. + 0.5) * width as f64) as i32,
+                (((self.t * 1.3).sin() / 4. + 0.5) * height as f64) as i32);
+
+
+        self.title.draw(canvas, &Position::Center(Point::new(width as i32 / 2, height as i32 / 4)));
+        self.subtitle.draw(
+            canvas,
+            &Position::Center(Point::new(width as i32 / 2, height as i32 / 4 + self.title.height() as i32))
+        );
+
+        self.col.draw(canvas, &Position::Center(point));
+    }
+
+}
 
 impl Scene for MyScene {
     fn update(&mut self, dt: f64) -> scene::Action {
@@ -82,6 +112,7 @@ impl Scene for MyScene {
 
         scene::Action::Continue
     }
+
     fn event(&mut self, event: YEvent) -> scene::Action {
         match event {
             YEvent::Step { .. } => {
@@ -108,20 +139,6 @@ impl Scene for MyScene {
         }
         scene::Action::Continue
     }
-    fn draw(&self, canvas: &mut sdl2::render::Canvas<sdl2::video::Window>) {
-        let (width, height) = canvas.window().size();
-
-        let point = Point::new(
-                (((self.t * 0.8).sin() / 4. + 0.5) * width as f64) as i32,
-                (((self.t * 1.3).sin() / 4. + 0.5) * height as f64) as i32);
-
-
-        self.title.draw(canvas, &Position::Center(Point::new(width as i32 / 2, height as i32 / 4)));
-        self.subtitle.draw(
-            canvas,
-            &Position::Center(Point::new(width as i32 / 2, height as i32 / 4 + self.title.height() as i32))
-        );
-
-        self.col.draw(canvas, &Position::Center(point));
-    }
+    fn as_drawable(&self) -> &dyn Drawable { self }
+    fn as_mut_drawable(&mut self) -> &mut dyn Drawable { self }
 }

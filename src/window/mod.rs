@@ -5,6 +5,7 @@ use sdl2::keyboard::Keycode;
 use sdl2::render::Canvas;
 use sdl2::pixels::Color;
 use sdl2::video::Window;
+use sdl2::rect::Rect;
 use sdl2::EventPump;
 
 use std::time::{Duration, Instant};
@@ -12,6 +13,7 @@ use std::thread::sleep;
 
 use scene::Scene;
 use latex::render_all_eqations;
+use drawable::Position;
 
 const SIZE: (usize, usize) = (800, 600);
 const BACKGROUND: (u8, u8, u8) = (255, 248, 234);
@@ -61,16 +63,16 @@ impl <'a> WindowManager<'a> {
 
         // Load everything
 
-        curr_scene.register();
+        curr_scene.as_mut_drawable().register();
         for scene in other_scenes.iter_mut() {
-            scene.register();
+            scene.as_mut_drawable().register();
         }
 
         render_all_eqations().expect("Can't render!");
 
-        curr_scene.load();
+        curr_scene.as_mut_drawable().load();
         for scene in other_scenes.iter_mut() {
-            scene.load();
+            scene.as_mut_drawable().load();
         }
 
         WindowManager {
@@ -125,7 +127,8 @@ impl <'a> WindowManager<'a> {
         self.canvas.set_draw_color(Color::RGBA(BACKGROUND.0, BACKGROUND.1, BACKGROUND.2, 255));
         self.canvas.clear();
 
-        self.curr_scene.draw(&mut self.canvas);
+        let (w, h) = self.canvas.window().size();
+        self.curr_scene.as_drawable().draw(&mut self.canvas, &Position::Rect(Rect::new(0, 0, w, h)));
 
         self.canvas.present();
     }
