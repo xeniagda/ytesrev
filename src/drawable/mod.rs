@@ -4,8 +4,6 @@ use sdl2::render::Canvas;
 use sdl2::rect::{Point, Rect};
 use sdl2::video::Window;
 
-use window::YEvent;
-
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub enum Position {
     TopLeftCorner(Point),
