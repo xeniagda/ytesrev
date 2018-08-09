@@ -17,8 +17,8 @@ pub enum Orientation {
 #[allow(unused)]
 pub enum UpdateOrder {
     Simultaneous,
-    FirstLast,
-    LastFirst,
+    FirstSecond,
+    SecondFirst,
 }
 
 pub struct SplitPrec<T: Drawable, U: Drawable> {
@@ -119,14 +119,14 @@ impl <T: Drawable, U: Drawable> Drawable for SplitPrec<T, U> {
 
                 first_res && second_res
             }
-            UpdateOrder::FirstLast => {
+            UpdateOrder::FirstSecond => {
                 if self.first.step() {
                     true
                 } else {
                     self.second.step()
                 }
             }
-            UpdateOrder::LastFirst => {
+            UpdateOrder::SecondFirst => {
                 if self.second.step() {
                     true
                 } else {

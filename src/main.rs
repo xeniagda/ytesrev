@@ -35,9 +35,9 @@ fn make_first_scene() -> impl Scene {
         SplitPrec::new(
             0.3,
             Orientation::UpDown,
-            UpdateOrder::Simultaneous,
-            Ditherer::new(LatexObj::text("\\large Title")),
-            Ditherer::new(LatexObj::math("E = mc^2")),
+            UpdateOrder::SecondFirst,
+            Ditherer::dithered_in(LatexObj::text("\\large Title")),
+            Ditherer::dithered_out(LatexObj::math("E = mc^2")),
         )
     )
 }

@@ -1,5 +1,5 @@
 use std::cell::Cell;
-use std::u64;
+use std::{u64, f64};
 
 use sdl2::render::{Canvas, BlendMode};
 use sdl2::rect::Rect;
@@ -40,7 +40,7 @@ impl <T: ImageContainer> ImageContainer for Ditherer<T> {
 }
 
 impl <T: ImageContainer> Ditherer<T> {
-    pub fn new(inner: T) -> Ditherer<T> {
+    pub fn dithered_out(inner: T) -> Ditherer<T> {
         let dither = None;
 
         Ditherer {
@@ -51,6 +51,20 @@ impl <T: ImageContainer> Ditherer<T> {
             dither_in_time: 0.,
             dither_out_time: 0.,
             dithering: DitherState::Nothing,
+        }
+    }
+
+    pub fn dithered_in(inner: T) -> Ditherer<T> {
+        let dither = None;
+
+        Ditherer {
+            inner: inner,
+            dither: dither,
+            max_time: 0,
+            cached: Cell::new(Vec::new()),
+            dither_in_time: f64::MAX,
+            dither_out_time: 0.,
+            dithering: DitherState::DitherIn,
         }
     }
 
@@ -179,10 +193,14 @@ impl <T: ImageContainer> Drawable for Ditherer<T> {
     fn update(&mut self, dt: f64) {
         match self.dithering {
             DitherState::DitherIn  => {
-                self.dither_in_time += dt;
+                if self.dither_in_time < self.max_time as f64 {
+                    self.dither_in_time += dt;
+                }
             }
             DitherState::DitherOut => {
-                self.dither_in_time += dt;
+                if self.dither_in_time < self.max_time as f64 {
+                    self.dither_in_time += dt;
+                }
                 self.dither_out_time += dt;
             }
             DitherState::Nothing   => {}
