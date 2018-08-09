@@ -15,8 +15,6 @@ mod ditherer;
 mod layout;
 
 mod drawable;
-#[macro_use]
-mod state;
 
 use window::WindowManager;
 use scene::{Scene, DrawableWrapper};
