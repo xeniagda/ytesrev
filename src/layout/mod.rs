@@ -9,10 +9,12 @@ use drawable::{Drawable, Position};
 
 const DRAW_BOXES: bool = true;
 
+#[allow(unused)]
 pub enum Orientation {
     UpDown, RightLeft,
 }
 
+#[allow(unused)]
 pub enum UpdateOrder {
     Simultaneous,
     FirstLast,

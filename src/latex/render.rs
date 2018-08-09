@@ -22,10 +22,6 @@ pub enum LatexError {
 
 pub struct LatexIdx(usize);
 
-impl LatexIdx {
-    pub fn get_id(&self) -> usize { self.0 }
-}
-
 lazy_static! {
     static ref EQUATIONS: Mutex<Vec<(&'static str, bool, Option<PngImage>)>> = Mutex::new(Vec::new());
 }

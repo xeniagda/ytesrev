@@ -6,6 +6,7 @@ use sdl2::video::Window;
 use window::YEvent;
 use drawable::{Drawable, Position};
 
+#[allow(unused)]
 pub enum Action {
     Continue,
     Next,
