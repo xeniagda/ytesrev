@@ -13,36 +13,45 @@ pub enum Orientation {
     UpDown, RightLeft,
 }
 
-pub struct SplitPrec<'a> {
-    pub prec: f64,
-    pub orientation: Orientation,
-    pub first: &'a mut dyn Drawable,
-    pub second: &'a mut dyn Drawable,
+pub enum UpdateOrder {
+    Simultaneous,
+    FirstLast,
+    LastFirst,
 }
 
-impl<'a> SplitPrec<'a> {
+pub struct SplitPrec<T: Drawable, U: Drawable> {
+    pub prec: f64,
+    pub orientation: Orientation,
+    pub order: UpdateOrder,
+    pub first: T,
+    pub second: U,
+}
+
+impl <T: Drawable, U: Drawable> SplitPrec<T, U> {
     pub fn new(
         prec: f64,
         orientation: Orientation,
-        first: &'a mut dyn Drawable,
-        second: &'a mut dyn Drawable,
-    ) -> SplitPrec<'a> {
+        order: UpdateOrder,
+        first: T,
+        second: U,
+    ) -> SplitPrec<T, U> {
         SplitPrec {
             prec: prec,
             orientation: orientation,
+            order: order,
             first: first,
             second: second,
         }
     }
 }
 
-impl<'a> Drawable for SplitPrec<'a> {
+impl <T: Drawable, U: Drawable> Drawable for SplitPrec<T, U> {
     fn content(&self) -> Vec<&dyn Drawable> {
-        vec![&*self.first, &*self.second]
+        vec![&self.first, &self.second]
     }
 
     fn content_mut(&mut self) -> Vec<&mut dyn Drawable> {
-        vec![self.first, self.second]
+        vec![&mut self.first, &mut self.second]
     }
 
     fn draw(&mut self, canvas: &mut Canvas<Window>, pos: &Position) {
@@ -99,6 +108,29 @@ impl<'a> Drawable for SplitPrec<'a> {
             }
         }
     }
+
+    fn step(&mut self) -> bool {
+        match self.order {
+            UpdateOrder::Simultaneous => {
+                let first_res = self.first.step();
+                let second_res = self.second.step();
+
+                first_res && second_res
+            }
+            UpdateOrder::FirstLast => {
+                if self.first.step() {
+                    true
+                } else {
+                    self.second.step()
+                }
+            }
+            UpdateOrder::LastFirst => {
+                if self.second.step() {
+                    true
+                } else {
+                    self.first.step()
+                }
+            }
+        }
+    }
 }
-
-

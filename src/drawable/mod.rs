@@ -26,6 +26,8 @@ pub trait Drawable {
         }
     }
 
+    fn step(&mut self) -> bool;
+
     fn update(&mut self, dt: f64) {
         for ref mut content in self.content_mut() {
             content.update(dt);

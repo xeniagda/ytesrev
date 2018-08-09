@@ -113,6 +113,8 @@ impl Drawable for PngImage {
             )
             .expect("Can't copy");
     }
+
+    fn step(&mut self) -> bool { false }
 }
 pub trait ImageContainer: Drawable {
     fn get_data(&self) -> &Vec<u8>;

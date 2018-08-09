@@ -54,11 +54,11 @@ impl <T: ImageContainer> Ditherer<T> {
         }
     }
 
-    pub fn start_dither(&mut self) {
+    pub fn dither_in(&mut self) {
         self.dithering = DitherState::DitherIn;
     }
 
-    pub fn fade_out(&mut self) {
+    pub fn dither_out(&mut self) {
         self.dithering = DitherState::DitherOut;
     }
 }
@@ -186,6 +186,24 @@ impl <T: ImageContainer> Drawable for Ditherer<T> {
                 self.dither_out_time += dt;
             }
             DitherState::Nothing   => {}
+        }
+    }
+
+    fn step(&mut self) -> bool {
+        match self.dithering {
+            DitherState::Nothing => {
+                self.dither_in();
+                true
+            }
+            DitherState::DitherIn => {
+                if !self.inner.step() {
+                    self.dither_out();
+                }
+                true
+            }
+            DitherState::DitherOut => {
+                false
+            }
         }
     }
 

@@ -124,4 +124,6 @@ impl Drawable for LatexObj {
             eprintln!("Wrong loading order!");
         }
     }
+
+    fn step(&mut self) -> bool { false }
 }
