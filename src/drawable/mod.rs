@@ -12,6 +12,24 @@ pub enum Position {
     Rect(Rect),
 }
 
+impl Position {
+    pub fn into_rect_with_size(self, width: u32, height: u32) -> Rect {
+        match self {
+            Position::TopLeftCorner(point) => {
+                Rect::new(point.x, point.y, width, height)
+            }
+            Position::Center(point) => {
+                Rect::new(point.x - width as i32 / 2, point.y - height as i32 / 2, width, height)
+            }
+            Position::Rect(rect) => {
+                let center_x = rect.x() + rect.width() as i32 / 2;
+                let center_y = rect.y() + rect.height() as i32 / 2;
+                Rect::new(center_x - width as i32 / 2, center_y - height as i32 / 2, width, height)
+            }
+        }
+    }
+}
+
 pub trait Drawable {
     fn content(&self) -> Vec<&dyn Drawable>;
     fn content_mut(&mut self) -> Vec<&mut dyn Drawable>;

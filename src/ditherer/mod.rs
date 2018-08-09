@@ -2,7 +2,6 @@ use std::cell::Cell;
 use std::{u64, f64};
 
 use sdl2::render::{Canvas, BlendMode};
-use sdl2::rect::Rect;
 use sdl2::video::Window;
 
 use super::rand::{thread_rng, Rng};
@@ -262,29 +261,7 @@ impl <T: ImageContainer> Drawable for Ditherer<T> {
 
             self.cached.set(cached);
 
-            let rect =
-                match pos {
-                    Position::TopLeftCorner(point) => {
-                        Rect::new(point.x, point.y, self.inner.width() as u32, self.inner.height() as u32)
-                    }
-                    Position::Center(point) => {
-                        Rect::new(
-                            point.x - self.inner.width()  as i32 / 2,
-                            point.y - self.inner.height() as i32 / 2,
-                            self.inner.width() as u32,
-                            self.inner.height() as u32
-                        )
-                    }
-                    Position::Rect(rect) => {
-                        Rect::new(
-                            rect.x,
-                            rect.y,
-                            self.inner.width() as u32,
-                            self.inner.height() as u32
-                        )
-                    }
-                };
-
+            let rect = pos.into_rect_with_size(self.inner.width() as u32, self.inner.height() as u32);
 
             canvas
                 .copy(

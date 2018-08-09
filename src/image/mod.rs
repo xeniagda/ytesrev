@@ -5,7 +5,6 @@ extern crate png;
 use sdl2::pixels::Color;
 use sdl2::render::{Canvas, BlendMode};
 use sdl2::video::Window;
-use sdl2::rect::Rect;
 
 use self::png::{Decoder, ColorType, DecodingError};
 
@@ -83,27 +82,7 @@ impl Drawable for PngImage {
             .update(None, self.data.as_slice(), 4 * self.width)
             .expect("Can't update");
 
-        let rect =
-            match pos {
-                Position::TopLeftCorner(point) => {
-                    Rect::new(point.x, point.y, self.width as u32, self.height as u32)
-                }
-                Position::Center(point) => {
-                    Rect::new(
-                        point.x - self.width  as i32 / 2,
-                        point.y - self.height as i32 / 2,
-                        self.width as u32,
-                        self.height as u32
-                    )
-                }
-                Position::Rect(r) => {
-                    Rect::new(
-                        r.x, r.y,
-                        self.width as u32,
-                        self.height as u32
-                    )
-                }
-            };
+        let rect = pos.into_rect_with_size(self.width as u32, self.height as u32);
 
         canvas
             .copy(

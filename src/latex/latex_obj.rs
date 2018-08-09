@@ -1,6 +1,6 @@
 extern crate sdl2;
 
-use sdl2::{render::Canvas, video::Window, pixels::Color, rect::Rect};
+use sdl2::{render::Canvas, video::Window, pixels::Color};
 use image::{PngImage, ImageContainer};
 use drawable::{Drawable, Position};
 use super::render::{register_equation, read_image, LatexIdx};
@@ -92,17 +92,8 @@ impl Drawable for LatexObj {
             img.draw(canvas, position);
         } else {
             canvas.set_draw_color(Color::RGB(255, 0, 255));
-            match position {
-                Position::TopLeftCorner(point) => {
-                    canvas.fill_rect(Rect::new(point.x, point.y, 100, 100)).expect("Can't draw");
-                }
-                Position::Center(point) => {
-                    canvas.fill_rect(Rect::new(point.x - 50, point.y - 50, 100, 100)).expect("Can't draw");
-                }
-                Position::Rect(rect) => {
-                    canvas.fill_rect(*rect).expect("Can't draw");
-                }
-            }
+            let rect = position.into_rect_with_size(100, 100);
+            canvas.fill_rect(rect).expect("Can't draw");
         }
     }
 
