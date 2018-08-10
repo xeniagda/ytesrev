@@ -1,7 +1,7 @@
 extern crate sdl2;
 
 use sdl2::{render::Canvas, video::Window, pixels::Color};
-use image::{PngImage, ImageContainer};
+use image::{PngImage, KnownSize, ImageContainer};
 use drawable::{Drawable, Position};
 use super::render::{register_equation, read_image, LatexIdx};
 
@@ -11,6 +11,23 @@ pub struct LatexObj {
     pub id: Option<LatexIdx>,
     pub expr: &'static str,
     pub is_text: bool,
+}
+
+impl KnownSize for LatexObj {
+    fn width(&self) -> usize {
+        if let Some(ref inner) = self.inner {
+            inner.width()
+        } else {
+            0
+        }
+    }
+    fn height(&self) -> usize {
+        if let Some(ref inner) = self.inner {
+            inner.height()
+        } else {
+            0
+        }
+    }
 }
 
 impl ImageContainer for LatexObj {
@@ -31,20 +48,6 @@ impl ImageContainer for LatexObj {
     fn into_data(self) -> Vec<u8> {
         if let Some(inner) = self.inner {
             inner.into_data()
-        } else {
-            panic!("Use of imagecontainer on unloaded LatexObj");
-        }
-    }
-    fn width(&self)    -> usize {
-        if let Some(ref inner) = self.inner {
-            inner.width()
-        } else {
-            panic!("Use of imagecontainer on unloaded LatexObj");
-        }
-    }
-    fn height(&self)   -> usize {
-        if let Some(ref inner) = self.inner {
-            inner.height()
         } else {
             panic!("Use of imagecontainer on unloaded LatexObj");
         }

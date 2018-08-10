@@ -6,7 +6,7 @@ use sdl2::video::Window;
 
 use super::rand::{thread_rng, Rng};
 
-use image::ImageContainer;
+use image::{KnownSize, ImageContainer};
 use drawable::{Drawable, Position};
 
 
@@ -30,12 +30,15 @@ pub struct Ditherer<T: ImageContainer> {
     dithering: DitherState,
 }
 
-impl <T: ImageContainer> ImageContainer for Ditherer<T> {
+impl <T: ImageContainer + KnownSize> KnownSize for Ditherer<T> {
+    fn width(&self) -> usize { self.inner.width() }
+    fn height(&self) -> usize { self.inner.height() }
+}
+
+impl <T: ImageContainer + KnownSize> ImageContainer for Ditherer<T> {
     fn get_data(&self) -> &Vec<u8> { self.inner.get_data() }
     fn get_data_mut(&mut self) -> &mut Vec<u8> { self.inner.get_data_mut() }
     fn into_data(self) -> Vec<u8> { self.inner.into_data() }
-    fn width(&self) -> usize { self.inner.width() }
-    fn height(&self) -> usize { self.inner.height() }
 }
 
 impl <T: ImageContainer> Ditherer<T> {

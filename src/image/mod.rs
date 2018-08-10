@@ -95,18 +95,26 @@ impl Drawable for PngImage {
 
     fn step(&mut self) -> bool { false }
 }
-pub trait ImageContainer: Drawable {
+
+pub trait KnownSize: Drawable {
+    fn width(&self)  -> usize;
+    fn height(&self) -> usize;
+}
+
+pub trait ImageContainer: KnownSize + Sized {
     fn get_data(&self) -> &Vec<u8>;
     fn get_data_mut(&mut self) -> &mut Vec<u8>;
     fn into_data(self) -> Vec<u8>;
-    fn width(&self) -> usize;
-    fn height(&self) -> usize;
+    fn as_knownsize(&self) -> &dyn KnownSize { self }
+}
+
+impl KnownSize for PngImage {
+    fn width(&self)  -> usize { self.width  }
+    fn height(&self) -> usize { self.height }
 }
 
 impl ImageContainer for PngImage {
     fn get_data(&self)         -> &Vec<u8>     { &self.data }
     fn get_data_mut(&mut self) -> &mut Vec<u8> { &mut self.data }
     fn into_data(self)         -> Vec<u8>      { self.data }
-    fn width(&self)            -> usize        { self.width }
-    fn height(&self)           -> usize        { self.height }
 }
