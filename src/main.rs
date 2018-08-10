@@ -20,7 +20,7 @@ use window::WindowManager;
 use scene::{Scene, DrawableWrapper};
 use latex::latex_obj::LatexObj;
 use ditherer::Ditherer;
-use layout::{SplitPrec, Orientation, UpdateOrder};
+use layout::{Orientation, split::{SplitPrec, UpdateOrder}};
 
 fn main() {
     let mut first_scene = make_first_scene();
@@ -36,7 +36,7 @@ fn make_first_scene() -> impl Scene {
     DrawableWrapper(
         SplitPrec::new(
             0.2,
-            Orientation::UpDown,
+            Orientation::Vertical,
             UpdateOrder::SecondFirst,
             Ditherer::dithered_in(LatexObj::text("\\huge Title")),
             Ditherer::dithered_out(LatexObj::math("E = mc^2")),
@@ -48,7 +48,7 @@ fn make_second_scene() -> impl Scene {
     DrawableWrapper(
         SplitPrec::new(
             0.2,
-            Orientation::UpDown,
+            Orientation::Vertical,
             UpdateOrder::SecondFirst,
             Ditherer::dithered_in(LatexObj::text("\\huge Second page")),
             Ditherer::dithered_out(LatexObj::math("a^2 + b^2 = c^2")),

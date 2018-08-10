@@ -4,4 +4,11 @@ const DRAW_BOXES: bool = true;
 const DRAW_BOXES: bool = false;
 
 pub mod split;
-pub use self::split::*;
+
+
+#[allow(unused)]
+pub enum Orientation {
+    Vertical, Horisontal,
+}
+
+

@@ -7,10 +7,7 @@ use sdl2::video::Window;
 
 use drawable::{Drawable, Position};
 
-#[allow(unused)]
-pub enum Orientation {
-    UpDown, RightLeft,
-}
+use super::Orientation;
 
 #[allow(unused)]
 pub enum UpdateOrder {
@@ -61,7 +58,7 @@ impl <T: Drawable, U: Drawable> Drawable for SplitPrec<T, U> {
             }
             Position::Rect(rect) => {
                 let (first_rect, second_rect) = match self.orientation {
-                    Orientation::UpDown => {
+                    Orientation::Vertical => {
                         let first_height = (rect.height() as f64 * self.prec) as u32;
                         let first_rect = Rect::new(
                             rect.x,
@@ -77,7 +74,7 @@ impl <T: Drawable, U: Drawable> Drawable for SplitPrec<T, U> {
                         );
                         (first_rect, second_rect)
                     }
-                    Orientation::RightLeft => {
+                    Orientation::Horisontal => {
                         let first_width = (rect.width() as f64 * self.prec) as u32;
                         let first_rect = Rect::new(
                             rect.x,
