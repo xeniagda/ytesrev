@@ -43,8 +43,8 @@ impl <T: ImageContainer> Ditherer<T> {
         let dither = None;
 
         Ditherer {
-            inner: inner,
-            dither: dither,
+            inner,
+            dither,
             max_time: 0,
             cached: Cell::new(Vec::new()),
             dither_in_time: 0.,
@@ -57,11 +57,11 @@ impl <T: ImageContainer> Ditherer<T> {
         let dither = None;
 
         Ditherer {
-            inner: inner,
-            dither: dither,
+            inner,
+            dither,
             max_time: 0,
             cached: Cell::new(Vec::new()),
-            dither_in_time: f64::MAX,
+            dither_in_time: 0.,
             dither_out_time: 0.,
             dithering: DitherState::DitherIn,
         }
@@ -242,7 +242,7 @@ impl <T: ImageContainer> Drawable for Ditherer<T> {
                     let idx = (y * self.inner.width() + x) * 4;
 
                     let data = self.inner.get_data();
-                    cached[idx + 0] = (mult * data[idx + 0] as f64) as u8;
+                    cached[idx    ] = (mult * data[idx    ] as f64) as u8;
                     cached[idx + 1] = (mult * data[idx + 1] as f64) as u8;
                     cached[idx + 2] = (mult * data[idx + 2] as f64) as u8;
                     cached[idx + 3] = (mult * data[idx + 3] as f64) as u8;

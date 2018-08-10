@@ -24,20 +24,34 @@ use layout::{SplitPrec, Orientation, UpdateOrder};
 
 fn main() {
     let mut first_scene = make_first_scene();
+    let mut second_scene = make_second_scene();
 
-    let mut wmng = WindowManager::init_window(&mut first_scene, vec![]);
+    let mut wmng = WindowManager::init_window(&mut first_scene, vec![&mut second_scene]);
 
     wmng.start();
 }
 
+
 fn make_first_scene() -> impl Scene {
     DrawableWrapper(
         SplitPrec::new(
-            0.3,
+            0.2,
             Orientation::UpDown,
             UpdateOrder::SecondFirst,
-            Ditherer::dithered_in(LatexObj::text("\\large Title")),
+            Ditherer::dithered_in(LatexObj::text("\\huge Title")),
             Ditherer::dithered_out(LatexObj::math("E = mc^2")),
+        )
+    )
+}
+
+fn make_second_scene() -> impl Scene {
+    DrawableWrapper(
+        SplitPrec::new(
+            0.2,
+            Orientation::UpDown,
+            UpdateOrder::SecondFirst,
+            Ditherer::dithered_in(LatexObj::text("\\huge Second page")),
+            Ditherer::dithered_out(LatexObj::math("a^2 + b^2 = c^2")),
         )
     )
 }

@@ -11,7 +11,7 @@ use sdl2::EventPump;
 use std::time::{Duration, Instant};
 use std::thread::sleep;
 
-use scene::Scene;
+use scene::{Scene, Action};
 use latex::render_all_eqations;
 use drawable::Position;
 
@@ -64,22 +64,22 @@ impl <'a> WindowManager<'a> {
         // Load everything
 
         curr_scene.as_mut_drawable().register();
-        for scene in other_scenes.iter_mut() {
+        for scene in &mut other_scenes {
             scene.as_mut_drawable().register();
         }
 
         render_all_eqations().expect("Can't render!");
 
         curr_scene.as_mut_drawable().load();
-        for scene in other_scenes.iter_mut() {
+        for scene in &mut other_scenes {
             scene.as_mut_drawable().load();
         }
 
         WindowManager {
-            canvas: canvas,
-            event_pump: event_pump,
-            other_scenes: other_scenes,
-            curr_scene: curr_scene,
+            canvas,
+            event_pump,
+            other_scenes,
+            curr_scene,
             time_manager: None,
         }
     }
@@ -99,17 +99,33 @@ impl <'a> WindowManager<'a> {
                         },
                         _ => {}
                     }
-                    match event {
-                        Event::KeyDown { keycode: Some(Keycode::Return), ..} => {
-                            self.curr_scene.event(YEvent::Next);
+
+
+                    let action =
+                        match event {
+                            Event::KeyDown { keycode: Some(Keycode::Return), ..} => {
+                                self.curr_scene.event(YEvent::Next)
+                            }
+                            Event::KeyDown { keycode: Some(Keycode::Space), ..}
+                            | Event::MouseButtonDown { ..} => {
+                                self.curr_scene.event(YEvent::Step)
+                            }
+                            e => {
+                                self.curr_scene.event(YEvent::Other(e))
+                            }
+                        };
+
+                    match action {
+                        Action::Next => {
+                            if self.other_scenes.is_empty() {
+                                return false;
+                            }
+                            self.curr_scene = self.other_scenes.remove(0);
                         }
-                        Event::KeyDown { keycode: Some(Keycode::Space), ..}
-                        | Event::MouseButtonDown { ..} => {
-                            self.curr_scene.event(YEvent::Step);
+                        Action::Exit => {
+                            return false;
                         }
-                        e => {
-                            self.curr_scene.event(YEvent::Other(e));
-                        }
+                        Action::Continue => {}
                     }
                 }
 

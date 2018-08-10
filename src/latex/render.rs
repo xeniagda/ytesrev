@@ -8,6 +8,7 @@ use std::fs::{File, create_dir, remove_dir_all};
 use std::path::{Path, PathBuf};
 use std::io::{Result as IResult, Error, ErrorKind, Write};
 use std::time::Instant;
+use std::mem::drop;
 
 use image::PngImage;
 
@@ -37,7 +38,7 @@ pub fn register_equation(equation: &'static str, is_text: bool) -> LatexIdx {
 }
 
 pub fn read_image(idx: LatexIdx) -> Result<PngImage, LatexError> {
-    if let Ok(ref mut eqs) = EQUATIONS.lock() {
+    let res = if let Ok(ref mut eqs) = EQUATIONS.lock() {
         if let Some(ref mut x) = eqs.get_mut(idx.0) {
             if x.2.is_some() {
                 Ok(x.2.take().unwrap())
@@ -49,7 +50,9 @@ pub fn read_image(idx: LatexIdx) -> Result<PngImage, LatexError> {
         }
     } else {
         Err(LatexError::NotLoaded)
-    }
+    };
+    drop(idx);
+    res
 }
 
 pub fn render_all_eqations() -> IResult<()> {
@@ -94,7 +97,7 @@ fn create_tex(tex_path: &Path) -> IResult<()> {
 
 
     if let Ok(eqs) = EQUATIONS.lock() {
-        for ref equation in eqs.iter() {
+        for equation in eqs.iter() {
             writeln!(tex_file, "\\begin{{equation*}}")?;
             if equation.1 {
                 writeln!(tex_file, "\\text{{ {} }}", equation.0)?;

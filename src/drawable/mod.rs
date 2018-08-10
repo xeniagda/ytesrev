@@ -35,12 +35,12 @@ pub trait Drawable {
     fn content_mut(&mut self) -> Vec<&mut dyn Drawable>;
 
     fn register(&mut self) {
-        for ref mut content in self.content_mut() {
+        for content in &mut self.content_mut() {
             content.register();
         }
     }
     fn load(&mut self) {
-        for ref mut content in self.content_mut() {
+        for content in &mut self.content_mut() {
             content.load();
         }
     }
@@ -48,7 +48,7 @@ pub trait Drawable {
     fn step(&mut self) -> bool;
 
     fn update(&mut self, dt: f64) {
-        for ref mut content in self.content_mut() {
+        for content in &mut self.content_mut() {
             content.update(dt);
         }
     }

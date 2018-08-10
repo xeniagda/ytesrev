@@ -56,7 +56,7 @@ impl LatexObj {
         LatexObj {
             inner: None,
             id: None,
-            expr: expr,
+            expr,
             is_text: false,
         }
     }
