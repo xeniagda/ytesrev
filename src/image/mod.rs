@@ -10,7 +10,7 @@ use self::png::{Decoder, ColorType, DecodingError};
 
 use std::io::Read;
 
-use drawable::{Drawable, Position};
+use drawable::{Drawable, Position, State};
 
 #[derive(Clone)]
 pub struct PngImage {
@@ -93,7 +93,8 @@ impl Drawable for PngImage {
             .expect("Can't copy");
     }
 
-    fn step(&mut self) -> bool { false }
+    fn step(&mut self) {}
+    fn state(&self) -> State { State::Final }
 }
 
 pub trait KnownSize: Drawable {

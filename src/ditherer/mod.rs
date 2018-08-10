@@ -7,7 +7,7 @@ use sdl2::video::Window;
 use super::rand::{thread_rng, Rng};
 
 use image::{KnownSize, ImageContainer};
-use drawable::{Drawable, Position};
+use drawable::{Drawable, Position, State};
 
 
 const DITHER_SPEED: f64 = 300.;
@@ -195,34 +195,53 @@ impl <T: ImageContainer> Drawable for Ditherer<T> {
     fn update(&mut self, dt: f64) {
         match self.dithering {
             DitherState::DitherIn  => {
-                if self.dither_in_time < self.max_time as f64 {
+                if self.dither_in_time * DITHER_SPEED < self.max_time as f64 {
                     self.dither_in_time += dt;
                 }
             }
             DitherState::DitherOut => {
-                if self.dither_in_time < self.max_time as f64 {
-                    self.dither_in_time += dt;
+                if self.dither_out_time * DITHER_SPEED < self.max_time as f64 {
+                    self.dither_out_time += dt;
                 }
-                self.dither_out_time += dt;
             }
             DitherState::Nothing   => {}
         }
     }
 
-    fn step(&mut self) -> bool {
+    fn step(&mut self) {
         match self.dithering {
             DitherState::Nothing => {
                 self.dither_in();
-                true
             }
             DitherState::DitherIn => {
-                if !self.inner.step() {
+                self.inner.step();
+                if self.inner.state() > State::Working {
                     self.dither_out();
                 }
-                true
             }
             DitherState::DitherOut => {
-                false
+            }
+        }
+    }
+
+    fn state(&self) -> State {
+        match self.dithering {
+            DitherState::Nothing => {
+                State::Working
+            }
+            DitherState::DitherIn => {
+                if self.dither_in_time * DITHER_SPEED < self.max_time as f64 {
+                    State::Working
+                } else {
+                    State::Final
+                }
+            }
+            DitherState::DitherOut => {
+                if self.dither_out_time * DITHER_SPEED < self.max_time as f64 {
+                    State::Final
+                } else {
+                    State::Hidden
+                }
             }
         }
     }

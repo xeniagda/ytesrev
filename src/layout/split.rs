@@ -5,7 +5,7 @@ use sdl2::pixels::Color;
 use sdl2::render::Canvas;
 use sdl2::video::Window;
 
-use drawable::{Drawable, Position};
+use drawable::{Drawable, Position, State};
 
 use super::Orientation;
 
@@ -106,28 +106,45 @@ impl <T: Drawable, U: Drawable> Drawable for SplitPrec<T, U> {
         }
     }
 
-    fn step(&mut self) -> bool {
+    fn step(&mut self) {
         match self.order {
             UpdateOrder::Simultaneous => {
-                let first_res = self.first.step();
-                let second_res = self.second.step();
-
-                first_res && second_res
+                if self.first.state() == State::Working {
+                    self.first.step();
+                }
+                if self.second.state() == State::Working {
+                    self.second.step();
+                }
+                if self.first.state() >= State::Final && self.second.state() >= State::Final {
+                    self.first.step();
+                    self.second.step();
+                }
             }
             UpdateOrder::FirstSecond => {
-                if self.first.step() {
-                    true
+                if self.first.state() == State::Working {
+                    self.first.step();
+                } else if self.second.state() == State::Working {
+                    self.second.step();
                 } else {
-                    self.second.step()
+                    self.first.step();
+                    self.second.step();
                 }
             }
             UpdateOrder::SecondFirst => {
-                if self.second.step() {
-                    true
+                println!("First: {:?}, Second: {:?}", self.first.state(), self.second.state());
+                if self.second.state() == State::Working {
+                    self.second.step();
+                } else if self.first.state() == State::Working {
+                    self.first.step();
                 } else {
-                    self.first.step()
+                    self.first.step();
+                    self.second.step();
                 }
             }
         }
+    }
+
+    fn state(&self) -> State {
+        Ord::min(self.first.state(), self.second.state())
     }
 }

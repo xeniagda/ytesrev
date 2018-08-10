@@ -12,6 +12,13 @@ pub enum Position {
     Rect(Rect),
 }
 
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug)]
+pub enum State {
+    Working,
+    Final,
+    Hidden,
+}
+
 impl Position {
     pub fn into_rect_with_size(self, width: u32, height: u32) -> Rect {
         match self {
@@ -45,7 +52,8 @@ pub trait Drawable {
         }
     }
 
-    fn step(&mut self) -> bool;
+    fn step(&mut self);
+    fn state(&self) -> State;
 
     fn update(&mut self, dt: f64) {
         for content in &mut self.content_mut() {

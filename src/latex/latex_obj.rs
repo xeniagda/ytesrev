@@ -2,7 +2,7 @@ extern crate sdl2;
 
 use sdl2::{render::Canvas, video::Window, pixels::Color};
 use image::{PngImage, KnownSize, ImageContainer};
-use drawable::{Drawable, Position};
+use drawable::{Drawable, Position, State};
 use super::render::{register_equation, read_image, LatexIdx};
 
 
@@ -119,5 +119,6 @@ impl Drawable for LatexObj {
         }
     }
 
-    fn step(&mut self) -> bool { false }
+    fn step(&mut self) {}
+    fn state(&self) -> State { State::Final }
 }
