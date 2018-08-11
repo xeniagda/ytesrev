@@ -40,16 +40,16 @@ fn make_first_scene() -> impl Scene {
             10,
             Orientation::Vertical,
             vec![
-                Box::new(Ditherer::dithered_in(LatexObj::text("Thing 1"))),
-                Box::new(Ditherer::dithered_in(LatexObj::text("Thing 2"))),
-                Box::new(Ditherer::dithered_in(LatexObj::text("Thing 3"))),
+                Box::new(Ditherer::dithered_out(LatexObj::text("Thing 1"))),
+                Box::new(Ditherer::dithered_out(LatexObj::text("Thing 2"))),
+                Box::new(Ditherer::dithered_out(LatexObj::text("Thing 3"))),
                 Box::new(
                     Stack::new(
                         100,
                         Orientation::Horisontal,
                         vec![
-                            Box::new(Ditherer::dithered_in(LatexObj::text("Stack"))),
-                            Box::new(Ditherer::dithered_in(LatexObj::text("in a \\emph{stack}"))),
+                            Box::new(Ditherer::dithered_out(LatexObj::text("Stack"))),
+                            Box::new(Ditherer::dithered_out(LatexObj::text("in a \\emph{stack}"))),
                         ]
                     )
                 )
