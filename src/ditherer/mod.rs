@@ -194,17 +194,20 @@ impl <T: ImageContainer> Drawable for Ditherer<T> {
 
     fn update(&mut self, dt: f64) {
         match self.dithering {
-            DitherState::DitherIn  => {
+            DitherState::DitherIn => {
                 if self.dither_in_time * DITHER_SPEED < self.max_time as f64 {
                     self.dither_in_time += dt;
                 }
             }
             DitherState::DitherOut => {
+                if self.dither_in_time * DITHER_SPEED < self.max_time as f64 {
+                    self.dither_in_time += dt;
+                }
                 if self.dither_out_time * DITHER_SPEED < self.max_time as f64 {
                     self.dither_out_time += dt;
                 }
             }
-            DitherState::Nothing   => {}
+            DitherState::Nothing => {}
         }
     }
 
