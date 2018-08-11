@@ -1,6 +1,9 @@
 # ytesrev
 
 <img src="ytesrev.gif" alt="showcase" width="400px"/>
+<sub><sup>
+    (higher quality in real life, gif looks like trash thanks to compression and me not knowing how to make it better)
+</sup></sub>
 
 This is a presentation tool inspired by 3blue1brown's tool [manim](https://github.com/3b1b/manim). Currently it
 supports rendering LaTeX files, relatively simple layout, reading PNGs among other things.
