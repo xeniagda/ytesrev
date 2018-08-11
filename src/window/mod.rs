@@ -20,7 +20,6 @@ const BACKGROUND: (u8, u8, u8) = (255, 248, 234);
 
 pub enum YEvent {
     Step,
-    Next,
     Other(Event),
 }
 
@@ -90,6 +89,15 @@ impl <'a> WindowManager<'a> {
                 let dt = tm.dt();
 
                 self.curr_scene.update(dt);
+                match self.curr_scene.action() {
+                    Action::Next => {
+                        if self.other_scenes.is_empty() {
+                            return false;
+                        }
+                        self.curr_scene = self.other_scenes.remove(0);
+                    }
+                    Action::Continue => {}
+                }
 
                 for event in self.event_pump.poll_iter() {
                     match event {
@@ -101,32 +109,22 @@ impl <'a> WindowManager<'a> {
                     }
 
 
-                    let action =
-                        match event {
-                            Event::KeyDown { keycode: Some(Keycode::Return), ..} => {
-                                self.curr_scene.event(YEvent::Next)
-                            }
-                            Event::KeyDown { keycode: Some(Keycode::Space), ..}
-                            | Event::MouseButtonDown { ..} => {
-                                self.curr_scene.event(YEvent::Step)
-                            }
-                            e => {
-                                self.curr_scene.event(YEvent::Other(e))
-                            }
-                        };
-
-                    match action {
-                        Action::Next => {
+                    match event {
+                        Event::KeyDown { keycode: Some(Keycode::Return), ..} => {
                             if self.other_scenes.is_empty() {
                                 return false;
                             }
                             self.curr_scene = self.other_scenes.remove(0);
                         }
-                        Action::Exit => {
-                            return false;
+                        Event::KeyDown { keycode: Some(Keycode::Space), ..}
+                        | Event::MouseButtonDown { ..} => {
+                            self.curr_scene.event(YEvent::Step)
                         }
-                        Action::Continue => {}
-                    }
+                        e => {
+                            self.curr_scene.event(YEvent::Other(e))
+                        }
+                    };
+
                 }
 
             },
@@ -155,6 +153,7 @@ impl <'a> WindowManager<'a> {
             if !self.process_events() {
                 break;
             }
+
             sleep(Duration::from_millis(5));
         }
     }

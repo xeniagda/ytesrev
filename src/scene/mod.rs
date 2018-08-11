@@ -10,12 +10,12 @@ use drawable::{Drawable, Position, State};
 pub enum Action {
     Continue,
     Next,
-    Exit
 }
 
 pub trait Scene {
-    fn update(&mut self, _dt: f64) -> Action;
-    fn event(&mut self, _event: YEvent) -> Action;
+    fn update(&mut self, _dt: f64);
+    fn event(&mut self, _event: YEvent);
+    fn action(&self) -> Action;
 
     fn as_drawable(&self) -> &dyn Drawable;
     fn as_mut_drawable(&mut self) -> &mut dyn Drawable;
@@ -26,19 +26,21 @@ pub trait Scene {
 pub struct DrawableWrapper<T: Drawable>(pub T);
 
 impl <T: Drawable> Scene for DrawableWrapper<T> {
-    fn update(&mut self, dt: f64) -> Action { self.0.update(dt); Action::Continue }
-    fn event(&mut self, event: YEvent) -> Action {
+    fn update(&mut self, dt: f64) { self.0.update(dt); }
+    fn event(&mut self, event: YEvent) {
         match event {
             YEvent::Step => {
                 self.0.step();
-                if self.0.state() == State::Hidden {
-                    Action::Next
-                } else {
-                    Action::Continue
-                }
             }
-            YEvent::Next => Action::Next,
-            _ => Action::Continue
+            _ => {}
+        }
+    }
+
+    fn action(&self) -> Action {
+        if self.0.state() == State::Hidden {
+            Action::Next
+        } else {
+            Action::Continue
         }
     }
 
