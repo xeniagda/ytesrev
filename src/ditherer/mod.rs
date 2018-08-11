@@ -215,9 +215,7 @@ impl <T: ImageContainer> Drawable for Ditherer<T> {
             }
             DitherState::DitherIn => {
                 self.inner.step();
-                if self.inner.state() > State::Working && self.dither_in_time * DITHER_SPEED > self.max_time as f64 {
-                    self.dither_out();
-                }
+                self.dither_out();
             }
             DitherState::DitherOut => {
             }
