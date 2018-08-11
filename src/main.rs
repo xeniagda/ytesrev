@@ -20,7 +20,9 @@ use window::WindowManager;
 use scene::{Scene, DrawableWrapper};
 use latex::latex_obj::LatexObj;
 use ditherer::Ditherer;
-use layout::{Orientation, split::{SplitPrec, UpdateOrder}};
+use layout::Orientation;
+use layout::split::{SplitPrec, UpdateOrder};
+use layout::stack::Stack;
 
 fn main() {
     let mut first_scene = make_first_scene();
@@ -34,12 +36,24 @@ fn main() {
 
 fn make_first_scene() -> impl Scene {
     DrawableWrapper(
-        SplitPrec::new(
-            0.2,
+        Stack::new(
+            10,
             Orientation::Vertical,
-            UpdateOrder::SecondFirst,
-            Ditherer::dithered_in(LatexObj::text("\\huge Title")),
-            Ditherer::dithered_out(LatexObj::math("E = mc^2")),
+            vec![
+                Box::new(Ditherer::dithered_in(LatexObj::text("Thing 1"))),
+                Box::new(Ditherer::dithered_in(LatexObj::text("Thing 2"))),
+                Box::new(Ditherer::dithered_in(LatexObj::text("Thing 3"))),
+                Box::new(
+                    Stack::new(
+                        100,
+                        Orientation::Horisontal,
+                        vec![
+                            Box::new(Ditherer::dithered_in(LatexObj::text("Stack"))),
+                            Box::new(Ditherer::dithered_in(LatexObj::text("in a \\emph{stack}"))),
+                        ]
+                    )
+                )
+            ]
         )
     )
 }

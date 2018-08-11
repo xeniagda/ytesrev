@@ -82,7 +82,7 @@ impl Drawable for PngImage {
             .update(None, self.data.as_slice(), 4 * self.width)
             .expect("Can't update");
 
-        let rect = pos.into_rect_with_size(self.width as u32, self.height as u32);
+        let rect = pos.into_rect_with_size_unbounded(self.width as u32, self.height as u32);
 
         canvas
             .copy(

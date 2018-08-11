@@ -4,7 +4,7 @@ const DRAW_BOXES: bool = true;
 const DRAW_BOXES: bool = false;
 
 pub mod split;
-
+pub mod stack;
 
 #[allow(unused)]
 pub enum Orientation {

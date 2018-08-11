@@ -1,143 +1,109 @@
 extern crate sdl2;
 
-use sdl2::rect::Rect;
-use sdl2::pixels::Color;
+use sdl2::rect::{Rect, Point};
 use sdl2::render::Canvas;
 use sdl2::video::Window;
 
-use drawable::{Drawable, Position};
+use drawable::{Drawable, Position, State};
+use image::KnownSize;
+use super::Orientation;
 
-#[allow(unused)]
-pub enum Direction {
-    Vertical, Horisontal
+
+pub trait Stackable: Drawable + KnownSize {
+    fn as_sizeable(    &    self) -> &    dyn KnownSize;
+    fn as_sizeable_mut(&mut self) -> &mut dyn KnownSize;
+    fn as_drawable(    &    self) -> &    dyn Drawable;
+    fn as_drawable_mut(&mut self) -> &mut dyn Drawable;
 }
 
-trait Stackable: Drawable + Sizeable {
-    fn as_sizeable(&mut self) -> &mut dyn Sizeable;
-    fn as_drawable(&mut self) -> &mut dyn Drawalble;
-}
-
-impl <T: Drawable + Sizeable> Stackable for T {
-    fn as_sizeable(&mut self) -> &mut dyn Sizeable {
-        self
-    }
-    fn as_drawable(&mut self) -> &mut dyn Drawalble {
-        self
-    }
+impl <T: Drawable + KnownSize> Stackable for T {
+    fn as_sizeable(&self) -> &dyn KnownSize  { self }
+    fn as_sizeable_mut(&mut self) -> &mut dyn KnownSize  { self }
+    fn as_drawable(&self) -> &dyn Drawable { self }
+    fn as_drawable_mut(&mut self) -> &mut dyn Drawable { self }
 }
 
 pub struct Stack {
-    direction: Direction,
-    content: Vec<&dyn Stackable>,
     margin: u32,
+    orientation: Orientation,
+    content: Vec<Box<dyn Stackable>>,
 }
 
-impl <T: Drawable, U: Drawable> SplitPrec<T, U> {
+impl Stack {
     pub fn new(
-        prec: f64,
+        margin: u32,
         orientation: Orientation,
-        order: UpdateOrder,
-        first: T,
-        second: U,
-    ) -> SplitPrec<T, U> {
-        SplitPrec {
-            prec,
+        content: Vec<Box<dyn Stackable>>,
+    ) -> Stack {
+        Stack {
+            margin,
             orientation,
-            order,
-            first,
-            second,
+            content,
         }
     }
 }
 
-impl <T: Drawable, U: Drawable> Drawable for SplitPrec<T, U> {
+impl <'a> Drawable for Stack {
     fn content(&self) -> Vec<&dyn Drawable> {
-        vec![&self.first, &self.second]
+        self.content.iter().map(|x| x.as_ref().as_drawable()).collect()
     }
 
     fn content_mut(&mut self) -> Vec<&mut dyn Drawable> {
-        vec![&mut self.first, &mut self.second]
+        self.content.iter_mut().map(|x| x.as_mut().as_drawable_mut()).collect()
     }
 
     fn draw(&mut self, canvas: &mut Canvas<Window>, pos: &Position) {
-        match pos {
-            Position::TopLeftCorner(_) | Position::Center(_) => {
-                eprintln!("Trying to draw a YSplitpane not using a Position::Rect. Please don't");
+        let corner = pos.into_rect_with_size(self.width() as u32, self.height() as u32).top_left();
+
+        match self.orientation {
+            Orientation::Vertical => {
+                let mut y = corner.y;
+                for obj in &mut self.content {
+                    obj.as_drawable_mut().draw(canvas, &Position::TopLeftCorner(Point::new(corner.x, y)));
+                    y += obj.as_sizeable().height() as i32 + self.margin as i32;
+                }
             }
-            Position::Rect(rect) => {
-                let (first_rect, second_rect) = match self.orientation {
-                    Orientation::UpDown => {
-                        let first_height = (rect.height() as f64 * self.prec) as u32;
-                        let first_rect = Rect::new(
-                            rect.x,
-                            rect.y,
-                            rect.width(),
-                            first_height
-                        );
-                        let second_rect = Rect::new(
-                            rect.x,
-                            rect.y + first_height as i32,
-                            rect.width(),
-                            rect.height() - first_height,
-                        );
-                        (first_rect, second_rect)
-                    }
-                    Orientation::RightLeft => {
-                        let first_width = (rect.width() as f64 * self.prec) as u32;
-                        let first_rect = Rect::new(
-                            rect.x,
-                            rect.y,
-                            first_width,
-                            rect.height(),
-                        );
-                        let second_rect = Rect::new(
-                            rect.x + first_width as i32,
-                            rect.y,
-                            rect.width() - first_width,
-                            rect.height(),
-                        );
-                        (first_rect, second_rect)
-                    }
-                };
-
-                self.first.draw(canvas, &Position::Rect(first_rect));
-                self.second.draw(canvas, &Position::Rect(second_rect));
-
-                if super::DRAW_BOXES {
-                    canvas.set_draw_color(Color::RGB(255, 0, 0));
-                    canvas.draw_rect(first_rect).expect("Can't draw");
-                    canvas.draw_rect(second_rect).expect("Can't draw");
-                    canvas.set_draw_color(Color::RGB(0, 255, 0));
-                    canvas.draw_rect(*rect).expect("Can't draw");
+            Orientation::Horisontal => {
+                let mut x = corner.x;
+                for obj in &mut self.content {
+                    obj.as_drawable_mut().draw(canvas, &Position::TopLeftCorner(Point::new(x, corner.y)));
+                    x += obj.as_sizeable().width() as i32 + self.margin as i32;
                 }
             }
         }
     }
 
-    fn step(&mut self) -> bool {
-        match self.order {
-            UpdateOrder::Simultaneous => {
-                let first_res = self.first.step();
-                let second_res = self.second.step();
+    fn step(&mut self) {
+    }
 
-                first_res && second_res
+    fn state(&self) -> State {
+        State::Final
+    }
+}
+
+impl KnownSize for Stack {
+    fn width(&self)  -> usize {
+        match self.orientation {
+            Orientation::Horisontal => {
+                let content_size = self.content.iter().map(|x| x.as_sizeable().width()).sum::<usize>();
+                let margins = self.margin as usize * (self.content.len() - 1);
+                content_size + margins
             }
-            UpdateOrder::FirstSecond => {
-                if self.first.step() {
-                    true
-                } else {
-                    self.second.step()
-                }
+            Orientation::Vertical => {
+                self.content.iter().fold(0, |old, obj| obj.width().max(old))
             }
-            UpdateOrder::SecondFirst => {
-                if self.second.step() {
-                    true
-                } else {
-                    self.first.step()
-                }
+        }
+    }
+    fn height(&self) -> usize {
+        match self.orientation {
+            Orientation::Vertical => {
+                let content_size = self.content.iter().map(|x| x.as_sizeable().height()).sum::<usize>();
+                let margins = self.margin as usize * (self.content.len() - 1);
+                content_size + margins
+            }
+            Orientation::Horisontal => {
+                self.content.iter().fold(0, |old, obj| obj.height().max(old))
             }
         }
     }
 }
-
-

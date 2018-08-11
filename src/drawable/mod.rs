@@ -31,7 +31,45 @@ impl Position {
             Position::Rect(rect) => {
                 let center_x = rect.x() + rect.width() as i32 / 2;
                 let center_y = rect.y() + rect.height() as i32 / 2;
-                Rect::new(center_x - width as i32 / 2, center_y - height as i32 / 2, width, height)
+
+                let x = (center_x - width  as i32 / 2).max(rect.x);
+                let y = (center_y - height as i32 / 2).max(rect.y);
+
+                let width =
+                    if x + width as i32 > rect.x + rect.width() as i32 {
+                        rect.width()
+                    } else {
+                        width
+                    };
+
+                let height =
+                    if y + height as i32 > rect.y + rect.height() as i32 {
+                        rect.height()
+                    } else {
+                        height
+                    };
+
+                Rect::new(x, y, width, height)
+            }
+        }
+    }
+
+    pub fn into_rect_with_size_unbounded(self, width: u32, height: u32) -> Rect {
+        match self {
+            Position::TopLeftCorner(point) => {
+                Rect::new(point.x, point.y, width, height)
+            }
+            Position::Center(point) => {
+                Rect::new(point.x - width as i32 / 2, point.y - height as i32 / 2, width, height)
+            }
+            Position::Rect(rect) => {
+                let center_x = rect.x() + rect.width() as i32 / 2;
+                let center_y = rect.y() + rect.height() as i32 / 2;
+
+                let x = (center_x - width  as i32 / 2).max(rect.x);
+                let y = (center_y - height as i32 / 2).max(rect.y);
+
+                Rect::new(x, y, width, height)
             }
         }
     }
