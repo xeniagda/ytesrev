@@ -1,13 +1,18 @@
 extern crate sdl2;
 
-use sdl2::rect::Point;
+use sdl2::rect::{Point, Rect};
 use sdl2::render::Canvas;
 use sdl2::video::Window;
+use sdl2::pixels::Color;
 
 use drawable::{Drawable, Position, State};
 use image::KnownSize;
 use super::Orientation;
 
+pub enum ElementPositioning {
+    TopLeftCornered,
+    Centered,
+}
 
 pub trait Stackable: Drawable + KnownSize {
     fn as_sizeable(    &    self) -> &    dyn KnownSize;
@@ -26,6 +31,7 @@ impl <T: Drawable + KnownSize> Stackable for T {
 pub struct Stack {
     margin: u32,
     orientation: Orientation,
+    positioning: ElementPositioning,
     content: Vec<Box<dyn Stackable>>,
 }
 
@@ -33,11 +39,13 @@ impl Stack {
     pub fn new(
         margin: u32,
         orientation: Orientation,
+        positioning: ElementPositioning,
         content: Vec<Box<dyn Stackable>>,
     ) -> Stack {
         Stack {
             margin,
             orientation,
+            positioning,
             content,
         }
     }
@@ -55,18 +63,50 @@ impl <'a> Drawable for Stack {
     fn draw(&mut self, canvas: &mut Canvas<Window>, pos: &Position) {
         let corner = pos.into_rect_with_size(self.width() as u32, self.height() as u32).top_left();
 
+        let (width, height) = (self.width(), self.height());
+
         match self.orientation {
             Orientation::Vertical => {
                 let mut y = corner.y;
                 for obj in &mut self.content {
-                    obj.as_drawable_mut().draw(canvas, &Position::TopLeftCorner(Point::new(corner.x, y)));
+                    if super::DRAW_BOXES {
+                        canvas.set_draw_color(Color::RGB(255, 0, 0));
+                        canvas.draw_rect(
+                            Rect::new(corner.x, y, obj.as_sizeable().width() as u32, obj.as_sizeable().height() as u32)
+                        ).expect("Can't draw");
+                    }
+
+                    match self.positioning {
+                        ElementPositioning::TopLeftCornered => {
+                            obj.as_drawable_mut().draw(canvas, &Position::TopLeftCorner(Point::new(corner.x, y)));
+                        }
+                        ElementPositioning::Centered => {
+                            let px = corner.x + width  as i32 / 2;
+                            obj.as_drawable_mut().draw(canvas, &Position::Center(Point::new(px, y)));
+                        }
+                    }
                     y += obj.as_sizeable().height() as i32 + self.margin as i32;
                 }
             }
             Orientation::Horisontal => {
                 let mut x = corner.x;
                 for obj in &mut self.content {
-                    obj.as_drawable_mut().draw(canvas, &Position::TopLeftCorner(Point::new(x, corner.y)));
+                    if super::DRAW_BOXES {
+                        canvas.set_draw_color(Color::RGB(255, 0, 0));
+                        canvas.draw_rect(
+                            Rect::new(x, corner.y, obj.as_sizeable().width() as u32, obj.as_sizeable().height() as u32)
+                        ).expect("Can't draw");
+                    }
+
+                    match self.positioning {
+                        ElementPositioning::TopLeftCornered => {
+                            obj.as_drawable_mut().draw(canvas, &Position::TopLeftCorner(Point::new(x, corner.y)));
+                        }
+                        ElementPositioning::Centered => {
+                            let py = corner.y + height as i32 / 2;
+                            obj.as_drawable_mut().draw(canvas, &Position::Center(Point::new(x, py)));
+                        }
+                    }
                     x += obj.as_sizeable().width() as i32 + self.margin as i32;
                 }
             }

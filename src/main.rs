@@ -22,7 +22,7 @@ use latex::latex_obj::LatexObj;
 use ditherer::Ditherer;
 use layout::Orientation;
 use layout::split::{SplitPrec, UpdateOrder};
-use layout::stack::Stack;
+use layout::stack::{Stack, ElementPositioning};
 
 fn main() {
     let mut first_scene = make_first_scene();
@@ -39,6 +39,7 @@ fn make_first_scene() -> impl Scene {
         Stack::new(
             10,
             Orientation::Vertical,
+            ElementPositioning::Centered,
             vec![
                 Box::new(Ditherer::dithered_out(LatexObj::text("Thing 1"))),
                 Box::new(Ditherer::dithered_out(LatexObj::text("Thing 2"))),
@@ -47,9 +48,10 @@ fn make_first_scene() -> impl Scene {
                     Stack::new(
                         100,
                         Orientation::Horisontal,
+                        ElementPositioning::TopLeftCornered,
                         vec![
                             Box::new(Ditherer::dithered_out(LatexObj::text("Stack"))),
-                            Box::new(Ditherer::dithered_out(LatexObj::text("in a \\emph{stack}"))),
+                            Box::new(Ditherer::dithered_out(LatexObj::text("\\emph{in} a stack"))),
                         ]
                     )
                 )
