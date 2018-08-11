@@ -1,6 +1,6 @@
 extern crate sdl2;
 
-use sdl2::rect::{Rect, Point};
+use sdl2::rect::Point;
 use sdl2::render::Canvas;
 use sdl2::video::Window;
 
@@ -74,10 +74,21 @@ impl <'a> Drawable for Stack {
     }
 
     fn step(&mut self) {
+        for item in &mut self.content {
+            if item.state() == State::Working {
+                item.step();
+                return;
+            }
+        }
+        for item in &mut self.content {
+            if item.state() == State::Final {
+                item.step();
+            }
+        }
     }
 
     fn state(&self) -> State {
-        State::Final
+        self.content.iter().map(|x| x.as_drawable().state()).min().unwrap_or(State::Hidden)
     }
 }
 
