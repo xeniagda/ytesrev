@@ -1,6 +1,6 @@
-#[cfg(debug_assertions)]
+#[cfg(feature = "debug_boxes")]
 const DRAW_BOXES: bool = true;
-#[cfg(not(debug_assertions))]
+#[cfg(not(feature = "debug_boxes"))]
 const DRAW_BOXES: bool = false;
 
 pub mod split;
