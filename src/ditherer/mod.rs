@@ -20,13 +20,27 @@ enum DitherState {
     DitherOut,
 }
 
-pub struct Ditherer<T: ImageContainer> {
+pub fn default_dither_fn<T: ImageContainer + KnownSize>(image: &T, (x, y): (usize, usize)) -> u64 {
+    let alpha = move |x: usize, y: usize| {
+            let x = x.max(0).min(image.width() - 1);
+            let y = y.max(0).min(image.height() - 1);
+            image.get_data()[(y * image.width() + x) * 4 + 3]
+        };
+
+    let delta_alpha_y = (alpha(x, y + 1) as i64 - alpha(x, y - 1) as i64).abs();
+    let delta_alpha_x = (alpha(x + 1, y) as i64 - alpha(x - 1, y) as i64).abs();
+
+    delta_alpha_y.max(delta_alpha_x) as u64
+}
+
+pub struct Ditherer<T: ImageContainer + 'static> {
     pub inner: T,
     pub dither: Option<Vec<Vec<u64>>>,
     max_time: u64,
     cached: Cell<Vec<u8>>,
     pub dither_in_time: f64,
     pub dither_out_time: f64,
+    pub dither_fn: Box<Fn(&T, (usize, usize)) -> u64>,
     dithering: DitherState,
 }
 
@@ -41,6 +55,7 @@ impl <T: ImageContainer + KnownSize> ImageContainer for Ditherer<T> {
     fn into_data(self) -> Vec<u8> { self.inner.into_data() }
 }
 
+
 impl <T: ImageContainer> Ditherer<T> {
     pub fn dithered_out(inner: T) -> Ditherer<T> {
         let dither = None;
@@ -52,6 +67,7 @@ impl <T: ImageContainer> Ditherer<T> {
             cached: Cell::new(Vec::new()),
             dither_in_time: 0.,
             dither_out_time: 0.,
+            dither_fn: Box::new(default_dither_fn),
             dithering: DitherState::Nothing,
         }
     }
@@ -66,6 +82,7 @@ impl <T: ImageContainer> Ditherer<T> {
             cached: Cell::new(Vec::new()),
             dither_in_time: 0.,
             dither_out_time: 0.,
+            dither_fn: Box::new(default_dither_fn),
             dithering: DitherState::DitherIn,
         }
     }
@@ -87,75 +104,37 @@ impl <T: ImageContainer> Drawable for Ditherer<T> {
     fn load(&mut self) {
         self.inner.load();
 
-        let mut dither_y = vec![vec![0u64; self.inner.width()]; self.inner.height()];
-        let mut dither_x = vec![vec![0u64; self.inner.width()]; self.inner.height()];
+        let mut grad = vec![vec![0u64; self.inner.width()]; self.inner.height()];
 
-        // Find gradient delta up/down
+        // Find gradient
         for x in 0..self.inner.width() {
-            for y in 1..self.inner.height() - 1 {
-                let over  = self.inner.get_data()[((y - 1) * self.inner.width() + x) * 4 + 3];
-                let under = self.inner.get_data()[((y + 1) * self.inner.width() + x) * 4 + 3];
-
-                let delta_alpha = (over as i64 - under as i64).abs() as u64;
-                dither_y[y][x] = delta_alpha;
-            }
-        }
-
-        // Find gradient delta left/right
-        for x in 1..self.inner.width()-1 {
             for y in 0..self.inner.height() {
-                let left  = self.inner.get_data()[(y * self.inner.width() + x - 1) * 4 + 3];
-                let right = self.inner.get_data()[(y * self.inner.width() + x + 1) * 4 + 3];
-
-                let delta_alpha = (left as i64 - right as i64).abs() as u64;
-                dither_x[y][x] = delta_alpha;
+                grad[y][x] = (*self.dither_fn)(&self.inner, (x, y));
             }
         }
 
         // Select only local maximum
 
-        // Up/down
-        for x in 0..self.inner.width() {
-            let mut last = 0;
-            for y in 1..self.inner.height() - 1 {
-                if dither_y[y][x] <= last || dither_y[y][x] <= dither_y[y+1][x] {
-                    last = dither_y[y][x];
-                    dither_y[y][x] = 0;
-                } else {
-                    dither_y[y][x] = 1 as u64;
-                    last = dither_y[y][x];
-                }
-            }
-        }
-
-        // Left/right
-        for y in 0..self.inner.height() {
-            let mut last = 0;
-            for x in 1..self.inner.width()-1 {
-                if dither_x[y][x] <= last || dither_x[y][x] <= dither_x[y][x+1] {
-                    last = dither_x[y][x];
-                    dither_x[y][x] = 0;
-                } else {
-                    dither_x[y][x] = 1 as u64;
-                    last = dither_x[y][x];
-                }
-            }
-        }
-
-        // Combine
         let mut dither = vec![vec![0u64; self.inner.width()]; self.inner.height()];
-        for x in 0..self.inner.width() {
-            for y in 0..self.inner.height() {
-                dither[y][x] = (dither_y[y][x] + dither_x[y][x]) * x as u64;
-            }
-        }
 
         let mut rng = thread_rng();
+
+        for y in 1..self.inner.height()-1 {
+            for x in 1..self.inner.width()-1 {
+                // Check left/right
+                if grad[y][x] > grad[y][x + 1] && grad[y][x] > grad[y][x - 1] && rng.gen() {
+                    dither[y][x] = x as u64 + rng.gen_range(0, 100);
+                }
+                // Check up/down
+                if grad[y][x] > grad[y + 1][x] && grad[y][x] > grad[y - 1][x] && rng.gen() {
+                    dither[y][x] = x as u64 + rng.gen_range(0, 100);
+                }
+            }
+        }
 
         // Spread the selection
         for _ in 0..100 {
             let mut dither_next = dither.clone();
-
 
             for y in 0..self.inner.height() {
                 for x in 0..self.inner.width() {
@@ -166,7 +145,7 @@ impl <T: ImageContainer> Drawable for Ditherer<T> {
                     }
 
                     let mut around = vec![];
-                    for dy in -1..=1 {
+                    for dy in -1..=2 {
                         for dx in -1..=1 {
                             let (ry, rx) = ((y as isize + dy) as usize, (x as isize + dx) as usize);
                             if let Some(pxl) = dither.get(ry).and_then(|line| line.get(rx)) {
@@ -176,16 +155,30 @@ impl <T: ImageContainer> Drawable for Ditherer<T> {
                             }
                         }
                     }
-                    let val = *rng.choose(around.as_slice()).unwrap_or(&dither[y][x]) + rng.gen_range(40, 80);
+                    if around.is_empty() || rng.gen() {
+                        continue;
+                    }
 
-                    if dither[y][x] == 0 || dither[y][x] > val {
+                    let val = *rng.choose(around.as_slice()).unwrap() + rng.gen_range(20, 40);
+
+                    if dither[y][x] == 0 {
                         dither_next[y][x] = val;
-                        self.max_time = self.max_time.max(val);
+                        self.max_time = self.max_time.max(val + DITHER_ALPHA_SPEED as u64);
                     }
                 }
             }
 
             dither = dither_next;
+        }
+
+        // Check for dead spots (areas that should be rendered but weren't)
+        for x in 0..self.inner.width() {
+            for y in 0..self.inner.height() {
+                let alpha = self.inner.get_data()[(y * self.inner.width() + x) * 4 + 3];
+                if alpha > 0 && dither[y][x] == 0 {
+                    dither[y][x] = self.max_time;
+                }
+            }
         }
 
         self.dither = Some(dither);
