@@ -3,14 +3,15 @@ extern crate ytesrev;
 use std::fs::File;
 
 use ytesrev::window::WindowManager;
-use ytesrev::scene::{Scene, DrawableWrapper};
-use ytesrev::latex::latex_obj::LatexObj;
-use ytesrev::ditherer::{Ditherer, DitherDirection};
-use ytesrev::layout::Orientation;
-use ytesrev::layout::split::{SplitPrec, UpdateOrder};
-use ytesrev::layout::stack::{Stack, ElementPositioning};
-use ytesrev::layout::layered::Layered;
-use ytesrev::image::{PngImage, KnownSize, ImageContainer};
+use ytesrev::scene::*;
+use ytesrev::latex::latex_obj::*;
+use ytesrev::ditherer::*;
+use ytesrev::layout::*;
+use ytesrev::layout::split::*;
+use ytesrev::layout::stack::*;
+use ytesrev::layout::layered::*;
+use ytesrev::image::*;
+use ytesrev::solid::*;
 
 fn main() {
     let mut first_scene = make_first_scene();
@@ -61,7 +62,7 @@ fn make_second_scene() -> impl Scene {
             Layered::new(
                 false,
                 vec![
-                    Box::new(Ditherer::dithered_out(LatexObj::math("a^2 + b^2 = c^2"))),
+                    Box::new(Solid::new_rgba(255, 0, 0, 255)),
                     Box::new(Ditherer::dithered_out(LatexObj::math("sin^2\\theta + cos^2\\theta = 1"))),
                 ]
             ),

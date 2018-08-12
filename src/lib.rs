@@ -13,4 +13,4 @@ pub mod latex;
 pub mod ditherer;
 pub mod layout;
 pub mod drawable;
-
+pub mod solid;
