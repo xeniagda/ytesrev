@@ -1,7 +1,15 @@
 [package]
-name = "sdl2"
+name = "ytesrev"
 version = "0.1.0"
 authors = ["loovjo <jonathan.loov@gmail.com>"]
+
+[lib]
+name = "ytesrev"
+path = "src/lib.rs"
+
+[[bin]]
+name = "ytesrev-sample"
+path = "src/example/showcase.rs"
 
 [dependencies]
 sdl2 = "0.31.0"

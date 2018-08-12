@@ -1,31 +1,15 @@
-#![feature(duration_as_u128, nll, specialization)]
-
-#[macro_use]
-extern crate lazy_static;
-
-extern crate sdl2;
-extern crate png;
-extern crate rand;
-
-mod window;
-mod image;
-mod scene;
-mod latex;
-mod ditherer;
-mod layout;
-
-mod drawable;
+extern crate ytesrev;
 
 use std::fs::File;
 
-use window::WindowManager;
-use scene::{Scene, DrawableWrapper};
-use latex::latex_obj::LatexObj;
-use ditherer::{Ditherer, DitherDirection};
-use layout::Orientation;
-use layout::split::{SplitPrec, UpdateOrder};
-use layout::stack::{Stack, ElementPositioning};
-use image::{PngImage, KnownSize, ImageContainer};
+use ytesrev::window::WindowManager;
+use ytesrev::scene::{Scene, DrawableWrapper};
+use ytesrev::latex::latex_obj::LatexObj;
+use ytesrev::ditherer::{Ditherer, DitherDirection};
+use ytesrev::layout::Orientation;
+use ytesrev::layout::split::{SplitPrec, UpdateOrder};
+use ytesrev::layout::stack::{Stack, ElementPositioning};
+use ytesrev::image::{PngImage, KnownSize, ImageContainer};
 
 fn main() {
     let mut first_scene = make_first_scene();
