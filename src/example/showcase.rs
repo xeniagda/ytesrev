@@ -28,6 +28,7 @@ fn make_first_scene() -> impl Scene {
             10,
             Orientation::Vertical,
             ElementPositioning::Centered,
+            true,
             vec![
                 Box::new(Ditherer::dithered_out(LatexObj::text("Thing 1"))),
                 Box::new(Ditherer::dithered_out(LatexObj::text("Thing 2"))),
@@ -37,6 +38,7 @@ fn make_first_scene() -> impl Scene {
                         100,
                         Orientation::Horisontal,
                         ElementPositioning::TopLeftCornered,
+                        true,
                         vec![
                             Box::new(Ditherer::dithered_out(LatexObj::text("Stack"))),
                             Box::new(Ditherer::dithered_out(LatexObj::text("\\emph{in} a stack"))),
@@ -67,16 +69,29 @@ fn make_third_scene() -> impl Scene {
             Orientation::Vertical,
             UpdateOrder::SecondFirst,
             Ditherer::dithered_in(LatexObj::text("\\huge Third page")),
-            Ditherer::dithered_out(PngImage::load_from_path(File::open("image.png").unwrap()).unwrap())
-            .with_dither_fn(|ref img, pos| {
-                let r = img.get_data()[(pos.1 * img.width() + pos.0) * 4    ] as f64;
-                let g = img.get_data()[(pos.1 * img.width() + pos.0) * 4 + 1] as f64;
-                let b = img.get_data()[(pos.1 * img.width() + pos.0) * 4 + 2] as f64;
-                let avg = (r + b + g) / 3.;
-                let dev = (r - avg) * (r - avg) + (g - avg) * (g - avg) + (b - avg) * (b - avg);
-                dev as u64
-            })
-            .with_direction(DitherDirection::Outwards),
+            Stack::new(
+                0,
+                Orientation::Horisontal,
+                ElementPositioning::TopLeftCornered,
+                false,
+                vec![
+                    Box::new(
+                        Ditherer::dithered_out(LatexObj::text("Cool image $ \\Rightarrow $"))
+                    ),
+                    Box::new(
+                        Ditherer::dithered_out(PngImage::load_from_path(File::open("image.png").unwrap()).unwrap())
+                        .with_dither_fn(|ref img, pos| {
+                            let r = img.get_data()[(pos.1 * img.width() + pos.0) * 4    ] as f64;
+                            let g = img.get_data()[(pos.1 * img.width() + pos.0) * 4 + 1] as f64;
+                            let b = img.get_data()[(pos.1 * img.width() + pos.0) * 4 + 2] as f64;
+                            let avg = (r + b + g) / 3.;
+                            let dev = (r - avg) * (r - avg) + (g - avg) * (g - avg) + (b - avg) * (b - avg);
+                            dev as u64
+                        })
+                        .with_direction(DitherDirection::Outwards),
+                    ),
+                ]
+            )
         )
     )
 }

@@ -32,6 +32,7 @@ pub struct Stack {
     margin: u32,
     orientation: Orientation,
     positioning: ElementPositioning,
+    update_seq: bool,
     content: Vec<Box<dyn Stackable>>,
 }
 
@@ -40,12 +41,14 @@ impl Stack {
         margin: u32,
         orientation: Orientation,
         positioning: ElementPositioning,
+        update_seq: bool,
         content: Vec<Box<dyn Stackable>>,
     ) -> Stack {
         Stack {
             margin,
             orientation,
             positioning,
+            update_seq,
             content,
         }
     }
@@ -114,15 +117,21 @@ impl <'a> Drawable for Stack {
     }
 
     fn step(&mut self) {
+        let mut any_stepped = false;
         for item in &mut self.content {
             if item.state() == State::Working {
                 item.step();
-                return;
+                any_stepped = true;
+                if self.update_seq {
+                    return;
+                }
             }
         }
-        for item in &mut self.content {
-            if item.state() == State::Final {
-                item.step();
+        if !any_stepped {
+            for item in &mut self.content {
+                if item.state() == State::Final {
+                    item.step();
+                }
             }
         }
     }
