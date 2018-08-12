@@ -158,9 +158,13 @@ fn render_tex(tex_path: &Path, pdf_path: &Path, crop_path: &Path, raw_path: &Pat
 
 fn read_pngs(path: &Path) -> IResult<()> {
     if let Ok(ref mut eqs) = EQUATIONS.lock() {
+        let digits_max = format!("{}", eqs.len()).len();
+
         for (i, (_, _, ref mut im)) in eqs.iter_mut().enumerate() {
+            let num = zero_pad(format!("{}", i + 1), digits_max);
+
             let mut img_path = path.to_path_buf();
-            img_path.push(format!("tmp-crop-{}.png", i + 1));
+            img_path.push(format!("tmp-crop-{}.png", num));
 
             *im = Some(
                 PngImage::load_from_path_transform(
@@ -176,4 +180,11 @@ fn read_pngs(path: &Path) -> IResult<()> {
 fn white_transparent(col: Color) -> Color {
     let max_channel = col.r.min(col.g).min(col.b);
     Color { r: col.r, g: col.g, b: col.b, a: 255 - max_channel }
+}
+
+fn zero_pad(n: String, len: usize) -> String {
+    let needed = len.saturating_sub(n.len());
+    let mut res = (0..needed).map(|_| '0').collect::<String>();
+    res.push_str(&n);
+    res
 }
