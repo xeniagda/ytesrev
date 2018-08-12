@@ -92,7 +92,7 @@ fn make_third_scene() -> impl Scene {
                 let dev = (r - avg) * (r - avg) + (g - avg) * (g - avg) + (b - avg) * (b - avg);
                 dev as u64
             })
-            .with_direction(DitherDirection::None),
+            .with_direction(DitherDirection::Outwards),
         )
     )
 }

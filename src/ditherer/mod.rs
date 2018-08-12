@@ -27,6 +27,7 @@ pub enum DitherDirection {
     Rightwards,
     Downwards,
     Upwards,
+    Outwards,
     None,
 }
 
@@ -37,6 +38,11 @@ impl DitherDirection {
             DitherDirection::Leftwards  => { size.0 - pos.0 + 1 }
             DitherDirection::Downwards  => { pos.1 }
             DitherDirection::Upwards    => { size.1 - pos.1 + 1 }
+            DitherDirection::Outwards   => {
+                let dx = pos.0 as f64 - size.0 as f64 / 2.;
+                let dy = pos.1 as f64 - size.1 as f64 / 2.;
+                (dx * dx + dy * dy).sqrt() as usize
+            }
             DitherDirection::None  => { 1 }
         }
     }
