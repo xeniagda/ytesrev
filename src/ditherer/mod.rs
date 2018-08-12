@@ -10,7 +10,7 @@ use image::{KnownSize, ImageContainer};
 use drawable::{Drawable, Position, State};
 
 
-const DITHER_SPEED: f64 = 250.;
+const DITHER_SPEED: f64 = 350.;
 const DITHER_ALPHA_SPEED: f64 = 140.;
 
 #[derive(PartialEq, Copy, Clone)]
