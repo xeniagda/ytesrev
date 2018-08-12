@@ -286,53 +286,64 @@ impl <T: ImageContainer> Drawable for Ditherer<T> {
     }
 
     fn draw(&mut self, canvas: &mut Canvas<Window>, pos: &Position) {
-        if let Some(ref dither) = self.dither {
-            let mut cached = self.cached.take();
+        match self.dithering {
+            DitherState::Nothing => {}
+            DitherState::DitherIn if self.dither_in_time * DITHER_SPEED > self.max_time as f64 => {
+                self.inner.draw(canvas, pos);
+            }
+            DitherState::DitherIn | DitherState::DitherOut => {
+                if self.dither_out_time * DITHER_SPEED > self.max_time as f64 {
+                    return;
+                }
+                if let Some(ref dither) = self.dither {
+                    let mut cached = self.cached.take();
 
-            for y in 0..self.inner.height() {
-                for x in 0..self.inner.width() {
+                    for y in 0..self.inner.height() {
+                        for x in 0..self.inner.width() {
 
-                    let mut mult = 1.;
+                            let mut mult = 1.;
 
-                    let diff_out = dither[y][x] as f64 - (self.dither_out_time * DITHER_SPEED);
-                    mult *= (diff_out / DITHER_ALPHA_SPEED + 1.).min(1.).max(0.);
+                            let diff_out = dither[y][x] as f64 - (self.dither_out_time * DITHER_SPEED);
+                            mult *= (diff_out / DITHER_ALPHA_SPEED + 1.).min(1.).max(0.);
 
-                    let diff_in = (self.dither_in_time * DITHER_SPEED) - dither[y][x] as f64;
-                    mult *= (diff_in  / DITHER_ALPHA_SPEED).min(1.).max(0.);
+                            let diff_in = (self.dither_in_time * DITHER_SPEED) - dither[y][x] as f64;
+                            mult *= (diff_in  / DITHER_ALPHA_SPEED).min(1.).max(0.);
 
-                    let idx = (y * self.inner.width() + x) * 4;
+                            let idx = (y * self.inner.width() + x) * 4;
 
-                    let data = self.inner.get_data();
-                    cached[idx    ] = (mult * data[idx    ] as f64) as u8;
-                    cached[idx + 1] = (mult * data[idx + 1] as f64) as u8;
-                    cached[idx + 2] = (mult * data[idx + 2] as f64) as u8;
-                    cached[idx + 3] = (mult * data[idx + 3] as f64) as u8;
+                            let data = self.inner.get_data();
+                            cached[idx    ] = (mult * data[idx    ] as f64) as u8;
+                            cached[idx + 1] = (mult * data[idx + 1] as f64) as u8;
+                            cached[idx + 2] = (mult * data[idx + 2] as f64) as u8;
+                            cached[idx + 3] = (mult * data[idx + 3] as f64) as u8;
+                        }
+                    }
+                    let creator = canvas.texture_creator();
+                    let mut texture = creator
+                        .create_texture_target(None, self.inner.width() as u32, self.inner.height() as u32)
+                        .expect("Can't make texture");
+
+                    texture.set_blend_mode(BlendMode::Blend);
+
+                    texture
+                        .update(None, cached.as_slice(), 4 * self.inner.width())
+                        .expect("Can't update");
+
+                    self.cached.set(cached);
+
+                    let rect = pos.into_rect_with_size(self.inner.width() as u32, self.inner.height() as u32);
+
+                    canvas
+                        .copy(
+                            &texture,
+                            None,
+                            rect,
+                        )
+                        .expect("Can't copy");
+                } else {
+                    self.inner.draw(canvas, pos);
                 }
             }
-            let creator = canvas.texture_creator();
-            let mut texture = creator
-                .create_texture_target(None, self.inner.width() as u32, self.inner.height() as u32)
-                .expect("Can't make texture");
-
-            texture.set_blend_mode(BlendMode::Blend);
-
-            texture
-                .update(None, cached.as_slice(), 4 * self.inner.width())
-                .expect("Can't update");
-
-            self.cached.set(cached);
-
-            let rect = pos.into_rect_with_size(self.inner.width() as u32, self.inner.height() as u32);
-
-            canvas
-                .copy(
-                    &texture,
-                    None,
-                    rect,
-                )
-                .expect("Can't copy");
-        } else {
-            self.inner.draw(canvas, pos);
         }
     }
 }
