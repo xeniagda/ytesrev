@@ -20,6 +20,28 @@ enum DitherState {
     DitherOut,
 }
 
+#[derive(PartialEq, Copy, Clone)]
+#[allow(unused)]
+pub enum DitherDirection {
+    Leftwards,
+    Rightwards,
+    Downwards,
+    Upwards,
+    None,
+}
+
+impl DitherDirection {
+    pub fn value(&self, pos: (usize, usize), size: (usize, usize)) -> usize {
+        match self {
+            DitherDirection::Rightwards => { pos.0 }
+            DitherDirection::Leftwards  => { size.0 - pos.0 + 1 }
+            DitherDirection::Downwards  => { pos.1 }
+            DitherDirection::Upwards    => { size.1 - pos.1 + 1 }
+            DitherDirection::None  => { 1 }
+        }
+    }
+}
+
 pub fn default_dither_fn<T: ImageContainer + KnownSize>(image: &T, (x, y): (usize, usize)) -> u64 {
     let alpha = move |x: usize, y: usize| {
             let x = x.max(0).min(image.width() - 1);
@@ -41,6 +63,7 @@ pub struct Ditherer<T: ImageContainer + 'static> {
     pub dither_in_time: f64,
     pub dither_out_time: f64,
     pub dither_fn: Box<Fn(&T, (usize, usize)) -> u64>,
+    pub direction: DitherDirection,
     dithering: DitherState,
 }
 
@@ -68,6 +91,7 @@ impl <T: ImageContainer> Ditherer<T> {
             dither_in_time: 0.,
             dither_out_time: 0.,
             dither_fn: Box::new(default_dither_fn),
+            direction: DitherDirection::Rightwards,
             dithering: DitherState::Nothing,
         }
     }
@@ -83,7 +107,24 @@ impl <T: ImageContainer> Ditherer<T> {
             dither_in_time: 0.,
             dither_out_time: 0.,
             dither_fn: Box::new(default_dither_fn),
+            direction: DitherDirection::Rightwards,
             dithering: DitherState::DitherIn,
+        }
+    }
+
+    pub fn with_dither_fn<F: Fn(&T, (usize, usize)) -> u64>(self, f: F) -> Ditherer<T>
+        where F: 'static
+    {
+        Ditherer {
+            dither_fn: Box::new(f),
+            .. self
+        }
+    }
+
+    pub fn with_direction(self, dir: DitherDirection) -> Ditherer<T> {
+        Ditherer {
+            direction: dir,
+            .. self
         }
     }
 
@@ -121,13 +162,15 @@ impl <T: ImageContainer> Drawable for Ditherer<T> {
 
         for y in 1..self.inner.height()-1 {
             for x in 1..self.inner.width()-1 {
+                let val = self.direction.value((x, y), (self.inner.width(), self.inner.height())) as u64;
+                let val = val as u64 + rng.gen_range(0, 100);
                 // Check left/right
                 if grad[y][x] > grad[y][x + 1] && grad[y][x] > grad[y][x - 1] && rng.gen() {
-                    dither[y][x] = x as u64 + rng.gen_range(0, 100);
+                    dither[y][x] = val;
                 }
                 // Check up/down
                 if grad[y][x] > grad[y + 1][x] && grad[y][x] > grad[y - 1][x] && rng.gen() {
-                    dither[y][x] = x as u64 + rng.gen_range(0, 100);
+                    dither[y][x] = val;
                 }
             }
         }
