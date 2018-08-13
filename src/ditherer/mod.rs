@@ -12,6 +12,7 @@ use drawable::{Drawable, Position, State};
 
 const DITHER_SPEED: f64 = 350.;
 const DITHER_ALPHA_SPEED: f64 = 140.;
+const MAX_TIME: f64 = 2.5;
 
 #[derive(PartialEq, Copy, Clone)]
 enum DitherState {
@@ -295,6 +296,11 @@ impl <T: ImageContainer> Drawable for Ditherer<T> {
     }
 
     fn draw(&mut self, canvas: &mut Canvas<Window>, pos: &Position) {
+        let mut t_mult = 1.;
+        if self.max_time as f64 > MAX_TIME * DITHER_SPEED {
+            t_mult = self.max_time as f64 / (MAX_TIME * DITHER_SPEED);
+        }
+
         match self.dithering {
             DitherState::Nothing => {}
             DitherState::DitherIn if self.dither_in_time * DITHER_SPEED > self.max_time as f64 => {
@@ -312,10 +318,10 @@ impl <T: ImageContainer> Drawable for Ditherer<T> {
 
                             let mut mult = 1.;
 
-                            let diff_out = dither[y][x] as f64 - (self.dither_out_time * DITHER_SPEED);
+                            let diff_out = dither[y][x] as f64 - (self.dither_out_time * DITHER_SPEED * t_mult);
                             mult *= (diff_out / DITHER_ALPHA_SPEED + 1.).min(1.).max(0.);
 
-                            let diff_in = (self.dither_in_time * DITHER_SPEED) - dither[y][x] as f64;
+                            let diff_in = (self.dither_in_time * DITHER_SPEED * t_mult) - dither[y][x] as f64;
                             mult *= (diff_in  / DITHER_ALPHA_SPEED).min(1.).max(0.);
 
                             let idx = (y * self.inner.width() + x) * 4;
