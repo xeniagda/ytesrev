@@ -56,8 +56,8 @@ pub fn alpha_dither_fn<T: ImageContainer + KnownSize>(image: &T, (x, y): (usize,
             image.get_data()[(y * image.width() + x) * 4 + 3]
         };
 
-    let delta_alpha_y = (alpha(x, y + 1) as i64 - alpha(x, y - 1) as i64).abs();
-    let delta_alpha_x = (alpha(x + 1, y) as i64 - alpha(x - 1, y) as i64).abs();
+    let delta_alpha_y = (alpha(x, y + 1) as i64 - alpha(x, y.saturating_sub(1)) as i64).abs();
+    let delta_alpha_x = (alpha(x + 1, y) as i64 - alpha(x.saturating_sub(1), y) as i64).abs();
 
     delta_alpha_y.max(delta_alpha_x) as u64
 }
@@ -66,8 +66,9 @@ pub fn color_dither_fn<T: ImageContainer + KnownSize>(img: &T, pos: (usize, usiz
     let r = img.get_data()[(pos.1 * img.width() + pos.0) * 4    ] as f64;
     let g = img.get_data()[(pos.1 * img.width() + pos.0) * 4 + 1] as f64;
     let b = img.get_data()[(pos.1 * img.width() + pos.0) * 4 + 2] as f64;
-    let avg = (r + b + g) / 3.;
-    let dev = (r - avg) * (r - avg) + (g - avg) * (g - avg) + (b - avg) * (b - avg);
+    let a = img.get_data()[(pos.1 * img.width() + pos.0) * 4 + 3] as f64;
+    let avg = (r + b + g + a) / 4.;
+    let dev = (r - avg) * (r - avg) + (g - avg) * (g - avg) + (b - avg) * (b - avg) + (a - avg) * (a - avg);
     dev as u64
 }
 
@@ -176,17 +177,23 @@ impl <T: ImageContainer> Drawable for Ditherer<T> {
 
         let mut rng = thread_rng();
 
-        for y in 1..self.inner.height()-1 {
-            for x in 1..self.inner.width()-1 {
+        for y in 0..self.inner.height() {
+            for x in 0..self.inner.width() {
                 let val = self.direction.value((x, y), (self.inner.width(), self.inner.height())) as u64;
                 let val = val as u64 + rng.gen_range(0, 100);
+                if x == 0 || x == self.inner.width() - 1 || y == 0 || y == self.inner.height() - 1 {
+                    dither[y][x] = val;
+                    continue;
+                }
                 // Check left/right
                 if grad[y][x] > grad[y][x + 1] && grad[y][x] > grad[y][x - 1] && rng.gen() {
                     dither[y][x] = val;
+                    continue;
                 }
                 // Check up/down
                 if grad[y][x] > grad[y + 1][x] && grad[y][x] > grad[y - 1][x] && rng.gen() {
                     dither[y][x] = val;
+                    continue;
                 }
             }
         }
