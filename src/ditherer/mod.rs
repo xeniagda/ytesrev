@@ -48,7 +48,7 @@ impl DitherDirection {
     }
 }
 
-pub fn default_dither_fn<T: ImageContainer + KnownSize>(image: &T, (x, y): (usize, usize)) -> u64 {
+pub fn alpha_dither_fn<T: ImageContainer + KnownSize>(image: &T, (x, y): (usize, usize)) -> u64 {
     let alpha = move |x: usize, y: usize| {
             let x = x.max(0).min(image.width() - 1);
             let y = y.max(0).min(image.height() - 1);
@@ -59,6 +59,15 @@ pub fn default_dither_fn<T: ImageContainer + KnownSize>(image: &T, (x, y): (usiz
     let delta_alpha_x = (alpha(x + 1, y) as i64 - alpha(x - 1, y) as i64).abs();
 
     delta_alpha_y.max(delta_alpha_x) as u64
+}
+
+pub fn color_dither_fn<T: ImageContainer + KnownSize>(img: &T, pos: (usize, usize)) -> u64 {
+    let r = img.get_data()[(pos.1 * img.width() + pos.0) * 4    ] as f64;
+    let g = img.get_data()[(pos.1 * img.width() + pos.0) * 4 + 1] as f64;
+    let b = img.get_data()[(pos.1 * img.width() + pos.0) * 4 + 2] as f64;
+    let avg = (r + b + g) / 3.;
+    let dev = (r - avg) * (r - avg) + (g - avg) * (g - avg) + (b - avg) * (b - avg);
+    dev as u64
 }
 
 pub struct Ditherer<T: ImageContainer + 'static> {
@@ -96,7 +105,7 @@ impl <T: ImageContainer> Ditherer<T> {
             cached: Cell::new(Vec::new()),
             dither_in_time: 0.,
             dither_out_time: 0.,
-            dither_fn: Box::new(default_dither_fn),
+            dither_fn: Box::new(alpha_dither_fn),
             direction: DitherDirection::Rightwards,
             dithering: DitherState::Nothing,
         }
@@ -112,7 +121,7 @@ impl <T: ImageContainer> Ditherer<T> {
             cached: Cell::new(Vec::new()),
             dither_in_time: 0.,
             dither_out_time: 0.,
-            dither_fn: Box::new(default_dither_fn),
+            dither_fn: Box::new(alpha_dither_fn),
             direction: DitherDirection::Rightwards,
             dithering: DitherState::DitherIn,
         }

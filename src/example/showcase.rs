@@ -88,14 +88,7 @@ fn make_third_scene() -> impl Scene {
                     ),
                     Box::new(
                         Ditherer::dithered_out(PngImage::load_from_path(File::open("image.png").unwrap()).unwrap())
-                        .with_dither_fn(|ref img, pos| {
-                            let r = img.get_data()[(pos.1 * img.width() + pos.0) * 4    ] as f64;
-                            let g = img.get_data()[(pos.1 * img.width() + pos.0) * 4 + 1] as f64;
-                            let b = img.get_data()[(pos.1 * img.width() + pos.0) * 4 + 2] as f64;
-                            let avg = (r + b + g) / 3.;
-                            let dev = (r - avg) * (r - avg) + (g - avg) * (g - avg) + (b - avg) * (b - avg);
-                            dev as u64
-                        })
+                        .with_dither_fn(color_dither_fn)
                         .with_direction(DitherDirection::Outwards),
                     ),
                 ]
