@@ -12,6 +12,8 @@ use ytesrev::layout::stack::*;
 use ytesrev::layout::layered::*;
 use ytesrev::image::*;
 use ytesrev::solid::*;
+use ytesrev::empty::*;
+use ytesrev::withsize::*;
 
 fn main() {
     let mut first_scene = make_first_scene();
@@ -34,7 +36,8 @@ fn make_first_scene() -> impl Scene {
             vec![
                 Box::new(Ditherer::dithered_out(LatexObj::text("Thing 1"))),
                 Box::new(Ditherer::dithered_out(LatexObj::text("Thing 2"))),
-                Box::new(Ditherer::dithered_out(LatexObj::text("Thing 3"))),
+                Box::new(WithSize::new((0, 40), Empty)),
+                Box::new(Ditherer::dithered_out(LatexObj::text("Thing 3 - a bit down"))),
                 Box::new(
                     Stack::new(
                         100,
