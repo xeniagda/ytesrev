@@ -15,8 +15,6 @@ pub enum ElementPositioning {
 }
 
 pub trait Stackable: Drawable + KnownSize {
-    fn as_sizeable(    &    self) -> &    dyn KnownSize;
-    fn as_sizeable_mut(&mut self) -> &mut dyn KnownSize;
     fn as_drawable(    &    self) -> &    dyn Drawable;
     fn as_drawable_mut(&mut self) -> &mut dyn Drawable;
 }
@@ -56,11 +54,11 @@ impl Stack {
 
 impl <'a> Drawable for Stack {
     fn content(&self) -> Vec<&dyn Drawable> {
-        self.content.iter().map(|x| x.as_ref().as_drawable()).collect()
+        self.content.iter().map(|x| x.as_drawable()).collect()
     }
 
     fn content_mut(&mut self) -> Vec<&mut dyn Drawable> {
-        self.content.iter_mut().map(|x| x.as_mut().as_drawable_mut()).collect()
+        self.content.iter_mut().map(|x| x.as_drawable_mut()).collect()
     }
 
     fn draw(&mut self, canvas: &mut Canvas<Window>, pos: &Position) {
@@ -97,7 +95,7 @@ impl <'a> Drawable for Stack {
                     }
 
                     obj.draw(canvas, &pos);
-                    y += obj.as_sizeable().height() as i32 + self.margin as i32;
+                    y += obj.height() as i32 + self.margin as i32;
                 }
             }
             Orientation::Horisontal => {
@@ -123,7 +121,7 @@ impl <'a> Drawable for Stack {
                     }
 
                     obj.draw(canvas, &pos);
-                    x += obj.as_sizeable().width() as i32 + self.margin as i32;
+                    x += obj.width() as i32 + self.margin as i32;
                 }
             }
         }
@@ -150,7 +148,7 @@ impl <'a> Drawable for Stack {
     }
 
     fn state(&self) -> State {
-        self.content.iter().map(|x| x.as_drawable().state()).min().unwrap_or(State::Hidden)
+        self.content.iter().map(|x| x.state()).min().unwrap_or(State::Hidden)
     }
 }
 
@@ -158,7 +156,7 @@ impl KnownSize for Stack {
     fn width(&self)  -> usize {
         match self.orientation {
             Orientation::Horisontal => {
-                let content_size = self.content.iter().map(|x| x.as_sizeable().width()).sum::<usize>();
+                let content_size = self.content.iter().map(|x| x.width()).sum::<usize>();
                 let margins = self.margin as usize * (self.content.len() - 1);
                 content_size + margins
             }
@@ -171,7 +169,7 @@ impl KnownSize for Stack {
     fn height(&self) -> usize {
         match self.orientation {
             Orientation::Vertical => {
-                let content_size = self.content.iter().map(|x| x.as_sizeable().height()).sum::<usize>();
+                let content_size = self.content.iter().map(|x| x.height()).sum::<usize>();
                 let margins = self.margin as usize * (self.content.len() - 1);
                 content_size + margins
             }
