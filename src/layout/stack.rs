@@ -150,10 +150,11 @@ impl KnownSize for Stack {
                 content_size + margins
             }
             Orientation::Vertical => {
-                self.content.iter().fold(0, |old, obj| obj.width().max(old))
+                self.content.iter().map(|x| x.width()).max().unwrap_or(0)
             }
         }
     }
+
     fn height(&self) -> usize {
         match self.orientation {
             Orientation::Vertical => {
@@ -162,7 +163,7 @@ impl KnownSize for Stack {
                 content_size + margins
             }
             Orientation::Horisontal => {
-                self.content.iter().fold(0, |old, obj| obj.height().max(old))
+                self.content.iter().map(|x| x.height()).max().unwrap_or(0)
             }
         }
     }
