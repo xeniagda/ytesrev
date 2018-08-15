@@ -9,8 +9,12 @@ fn main() {
     let mut first_scene = make_first_scene();
     let mut second_scene = make_second_scene();
     let mut third_scene = make_third_scene();
+    let mut fouth_scene = make_fourth_scene();
 
-    let mut wmng = WindowManager::init_window(&mut first_scene, vec![&mut second_scene, &mut third_scene]);
+    let mut wmng = WindowManager::init_window(
+        &mut first_scene,
+        vec![&mut second_scene, &mut third_scene, &mut fouth_scene],
+    );
 
     wmng.start();
 }
@@ -87,5 +91,42 @@ fn make_third_scene() -> impl Scene {
                 ]
             )
         )
+    )
+}
+
+fn make_fourth_scene() -> impl Scene {
+    let background =
+            Layered::new(
+                false,
+                vec![
+                    Box::new(Anchor::new(
+                        AnchorDirection::North, Ditherer::dithered_out(LatexObj::text("North")))
+                    ),
+                    Box::new(Anchor::new(
+                        AnchorDirection::East, Ditherer::dithered_out(LatexObj::text("East")))
+                    ),
+                    Box::new(Anchor::new(
+                        AnchorDirection::South, Ditherer::dithered_out(LatexObj::text("South")))
+                    ),
+                    Box::new(Anchor::new(
+                        AnchorDirection::West, Ditherer::dithered_out(LatexObj::text("West")))
+                    ),
+                    Box::new(Anchor::new(
+                        AnchorDirection::NorthEast, Ditherer::dithered_out(LatexObj::text("NorthEast")))
+                    ),
+                    Box::new(Anchor::new(
+                        AnchorDirection::SouthEast, Ditherer::dithered_out(LatexObj::text("SouthEast")))
+                    ),
+                    Box::new(Anchor::new(
+                        AnchorDirection::SouthWest, Ditherer::dithered_out(LatexObj::text("SouthWest")))
+                    ),
+                    Box::new(Anchor::new(
+                        AnchorDirection::NorthWest, Ditherer::dithered_out(LatexObj::text("NorthWest")))
+                    ),
+                ]
+            );
+
+    DrawableWrapper(
+        background
     )
 }
