@@ -5,7 +5,7 @@ use sdl2::pixels::Color;
 use sdl2::render::Canvas;
 use sdl2::video::Window;
 
-use drawable::{Drawable, Position, State};
+use drawable::{Drawable, Position, State, DrawSettings};
 
 use super::Orientation;
 
@@ -51,7 +51,7 @@ impl <T: Drawable, U: Drawable> Drawable for SplitPrec<T, U> {
         vec![&mut self.first, &mut self.second]
     }
 
-    fn draw(&mut self, canvas: &mut Canvas<Window>, pos: &Position) {
+    fn draw(&mut self, canvas: &mut Canvas<Window>, pos: &Position, settings: DrawSettings) {
         match pos {
             Position::TopLeftCorner(_) | Position::Center(_) => {
                 eprintln!("Trying to draw a YSplitpane not using a Position::Rect. Please don't");
@@ -92,8 +92,8 @@ impl <T: Drawable, U: Drawable> Drawable for SplitPrec<T, U> {
                     }
                 };
 
-                self.first.draw(canvas, &Position::Rect(first_rect));
-                self.second.draw(canvas, &Position::Rect(second_rect));
+                self.first.draw(canvas, &Position::Rect(first_rect), settings);
+                self.second.draw(canvas, &Position::Rect(second_rect), settings);
 
                 if super::DRAW_BOXES {
                     canvas.set_draw_color(Color::RGB(255, 0, 0));

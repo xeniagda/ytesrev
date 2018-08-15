@@ -13,10 +13,12 @@ use std::thread::sleep;
 
 use scene::{Scene, Action};
 use latex::render_all_eqations;
-use drawable::Position;
+use drawable::{Position, SETTINGS_MAIN, SETTINGS_NOTES};
 
 const SIZE: (usize, usize) = (1200, 800);
 const BACKGROUND: (u8, u8, u8) = (255, 248, 234);
+
+const NOTES: bool = true;
 
 pub enum YEvent {
     Step,
@@ -25,6 +27,7 @@ pub enum YEvent {
 
 pub struct WindowManager {
     pub canvas: Canvas<Window>,
+    pub notes_canvas: Option<Canvas<Window>>,
     pub event_pump: EventPump,
 
     pub other_scenes: Vec<Box<dyn Scene>>,
@@ -68,18 +71,32 @@ impl WindowManager {
         let sdl_context = sdl2::init().unwrap();
         let video_subsystem = sdl_context.video().unwrap();
 
-        let window = video_subsystem.window("Ytesrev", SIZE.0 as u32, SIZE.1 as u32)
+        let main_window = video_subsystem.window("Ytesrev", SIZE.0 as u32, SIZE.1 as u32)
             .position_centered()
             .resizable()
             .build()
             .unwrap();
 
-        let canvas = window.into_canvas().build().unwrap();
+        let canvas = main_window.into_canvas().build().unwrap();
+
+        let notes_canvas =
+            if NOTES {
+                let notes_window = video_subsystem.window("Ytesrev - Notes", SIZE.0 as u32 / 2, SIZE.1 as u32 / 2)
+                    .position_centered()
+                    .resizable()
+                    .build()
+                    .unwrap();
+                Some(notes_window.into_canvas().build().unwrap())
+            } else {
+                None
+            };
+
 
         let event_pump = sdl_context.event_pump().unwrap();
 
         WindowManager {
             canvas,
+            notes_canvas,
             event_pump,
             other_scenes,
             curr_scene,
@@ -146,9 +163,21 @@ impl WindowManager {
         self.canvas.clear();
 
         let (w, h) = self.canvas.window().size();
-        self.curr_scene.as_mut_drawable().draw(&mut self.canvas, &Position::Rect(Rect::new(0, 0, w, h)));
+        self.curr_scene.as_mut_drawable().draw(&mut self.canvas, &Position::Rect(Rect::new(0, 0, w, h)), SETTINGS_MAIN);
 
         self.canvas.present();
+
+        if let Some(ref mut notes_canvas) = self.notes_canvas {
+            notes_canvas.set_draw_color(Color::RGBA(BACKGROUND.0, BACKGROUND.1, BACKGROUND.2, 255));
+            notes_canvas.clear();
+
+            let (w, h) = notes_canvas.window().size();
+            self.curr_scene
+                .as_mut_drawable()
+                .draw(notes_canvas, &Position::Rect(Rect::new(0, 0, w, h)), SETTINGS_NOTES);
+
+            notes_canvas.present();
+        }
     }
 
     pub fn start(&mut self) {

@@ -3,7 +3,7 @@ extern crate sdl2;
 use sdl2::render::Canvas;
 use sdl2::video::Window;
 
-use drawable::{Drawable, Position, State};
+use drawable::{Drawable, Position, State, DrawSettings};
 
 /// I'm not sure why this is needed, but when just storing the dyn Drawable, the compiler complains about
 /// Layered::content_mut
@@ -49,9 +49,9 @@ impl Drawable for Layered {
         self.content.iter_mut().map(|x| x.as_drawable_mut()).collect()
     }
 
-    fn draw(&mut self, canvas: &mut Canvas<Window>, pos: &Position) {
+    fn draw(&mut self, canvas: &mut Canvas<Window>, pos: &Position, settings: DrawSettings) {
         for obj in &mut self.content {
-            obj.draw(canvas, pos);
+            obj.draw(canvas, pos, settings);
         }
     }
 

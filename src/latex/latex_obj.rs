@@ -2,7 +2,7 @@ extern crate sdl2;
 
 use sdl2::{render::Canvas, video::Window, pixels::Color};
 use image::{PngImage, KnownSize, ImageContainer};
-use drawable::{Drawable, Position, State};
+use drawable::{Drawable, Position, State, DrawSettings};
 use super::render::{register_equation, read_image, LatexIdx};
 
 
@@ -90,9 +90,9 @@ impl Drawable for LatexObj {
         }
     }
 
-    fn draw(&mut self, canvas: &mut Canvas<Window>, position: &Position) {
+    fn draw(&mut self, canvas: &mut Canvas<Window>, position: &Position, settings: DrawSettings) {
         if let Some(ref mut img) = self.inner {
-            img.draw(canvas, position);
+            img.draw(canvas, position, settings);
         } else {
             canvas.set_draw_color(Color::RGB(255, 0, 255));
             let rect = position.into_rect_with_size(100, 100);

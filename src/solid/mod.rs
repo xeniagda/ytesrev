@@ -2,7 +2,7 @@ use sdl2::pixels::Color;
 use sdl2::render::Canvas;
 use sdl2::video::Window;
 
-use drawable::{Drawable, State, Position};
+use drawable::{Drawable, State, Position, DrawSettings};
 
 
 pub struct Solid {
@@ -42,7 +42,7 @@ impl Drawable for Solid {
         }
     }
 
-    fn draw(&mut self, canvas: &mut Canvas<Window>, position: &Position) {
+    fn draw(&mut self, canvas: &mut Canvas<Window>, position: &Position, _settings: DrawSettings) {
         match position {
             Position::Rect(r) => {
                 canvas.set_draw_color(self.color);

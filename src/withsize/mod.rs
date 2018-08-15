@@ -1,7 +1,7 @@
 use sdl2::render::Canvas;
 use sdl2::video::Window;
 
-use drawable::{Drawable, Position, State};
+use drawable::{Drawable, Position, State, DrawSettings};
 use image::KnownSize;
 
 pub struct WithSize<T: Drawable> {
@@ -44,8 +44,8 @@ impl <T: Drawable> Drawable for WithSize<T> {
         self.inner.state()
     }
 
-    fn draw(&mut self, canvas: &mut Canvas<Window>, pos: &Position) {
-        self.inner.draw(canvas, pos);
+    fn draw(&mut self, canvas: &mut Canvas<Window>, pos: &Position, settings: DrawSettings) {
+        self.inner.draw(canvas, pos, settings);
     }
 }
 

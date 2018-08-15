@@ -10,7 +10,7 @@ use self::png::{Decoder, ColorType, DecodingError};
 
 use std::io::Read;
 
-use drawable::{Drawable, Position, State};
+use drawable::{Drawable, Position, State, DrawSettings};
 
 #[derive(Clone)]
 pub struct PngImage {
@@ -70,7 +70,7 @@ impl Drawable for PngImage {
     fn content(&self) -> Vec<&dyn Drawable> { vec![] }
     fn content_mut(&mut self) -> Vec<&mut dyn Drawable> { vec![] }
 
-    fn draw(&mut self, canvas: &mut Canvas<Window>, pos: &Position) {
+    fn draw(&mut self, canvas: &mut Canvas<Window>, pos: &Position, _settings: DrawSettings) {
         let creator = canvas.texture_creator();
         let mut texture = creator
             .create_texture_target(None, self.width as u32, self.height as u32)

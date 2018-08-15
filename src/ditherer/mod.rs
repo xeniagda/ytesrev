@@ -7,7 +7,7 @@ use sdl2::video::Window;
 use super::rand::{thread_rng, Rng};
 
 use image::{KnownSize, ImageContainer};
-use drawable::{Drawable, Position, State};
+use drawable::{Drawable, Position, State, DrawSettings};
 
 
 const DITHER_SPEED: f64 = 350.;
@@ -199,7 +199,7 @@ impl <T: ImageContainer> Drawable for Ditherer<T> {
         }
 
         // Spread the selection
-        for _ in 0..100 {
+        for _ in 0..50 {
             let mut dither_next = dither.clone();
 
             for y in 0..self.inner.height() {
@@ -302,18 +302,19 @@ impl <T: ImageContainer> Drawable for Ditherer<T> {
         }
     }
 
-    fn draw(&mut self, canvas: &mut Canvas<Window>, pos: &Position) {
+    fn draw(&mut self, canvas: &mut Canvas<Window>, pos: &Position, settings: DrawSettings) {
         let mut t_mult = 1.;
         if self.max_time as f64 > MAX_TIME * DITHER_SPEED {
             t_mult = self.max_time as f64 / (MAX_TIME * DITHER_SPEED);
         }
 
         match self.dithering {
-            DitherState::Nothing => {}
-            DitherState::DitherIn if self.dither_in_time * DITHER_SPEED > self.max_time as f64 => {
-                self.inner.draw(canvas, pos);
+            DitherState::Nothing if !settings.notes_view => {}
+            DitherState::DitherIn
+                if self.dither_in_time * DITHER_SPEED > self.max_time as f64 && !settings.notes_view => {
+                self.inner.draw(canvas, pos, settings);
             }
-            DitherState::DitherIn | DitherState::DitherOut => {
+            _ => {
                 if self.dither_out_time * DITHER_SPEED > self.max_time as f64 {
                     return;
                 }
@@ -334,10 +335,17 @@ impl <T: ImageContainer> Drawable for Ditherer<T> {
                             let idx = (y * self.inner.width() + x) * 4;
 
                             let data = self.inner.get_data();
-                            cached[idx    ] = (mult * data[idx    ] as f64) as u8;
-                            cached[idx + 1] = (mult * data[idx + 1] as f64) as u8;
-                            cached[idx + 2] = (mult * data[idx + 2] as f64) as u8;
-                            cached[idx + 3] = (mult * data[idx + 3] as f64) as u8;
+                            if settings.notes_view {
+                                cached[idx    ] = ((mult * 0.5 + 0.5) * data[idx    ] as f64) as u8;
+                                cached[idx + 1] = ((mult * 0.5 + 0.5) * data[idx + 1] as f64) as u8;
+                                cached[idx + 2] = ((mult * 0.5 + 0.5) * data[idx + 2] as f64) as u8;
+                                cached[idx + 3] = ((mult * 0.5 + 0.5) * data[idx + 3] as f64) as u8;
+                            } else {
+                                cached[idx    ] = (mult * data[idx    ] as f64) as u8;
+                                cached[idx + 1] = (mult * data[idx + 1] as f64) as u8;
+                                cached[idx + 2] = (mult * data[idx + 2] as f64) as u8;
+                                cached[idx + 3] = (mult * data[idx + 3] as f64) as u8;
+                            }
                         }
                     }
                     let creator = canvas.texture_creator();
@@ -363,7 +371,7 @@ impl <T: ImageContainer> Drawable for Ditherer<T> {
                         )
                         .expect("Can't copy");
                 } else {
-                    self.inner.draw(canvas, pos);
+                    self.inner.draw(canvas, pos, settings);
                 }
             }
         }

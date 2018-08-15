@@ -4,7 +4,7 @@ use sdl2::render::Canvas;
 use sdl2::video::Window;
 
 use window::YEvent;
-use drawable::{Drawable, Position, State};
+use drawable::{Drawable, Position, State, DrawSettings};
 
 #[allow(unused)]
 pub enum Action {
@@ -49,8 +49,8 @@ impl <T: Drawable> Scene for DrawableWrapper<T> {
 }
 
 impl <T: Drawable> Drawable for DrawableWrapper<T> {
-    fn draw(&mut self, canvas: &mut Canvas<Window>, position: &Position) {
-        self.0.draw(canvas, position);
+    fn draw(&mut self, canvas: &mut Canvas<Window>, position: &Position, settings: DrawSettings) {
+        self.0.draw(canvas, position, settings);
     }
 
     fn step(&mut self) {

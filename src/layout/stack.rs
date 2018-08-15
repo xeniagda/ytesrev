@@ -5,7 +5,7 @@ use sdl2::render::Canvas;
 use sdl2::video::Window;
 use sdl2::pixels::Color;
 
-use drawable::{Drawable, Position, State};
+use drawable::{Drawable, Position, State, DrawSettings};
 use image::KnownSize;
 use super::Orientation;
 
@@ -59,7 +59,7 @@ impl <'a> Drawable for Stack {
         self.content.iter_mut().map(|x| x.as_drawable_mut()).collect()
     }
 
-    fn draw(&mut self, canvas: &mut Canvas<Window>, pos: &Position) {
+    fn draw(&mut self, canvas: &mut Canvas<Window>, pos: &Position, settings: DrawSettings) {
         let rect = pos.into_rect_with_size(self.width() as u32, self.height() as u32);
         let corner = rect.top_left();
         if super::DRAW_BOXES {
@@ -92,7 +92,7 @@ impl <'a> Drawable for Stack {
                         ).expect("Can't draw");
                     }
 
-                    obj.draw(canvas, &pos);
+                    obj.draw(canvas, &pos, settings);
                     y += obj.height() as i32 + self.margin as i32;
                 }
             }
@@ -118,7 +118,7 @@ impl <'a> Drawable for Stack {
                         ).expect("Can't draw");
                     }
 
-                    obj.draw(canvas, &pos);
+                    obj.draw(canvas, &pos, settings);
                     x += obj.width() as i32 + self.margin as i32;
                 }
             }

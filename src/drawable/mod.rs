@@ -12,6 +12,14 @@ pub enum Position {
     Rect(Rect),
 }
 
+#[derive(Clone, Copy, PartialEq, Debug)]
+pub struct DrawSettings {
+    pub notes_view: bool
+}
+
+pub const SETTINGS_MAIN: DrawSettings = DrawSettings { notes_view: false };
+pub const SETTINGS_NOTES: DrawSettings = DrawSettings { notes_view: true };
+
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug)]
 pub enum State {
     Working,
@@ -99,5 +107,5 @@ pub trait Drawable {
         }
     }
 
-    fn draw(&mut self, _canvas: &mut Canvas<Window>, _position: &Position);
+    fn draw(&mut self, _canvas: &mut Canvas<Window>, _position: &Position, _settings: DrawSettings);
 }

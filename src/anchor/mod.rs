@@ -2,7 +2,7 @@ use sdl2::rect::{Rect, Point};
 use sdl2::render::Canvas;
 use sdl2::video::Window;
 
-use drawable::{Drawable, Position, State};
+use drawable::{Drawable, Position, State, DrawSettings};
 use image::KnownSize;
 
 
@@ -57,12 +57,12 @@ impl <T: Drawable + KnownSize> Drawable for Anchor<T> {
         self.inner.state()
     }
 
-    fn draw(&mut self, canvas: &mut Canvas<Window>, pos: &Position) {
+    fn draw(&mut self, canvas: &mut Canvas<Window>, pos: &Position, settings: DrawSettings) {
         let rect =
             match pos {
                 Position::Rect(r) => r,
                 _ => {
-                    self.inner.draw(canvas, pos);
+                    self.inner.draw(canvas, pos, settings);
                     return;
                 }
             };
@@ -98,7 +98,8 @@ impl <T: Drawable + KnownSize> Drawable for Anchor<T> {
                     Point::new(rect.x + rwidth - iwidth, rect.y + rheight - iheight)
                 }
             };
-        self.inner.draw(canvas, &Position::Rect(Rect::new(corner.x, corner.y, iwidth as u32, iheight as u32)));
+        self.inner
+            .draw(canvas, &Position::Rect(Rect::new(corner.x, corner.y, iwidth as u32, iheight as u32)), settings);
     }
 }
 
