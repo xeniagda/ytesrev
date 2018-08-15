@@ -1,6 +1,6 @@
 extern crate sdl2;
 
-use sdl2::rect::{Point, Rect};
+use sdl2::rect::Point;
 use sdl2::render::Canvas;
 use sdl2::video::Window;
 use sdl2::pixels::Color;
@@ -64,7 +64,12 @@ impl <'a> Drawable for Stack {
     }
 
     fn draw(&mut self, canvas: &mut Canvas<Window>, pos: &Position) {
-        let corner = pos.into_rect_with_size(self.width() as u32, self.height() as u32).top_left();
+        let rect = pos.into_rect_with_size(self.width() as u32, self.height() as u32);
+        let corner = rect.top_left();
+        if super::DRAW_BOXES {
+            canvas.set_draw_color(Color::RGB(0, 255, 0));
+            canvas.draw_rect(rect).expect("Can't draw");
+        }
 
         let (width, height) = (self.width(), self.height());
 
@@ -72,44 +77,52 @@ impl <'a> Drawable for Stack {
             Orientation::Vertical => {
                 let mut y = corner.y;
                 for obj in &mut self.content {
+                    let corner =
+                        match self.positioning {
+                            ElementPositioning::TopLeftCornered => {
+                                Point::new(corner.x, y)
+                            }
+                            ElementPositioning::Centered => {
+                                let px = corner.x + width as i32 / 2 - obj.width() as i32 / 2;
+                                Point::new(px, y)
+                            }
+                        };
+                    let pos = Position::TopLeftCorner(corner);
+
                     if super::DRAW_BOXES {
                         canvas.set_draw_color(Color::RGB(255, 0, 0));
                         canvas.draw_rect(
-                            Rect::new(corner.x, y, obj.as_sizeable().width() as u32, obj.as_sizeable().height() as u32)
+                            pos.into_rect_with_size(obj.width() as u32, obj.height() as u32)
                         ).expect("Can't draw");
                     }
 
-                    match self.positioning {
-                        ElementPositioning::TopLeftCornered => {
-                            obj.as_drawable_mut().draw(canvas, &Position::TopLeftCorner(Point::new(corner.x, y)));
-                        }
-                        ElementPositioning::Centered => {
-                            let px = corner.x + width  as i32 / 2;
-                            obj.as_drawable_mut().draw(canvas, &Position::Center(Point::new(px, y)));
-                        }
-                    }
+                    obj.draw(canvas, &pos);
                     y += obj.as_sizeable().height() as i32 + self.margin as i32;
                 }
             }
             Orientation::Horisontal => {
                 let mut x = corner.x;
                 for obj in &mut self.content {
+                    let corner =
+                        match self.positioning {
+                            ElementPositioning::TopLeftCornered => {
+                                Point::new(x, corner.y)
+                            }
+                            ElementPositioning::Centered => {
+                                let py = corner.y + height as i32 / 2 - obj.height() as i32 / 2;
+                                Point::new(x, py)
+                            }
+                        };
+                    let pos = Position::TopLeftCorner(corner);
+
                     if super::DRAW_BOXES {
                         canvas.set_draw_color(Color::RGB(255, 0, 0));
                         canvas.draw_rect(
-                            Rect::new(x, corner.y, obj.as_sizeable().width() as u32, obj.as_sizeable().height() as u32)
+                            pos.into_rect_with_size(obj.width() as u32, obj.height() as u32)
                         ).expect("Can't draw");
                     }
 
-                    match self.positioning {
-                        ElementPositioning::TopLeftCornered => {
-                            obj.as_drawable_mut().draw(canvas, &Position::TopLeftCorner(Point::new(x, corner.y)));
-                        }
-                        ElementPositioning::Centered => {
-                            let py = corner.y + height as i32 / 2;
-                            obj.as_drawable_mut().draw(canvas, &Position::Center(Point::new(x, py)));
-                        }
-                    }
+                    obj.draw(canvas, &pos);
                     x += obj.as_sizeable().width() as i32 + self.margin as i32;
                 }
             }
