@@ -20,8 +20,6 @@ pub trait Stackable: Drawable + KnownSize {
 }
 
 impl <T: Drawable + KnownSize> Stackable for T {
-    fn as_sizeable(&self) -> &dyn KnownSize  { self }
-    fn as_sizeable_mut(&mut self) -> &mut dyn KnownSize  { self }
     fn as_drawable(&self) -> &dyn Drawable { self }
     fn as_drawable_mut(&mut self) -> &mut dyn Drawable { self }
 }
