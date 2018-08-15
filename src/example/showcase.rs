@@ -2,18 +2,8 @@ extern crate ytesrev;
 
 use std::fs::File;
 
-use ytesrev::window::WindowManager;
-use ytesrev::scene::*;
-use ytesrev::latex::latex_obj::*;
-use ytesrev::ditherer::*;
-use ytesrev::layout::*;
-use ytesrev::layout::split::*;
-use ytesrev::layout::stack::*;
-use ytesrev::layout::layered::*;
-use ytesrev::image::*;
-use ytesrev::solid::*;
-use ytesrev::empty::*;
-use ytesrev::withsize::*;
+use ytesrev::prelude::*;
+use ytesrev::ditherer::color_dither_fn;
 
 fn main() {
     let mut first_scene = make_first_scene();

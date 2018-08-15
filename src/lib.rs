@@ -16,3 +16,19 @@ pub mod drawable;
 pub mod solid;
 pub mod empty;
 pub mod withsize;
+
+pub mod prelude {
+    pub use window::WindowManager;
+    pub use drawable::Drawable;
+    pub use scene::{DrawableWrapper, Scene};
+    pub use latex::latex_obj::LatexObj;
+    pub use ditherer::{Ditherer, DitherDirection};
+    pub use layout::Orientation;
+    pub use layout::split::{SplitPrec, UpdateOrder};
+    pub use layout::stack::{Stack, ElementPositioning};
+    pub use layout::layered::Layered;
+    pub use image::PngImage;
+    pub use solid::Solid;
+    pub use empty::Empty;
+    pub use withsize::WithSize;
+}
