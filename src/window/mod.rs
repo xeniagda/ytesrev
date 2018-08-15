@@ -15,7 +15,7 @@ use scene::{Scene, Action};
 use latex::render_all_eqations;
 use drawable::Position;
 
-const SIZE: (usize, usize) = (800, 600);
+const SIZE: (usize, usize) = (1200, 800);
 const BACKGROUND: (u8, u8, u8) = (255, 248, 234);
 
 pub enum YEvent {
@@ -67,12 +67,16 @@ impl <'a> WindowManager<'a> {
             scene.as_mut_drawable().register();
         }
 
+        println!("Loading...");
         render_all_eqations().expect("Can't render!");
 
+        println!("Scene 1...");
         curr_scene.as_mut_drawable().load();
-        for scene in &mut other_scenes {
+        for (i, scene) in other_scenes.iter_mut().enumerate() {
+            println!("Scene {}...", i + 2);
             scene.as_mut_drawable().load();
         }
+        println!("Done!");
 
         WindowManager {
             canvas,
