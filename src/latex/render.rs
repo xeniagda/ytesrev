@@ -179,7 +179,7 @@ fn read_pngs(path: &Path) -> IResult<()> {
 
 fn white_transparent(col: Color) -> Color {
     let max_channel = col.r.min(col.g).min(col.b);
-    Color { r: col.r, g: col.g, b: col.b, a: 255 - max_channel }
+    Color { r: 0, g: 0, b: 0, a: 255 - max_channel }
 }
 
 fn zero_pad(n: String, len: usize) -> String {
