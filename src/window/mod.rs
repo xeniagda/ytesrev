@@ -23,12 +23,12 @@ pub enum YEvent {
     Other(Event),
 }
 
-pub struct WindowManager<'a> {
+pub struct WindowManager {
     pub canvas: Canvas<Window>,
     pub event_pump: EventPump,
 
-    pub other_scenes: Vec<&'a mut dyn Scene>,
-    pub curr_scene: &'a mut dyn Scene,
+    pub other_scenes: Vec<Box<dyn Scene>>,
+    pub curr_scene: Box<dyn Scene>,
 
     time_manager: Option<TimeManager>,
 }
@@ -41,25 +41,11 @@ struct TimeManager {
     durs: Vec<Duration>,
 }
 
-impl <'a> WindowManager<'a> {
+impl WindowManager {
     pub fn init_window(
-            curr_scene: &'a mut dyn Scene,
-            mut other_scenes: Vec<&'a mut dyn Scene>
-    ) -> WindowManager<'a> {
-        let sdl_context = sdl2::init().unwrap();
-        let video_subsystem = sdl_context.video().unwrap();
-
-        let window = video_subsystem.window("Ytesrev", SIZE.0 as u32, SIZE.1 as u32)
-            .position_centered()
-            .resizable()
-            .build()
-            .unwrap();
-
-        let canvas = window.into_canvas().build().unwrap();
-
-        let event_pump = sdl_context.event_pump().unwrap();
-
-
+            mut curr_scene: Box<dyn Scene>,
+            mut other_scenes: Vec<Box<dyn Scene>>
+    ) -> WindowManager {
         // Load everything
 
         curr_scene.as_mut_drawable().register();
@@ -77,6 +63,20 @@ impl <'a> WindowManager<'a> {
             scene.as_mut_drawable().load();
         }
         println!("Done!");
+
+
+        let sdl_context = sdl2::init().unwrap();
+        let video_subsystem = sdl_context.video().unwrap();
+
+        let window = video_subsystem.window("Ytesrev", SIZE.0 as u32, SIZE.1 as u32)
+            .position_centered()
+            .resizable()
+            .build()
+            .unwrap();
+
+        let canvas = window.into_canvas().build().unwrap();
+
+        let event_pump = sdl_context.event_pump().unwrap();
 
         WindowManager {
             canvas,

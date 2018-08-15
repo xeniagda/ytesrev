@@ -6,14 +6,13 @@ use ytesrev::prelude::*;
 use ytesrev::ditherer::color_dither_fn;
 
 fn main() {
-    let mut first_scene = make_first_scene();
-    let mut second_scene = make_second_scene();
-    let mut third_scene = make_third_scene();
-    let mut fouth_scene = make_fourth_scene();
-
     let mut wmng = WindowManager::init_window(
-        &mut first_scene,
-        vec![&mut second_scene, &mut third_scene, &mut fouth_scene],
+        Box::new(make_first_scene()),
+        vec![
+            Box::new(make_second_scene()),
+            Box::new(make_third_scene()),
+            Box::new(make_fourth_scene()),
+        ],
     );
 
     wmng.start();
