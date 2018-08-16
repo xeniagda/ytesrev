@@ -152,6 +152,14 @@ impl <T: ImageContainer> Ditherer<T> {
     pub fn dither_out(&mut self) {
         self.dithering = DitherState::DitherOut;
     }
+
+    fn is_dithered_in(&self) -> bool {
+        self.dither_in_time * DITHER_SPEED > self.max_time as f64
+    }
+
+    fn is_dithered_out(&self) -> bool {
+        self.dither_out_time * DITHER_SPEED > self.max_time as f64
+    }
 }
 
 impl <T: ImageContainer> Drawable for Ditherer<T> {
@@ -254,15 +262,15 @@ impl <T: ImageContainer> Drawable for Ditherer<T> {
     fn update(&mut self, dt: f64) {
         match self.dithering {
             DitherState::DitherIn => {
-                if self.dither_in_time * DITHER_SPEED < self.max_time as f64 {
+                if !self.is_dithered_in() {
                     self.dither_in_time += dt;
                 }
             }
             DitherState::DitherOut => {
-                if self.dither_in_time * DITHER_SPEED < self.max_time as f64 {
+                if !self.is_dithered_in() {
                     self.dither_in_time += dt;
                 }
-                if self.dither_out_time * DITHER_SPEED < self.max_time as f64 {
+                if !self.is_dithered_out() {
                     self.dither_out_time += dt;
                 }
             }
@@ -293,10 +301,10 @@ impl <T: ImageContainer> Drawable for Ditherer<T> {
                 State::Final
             }
             DitherState::DitherOut => {
-                if self.dither_out_time * DITHER_SPEED < self.max_time as f64 {
-                    State::Final
-                } else {
+                if self.is_dithered_out() {
                     State::Hidden
+                } else {
+                    State::Final
                 }
             }
         }
@@ -311,11 +319,11 @@ impl <T: ImageContainer> Drawable for Ditherer<T> {
         match self.dithering {
             DitherState::Nothing if !settings.notes_view => {}
             DitherState::DitherIn
-                if self.dither_in_time * DITHER_SPEED > self.max_time as f64 && !settings.notes_view => {
+                if self.is_dithered_in() && !settings.notes_view => {
                 self.inner.draw(canvas, pos, settings);
             }
             _ => {
-                if self.dither_out_time * DITHER_SPEED > self.max_time as f64 {
+                if self.is_dithered_out() && !settings.notes_view {
                     return;
                 }
                 if let Some(ref dither) = self.dither {
@@ -336,9 +344,24 @@ impl <T: ImageContainer> Drawable for Ditherer<T> {
 
                             let data = self.inner.get_data();
                             if settings.notes_view {
-                                cached[idx    ] = ((mult * 0.5 + 0.5) * data[idx    ] as f64) as u8;
-                                cached[idx + 1] = ((mult * 0.5 + 0.5) * data[idx + 1] as f64) as u8;
-                                cached[idx + 2] = ((mult * 0.5 + 0.5) * data[idx + 2] as f64) as u8;
+                                let col =
+                                    if self.dithering == DitherState::Nothing {
+                                        (0.5, 0.5, 0.5)
+                                    } else if !self.is_dithered_in() {
+                                        (0.5, 1., 1.)
+                                    } else if self.is_dithered_in() && self.dithering == DitherState::DitherIn {
+                                        (0.5, 1., 0.5)
+                                    } else if self.dithering == DitherState::DitherOut {
+                                        (1., 1., 0.5)
+                                    } else {
+                                        (1., 0.5, 0.5)
+                                    };
+
+                                let avg = data[idx] / 3 + data[idx + 1] / 3 + data[idx + 2] / 3;
+
+                                cached[idx    ] = (255. - (col.0 * (255. - (mult * 0.5 + 0.5) * avg as f64))) as u8;
+                                cached[idx + 1] = (255. - (col.1 * (255. - (mult * 0.5 + 0.5) * avg as f64))) as u8;
+                                cached[idx + 2] = (255. - (col.2 * (255. - (mult * 0.5 + 0.5) * avg as f64))) as u8;
                                 cached[idx + 3] = ((mult * 0.5 + 0.5) * data[idx + 3] as f64) as u8;
                             } else {
                                 cached[idx    ] = (mult * data[idx    ] as f64) as u8;
