@@ -17,6 +17,7 @@ use drawable::{Position, SETTINGS_MAIN, SETTINGS_NOTES};
 
 const SIZE: (usize, usize) = (1200, 800);
 const BACKGROUND: (u8, u8, u8) = (255, 248, 234);
+const FPS_PRINT_RATE: Duration = Duration::from_millis(1000);
 
 const NOTES: bool = true;
 
@@ -34,6 +35,7 @@ pub struct WindowManager {
     pub curr_scene: Box<dyn Scene>,
 
     time_manager: Option<TimeManager>,
+    tick: usize,
 }
 
 
@@ -101,6 +103,7 @@ impl WindowManager {
             other_scenes,
             curr_scene,
             time_manager: None,
+            tick: 0,
         }
     }
 
@@ -168,20 +171,23 @@ impl WindowManager {
         self.canvas.present();
 
         if let Some(ref mut notes_canvas) = self.notes_canvas {
-            notes_canvas.set_draw_color(Color::RGBA(BACKGROUND.0, BACKGROUND.1, BACKGROUND.2, 255));
-            notes_canvas.clear();
+            if self.tick % 5 == 0 {
+                notes_canvas.set_draw_color(Color::RGBA(BACKGROUND.0, BACKGROUND.1, BACKGROUND.2, 255));
+                notes_canvas.clear();
 
-            let (w, h) = notes_canvas.window().size();
-            self.curr_scene
-                .as_mut_drawable()
-                .draw(notes_canvas, &Position::Rect(Rect::new(0, 0, w, h)), SETTINGS_NOTES);
+                let (w, h) = notes_canvas.window().size();
+                self.curr_scene
+                    .as_mut_drawable()
+                    .draw(notes_canvas, &Position::Rect(Rect::new(0, 0, w, h)), SETTINGS_NOTES);
 
-            notes_canvas.present();
+                notes_canvas.present();
+            }
         }
     }
 
     pub fn start(&mut self) {
         loop {
+            self.tick += 1;
             self.draw();
             if !self.process_events() {
                 break;
@@ -208,7 +214,7 @@ impl TimeManager {
         self.last_time = now;
 
         self.durs.push(diff);
-        if now - self.last_fps_print > Duration::from_secs(5) {
+        if now - self.last_fps_print > FPS_PRINT_RATE {
             let num_dur = self.durs.len() as u32;
 
             let avg_dur: Duration = self.durs.drain(..).sum::<Duration>() / num_dur;
