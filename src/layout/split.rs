@@ -54,7 +54,7 @@ impl <T: Drawable, U: Drawable> Drawable for SplitPrec<T, U> {
     fn draw(&mut self, canvas: &mut Canvas<Window>, pos: &Position, settings: DrawSettings) {
         match pos {
             Position::TopLeftCorner(_) | Position::Center(_) => {
-                eprintln!("Trying to draw a YSplitpane not using a Position::Rect. Please don't");
+                eprintln!("Trying to draw a Splitpane not using a Position::Rect. Please don't");
             }
             Position::Rect(rect) => {
                 let (first_rect, second_rect) = match self.orientation {
@@ -131,7 +131,6 @@ impl <T: Drawable, U: Drawable> Drawable for SplitPrec<T, U> {
                 }
             }
             UpdateOrder::SecondFirst => {
-                println!("First: {:?}, Second: {:?}", self.first.state(), self.second.state());
                 if self.second.state() == State::Working {
                     self.second.step();
                 } else if self.first.state() == State::Working {
