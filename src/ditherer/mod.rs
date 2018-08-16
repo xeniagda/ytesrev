@@ -255,6 +255,10 @@ impl <T: ImageContainer> Drawable for Ditherer<T> {
             }
         }
 
+        if self.dithering == DitherState::DitherIn {
+            self.dither_in_time = self.max_time as f64 * DITHER_SPEED;
+        }
+
         self.dither = Some(dither);
         self.cached = Cell::new(self.inner.get_data().clone().into_iter().map(|_| 0).collect::<Vec<u8>>());
     }
