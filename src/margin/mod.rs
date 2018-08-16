@@ -1,4 +1,4 @@
-use sdl2::rect::Rect;
+use sdl2::rect::{Rect, Point};
 use sdl2::pixels::Color;
 use sdl2::render::Canvas;
 use sdl2::video::Window;
@@ -70,10 +70,21 @@ impl <T: Drawable + KnownSize> Drawable for Margin<T> {
                     canvas.draw_rect(r2).expect("Can't draw");
 
                     canvas.set_draw_color(Color::RGB(0, 0, 255));
-                    canvas.draw_line(r.top_left(), r2.top_left()).expect("Can't draw");
-                    canvas.draw_line(r.top_right(), r2.top_right()).expect("Can't draw");
-                    canvas.draw_line(r.bottom_left(), r2.bottom_left()).expect("Can't draw");
-                    canvas.draw_line(r.bottom_right(), r2.bottom_right()).expect("Can't draw");
+
+                    let functions: [&dyn for<'r> Fn(&'r Rect) -> Point; 4] =
+                        [&Rect::top_left,
+                         &Rect::top_right,
+                         &Rect::bottom_left,
+                         &Rect::bottom_right];
+
+                    for f in &functions {
+                        let p1 = f(r);
+                        let p2 = f(&r2);
+                        canvas.draw_line(p2, p1).expect("Can't draw");
+                        canvas.draw_line(p2, Point::new((p2.x() + p1.x()) / 2, p2.y())).expect("Can't draw");
+                        canvas.draw_line(p2, Point::new(p2.x(), (p2.y() + p1.y()) / 2)).expect("Can't draw");
+
+                    }
                 }
 
                 self.inner.draw(canvas, &Position::Rect(r2), settings);
