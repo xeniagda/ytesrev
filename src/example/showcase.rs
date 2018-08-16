@@ -98,29 +98,69 @@ fn make_fourth_scene() -> impl Scene {
             Layered::new(
                 false,
                 vec![
-                    Box::new(Anchor::new(
-                        AnchorDirection::North, Ditherer::dithered_out(LatexObj::text("North")))
+                    Box::new(
+                        Margin::new_vert_hor(
+                            40, 40,
+                            Anchor::new(
+                                AnchorDirection::North, Ditherer::dithered_out(LatexObj::text("North"))
+                            )
+                        )
                     ),
-                    Box::new(Anchor::new(
-                        AnchorDirection::East, Ditherer::dithered_out(LatexObj::text("East")))
+                    Box::new(
+                        Margin::new_vert_hor(
+                            40, 40,
+                            Anchor::new(
+                                AnchorDirection::East, Ditherer::dithered_out(LatexObj::text("East"))
+                            )
+                        )
                     ),
-                    Box::new(Anchor::new(
-                        AnchorDirection::South, Ditherer::dithered_out(LatexObj::text("South")))
+                    Box::new(
+                        Margin::new_vert_hor(
+                            40, 40,
+                            Anchor::new(
+                                AnchorDirection::South, Ditherer::dithered_out(LatexObj::text("South"))
+                            )
+                        )
                     ),
-                    Box::new(Anchor::new(
-                        AnchorDirection::West, Ditherer::dithered_out(LatexObj::text("West")))
+                    Box::new(
+                        Margin::new_vert_hor(
+                            40, 40,
+                            Anchor::new(
+                                AnchorDirection::West, Ditherer::dithered_out(LatexObj::text("West"))
+                            )
+                        )
                     ),
-                    Box::new(Anchor::new(
-                        AnchorDirection::NorthEast, Ditherer::dithered_out(LatexObj::text("NorthEast")))
+                    Box::new(
+                        Margin::new_vert_hor(
+                            40, 40,
+                            Anchor::new(
+                                AnchorDirection::NorthEast, Ditherer::dithered_out(LatexObj::text("NorthEast"))
+                            )
+                        )
                     ),
-                    Box::new(Anchor::new(
-                        AnchorDirection::SouthEast, Ditherer::dithered_out(LatexObj::text("SouthEast")))
+                    Box::new(
+                        Margin::new_vert_hor(
+                            40, 40,
+                            Anchor::new(
+                                AnchorDirection::SouthEast, Ditherer::dithered_out(LatexObj::text("SouthEast"))
+                            )
+                        )
                     ),
-                    Box::new(Anchor::new(
-                        AnchorDirection::SouthWest, Ditherer::dithered_out(LatexObj::text("SouthWest")))
+                    Box::new(
+                        Margin::new_vert_hor(
+                            40, 40,
+                            Anchor::new(
+                                AnchorDirection::SouthWest, Ditherer::dithered_out(LatexObj::text("SouthWest"))
+                            )
+                        )
                     ),
-                    Box::new(Anchor::new(
-                        AnchorDirection::NorthWest, Ditherer::dithered_out(LatexObj::text("NorthWest")))
+                    Box::new(
+                        Margin::new_vert_hor(
+                            40, 40,
+                            Anchor::new(
+                                AnchorDirection::NorthWest, Ditherer::dithered_out(LatexObj::text("NorthWest"))
+                            )
+                        )
                     ),
                 ]
             );

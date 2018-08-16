@@ -17,6 +17,7 @@ pub mod solid;
 pub mod empty;
 pub mod withsize;
 pub mod anchor;
+pub mod margin;
 
 pub mod prelude {
     pub use window::WindowManager;
@@ -33,4 +34,5 @@ pub mod prelude {
     pub use empty::Empty;
     pub use withsize::WithSize;
     pub use anchor::{Anchor, AnchorDirection};
+    pub use margin::Margin;
 }
