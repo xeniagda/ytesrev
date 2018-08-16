@@ -1,7 +1,7 @@
 use sdl2::render::Canvas;
 use sdl2::video::Window;
 
-use drawable::{Drawable, Position, State, DrawSettings};
+use drawable::{DrawSettings, Drawable, Position, State};
 use image::KnownSize;
 
 pub struct WithSize<T: Drawable> {
@@ -9,17 +9,13 @@ pub struct WithSize<T: Drawable> {
     pub inner: T,
 }
 
-impl <T: Drawable> WithSize<T> {
+impl<T: Drawable> WithSize<T> {
     pub fn new(size: (u32, u32), inner: T) -> WithSize<T> {
-        WithSize {
-            size,
-            inner,
-        }
+        WithSize { size, inner }
     }
 }
 
-impl <T: Drawable> Drawable for WithSize<T> {
-
+impl<T: Drawable> Drawable for WithSize<T> {
     fn content(&self) -> Vec<&dyn Drawable> {
         vec![&self.inner]
     }
@@ -49,7 +45,7 @@ impl <T: Drawable> Drawable for WithSize<T> {
     }
 }
 
-impl <T: Drawable> KnownSize for WithSize<T> {
+impl<T: Drawable> KnownSize for WithSize<T> {
     fn width(&self) -> usize {
         self.size.0 as usize
     }

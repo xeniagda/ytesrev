@@ -1,7 +1,7 @@
 extern crate sdl2;
 
-use sdl2::render::Canvas;
 use sdl2::rect::{Point, Rect};
+use sdl2::render::Canvas;
 use sdl2::video::Window;
 
 #[allow(unused)]
@@ -14,7 +14,7 @@ pub enum Position {
 
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub struct DrawSettings {
-    pub notes_view: bool
+    pub notes_view: bool,
 }
 
 pub const SETTINGS_MAIN: DrawSettings = DrawSettings { notes_view: false };
@@ -30,12 +30,13 @@ pub enum State {
 impl Position {
     pub fn into_rect_with_size(self, width: u32, height: u32) -> Rect {
         match self {
-            Position::TopLeftCorner(point) => {
-                Rect::new(point.x, point.y, width, height)
-            }
-            Position::Center(point) => {
-                Rect::new(point.x - width as i32 / 2, point.y - height as i32 / 2, width, height)
-            }
+            Position::TopLeftCorner(point) => Rect::new(point.x, point.y, width, height),
+            Position::Center(point) => Rect::new(
+                point.x - width as i32 / 2,
+                point.y - height as i32 / 2,
+                width,
+                height,
+            ),
             Position::Rect(rect) => {
                 let center_x = rect.x() + rect.width() as i32 / 2;
                 let center_y = rect.y() + rect.height() as i32 / 2;

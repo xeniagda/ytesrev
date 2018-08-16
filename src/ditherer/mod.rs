@@ -1,14 +1,13 @@
 use std::cell::Cell;
-use std::{u64, f64};
+use std::{f64, u64};
 
-use sdl2::render::{Canvas, BlendMode};
+use sdl2::render::{BlendMode, Canvas};
 use sdl2::video::Window;
 
 use super::rand::{thread_rng, Rng};
 
-use image::{KnownSize, ImageContainer};
-use drawable::{Drawable, Position, State, DrawSettings};
-
+use drawable::{DrawSettings, Drawable, Position, State};
+use image::{ImageContainer, KnownSize};
 
 const DITHER_SPEED: f64 = 350.;
 const DITHER_ALPHA_SPEED: f64 = 140.;
@@ -35,26 +34,26 @@ pub enum DitherDirection {
 impl DitherDirection {
     pub fn value(&self, pos: (usize, usize), size: (usize, usize)) -> usize {
         match self {
-            DitherDirection::Rightwards => { pos.0 }
-            DitherDirection::Leftwards  => { size.0 - pos.0 + 1 }
-            DitherDirection::Downwards  => { pos.1 }
-            DitherDirection::Upwards    => { size.1 - pos.1 + 1 }
-            DitherDirection::Outwards   => {
+            DitherDirection::Rightwards => pos.0,
+            DitherDirection::Leftwards => size.0 - pos.0 + 1,
+            DitherDirection::Downwards => pos.1,
+            DitherDirection::Upwards => size.1 - pos.1 + 1,
+            DitherDirection::Outwards => {
                 let dx = pos.0 as f64 - size.0 as f64 / 2.;
                 let dy = pos.1 as f64 - size.1 as f64 / 2.;
                 (dx * dx + dy * dy).sqrt() as usize
             }
-            DitherDirection::None  => { 1 }
+            DitherDirection::None => 1,
         }
     }
 }
 
 pub fn alpha_dither_fn<T: ImageContainer + KnownSize>(image: &T, (x, y): (usize, usize)) -> u64 {
     let alpha = move |x: usize, y: usize| {
-            let x = x.max(0).min(image.width() - 1);
-            let y = y.max(0).min(image.height() - 1);
-            image.get_data()[(y * image.width() + x) * 4 + 3]
-        };
+        let x = x.max(0).min(image.width() - 1);
+        let y = y.max(0).min(image.height() - 1);
+        image.get_data()[(y * image.width() + x) * 4 + 3]
+    };
 
     let delta_alpha_y = (alpha(x, y + 1) as i64 - alpha(x, y.saturating_sub(1)) as i64).abs();
     let delta_alpha_x = (alpha(x + 1, y) as i64 - alpha(x.saturating_sub(1), y) as i64).abs();
@@ -68,7 +67,10 @@ pub fn color_dither_fn<T: ImageContainer + KnownSize>(img: &T, pos: (usize, usiz
     let b = img.get_data()[(pos.1 * img.width() + pos.0) * 4 + 2] as f64;
     let a = img.get_data()[(pos.1 * img.width() + pos.0) * 4 + 3] as f64;
     let avg = (r + b + g + a) / 4.;
-    let dev = (r - avg) * (r - avg) + (g - avg) * (g - avg) + (b - avg) * (b - avg) + (a - avg) * (a - avg);
+    let dev = (r - avg) * (r - avg)
+        + (g - avg) * (g - avg)
+        + (b - avg) * (b - avg)
+        + (a - avg) * (a - avg);
     dev as u64
 }
 
@@ -84,19 +86,28 @@ pub struct Ditherer<T: ImageContainer + 'static> {
     dithering: DitherState,
 }
 
-impl <T: ImageContainer + KnownSize> KnownSize for Ditherer<T> {
-    fn width(&self) -> usize { self.inner.width() }
-    fn height(&self) -> usize { self.inner.height() }
+impl<T: ImageContainer + KnownSize> KnownSize for Ditherer<T> {
+    fn width(&self) -> usize {
+        self.inner.width()
+    }
+    fn height(&self) -> usize {
+        self.inner.height()
+    }
 }
 
-impl <T: ImageContainer + KnownSize> ImageContainer for Ditherer<T> {
-    fn get_data(&self) -> &Vec<u8> { self.inner.get_data() }
-    fn get_data_mut(&mut self) -> &mut Vec<u8> { self.inner.get_data_mut() }
-    fn into_data(self) -> Vec<u8> { self.inner.into_data() }
+impl<T: ImageContainer + KnownSize> ImageContainer for Ditherer<T> {
+    fn get_data(&self) -> &Vec<u8> {
+        self.inner.get_data()
+    }
+    fn get_data_mut(&mut self) -> &mut Vec<u8> {
+        self.inner.get_data_mut()
+    }
+    fn into_data(self) -> Vec<u8> {
+        self.inner.into_data()
+    }
 }
 
-
-impl <T: ImageContainer> Ditherer<T> {
+impl<T: ImageContainer> Ditherer<T> {
     pub fn dithered_out(inner: T) -> Ditherer<T> {
         let dither = None;
 
@@ -130,18 +141,19 @@ impl <T: ImageContainer> Ditherer<T> {
     }
 
     pub fn with_dither_fn<F: Fn(&T, (usize, usize)) -> u64>(self, f: F) -> Ditherer<T>
-        where F: 'static
+    where
+        F: 'static,
     {
         Ditherer {
             dither_fn: Box::new(f),
-            .. self
+            ..self
         }
     }
 
     pub fn with_direction(self, dir: DitherDirection) -> Ditherer<T> {
         Ditherer {
             direction: dir,
-            .. self
+            ..self
         }
     }
 
@@ -162,10 +174,13 @@ impl <T: ImageContainer> Ditherer<T> {
     }
 }
 
-impl <T: ImageContainer> Drawable for Ditherer<T> {
-
-    fn     content(&    self) -> Vec<&    dyn Drawable> { vec![&    self.inner] }
-    fn content_mut(&mut self) -> Vec<&mut dyn Drawable> { vec![&mut self.inner] }
+impl<T: ImageContainer> Drawable for Ditherer<T> {
+    fn content(&self) -> Vec<&dyn Drawable> {
+        vec![&self.inner]
+    }
+    fn content_mut(&mut self) -> Vec<&mut dyn Drawable> {
+        vec![&mut self.inner]
+    }
 
     fn load(&mut self) {
         self.inner.load();
@@ -187,7 +202,10 @@ impl <T: ImageContainer> Drawable for Ditherer<T> {
 
         for y in 0..self.inner.height() {
             for x in 0..self.inner.width() {
-                let val = self.direction.value((x, y), (self.inner.width(), self.inner.height())) as u64;
+                let val = self
+                    .direction
+                    .value((x, y), (self.inner.width(), self.inner.height()))
+                    as u64;
                 let val = val as u64 + rng.gen_range(0, 100);
                 if x == 0 || x == self.inner.width() - 1 || y == 0 || y == self.inner.height() - 1 {
                     dither[y][x] = val;
@@ -212,7 +230,6 @@ impl <T: ImageContainer> Drawable for Ditherer<T> {
 
             for y in 0..self.inner.height() {
                 for x in 0..self.inner.width() {
-
                     let alpha = self.inner.get_data()[(y * self.inner.width() + x) * 4 + 3];
                     if alpha == 0 {
                         continue;
@@ -260,7 +277,14 @@ impl <T: ImageContainer> Drawable for Ditherer<T> {
         }
 
         self.dither = Some(dither);
-        self.cached = Cell::new(self.inner.get_data().clone().into_iter().map(|_| 0).collect::<Vec<u8>>());
+        self.cached = Cell::new(
+            self.inner
+                .get_data()
+                .clone()
+                .into_iter()
+                .map(|_| 0)
+                .collect::<Vec<u8>>(),
+        );
     }
 
     fn update(&mut self, dt: f64) {
@@ -322,8 +346,7 @@ impl <T: ImageContainer> Drawable for Ditherer<T> {
 
         match self.dithering {
             DitherState::Nothing if !settings.notes_view => {}
-            DitherState::DitherIn
-                if self.is_dithered_in() && !settings.notes_view => {
+            DitherState::DitherIn if self.is_dithered_in() && !settings.notes_view => {
                 self.inner.draw(canvas, pos, settings);
             }
             _ => {
@@ -335,14 +358,15 @@ impl <T: ImageContainer> Drawable for Ditherer<T> {
 
                     for y in 0..self.inner.height() {
                         for x in 0..self.inner.width() {
-
                             let mut mult = 1.;
 
-                            let diff_out = dither[y][x] as f64 - (self.dither_out_time * DITHER_SPEED * t_mult);
+                            let diff_out = dither[y][x] as f64
+                                - (self.dither_out_time * DITHER_SPEED * t_mult);
                             mult *= (diff_out / DITHER_ALPHA_SPEED + 1.).min(1.).max(0.);
 
-                            let diff_in = (self.dither_in_time * DITHER_SPEED * t_mult) - dither[y][x] as f64;
-                            mult *= (diff_in  / DITHER_ALPHA_SPEED).min(1.).max(0.);
+                            let diff_in =
+                                (self.dither_in_time * DITHER_SPEED * t_mult) - dither[y][x] as f64;
+                            mult *= (diff_in / DITHER_ALPHA_SPEED).min(1.).max(0.);
 
                             let idx = (y * self.inner.width() + x) * 4;
 
@@ -380,8 +404,11 @@ impl <T: ImageContainer> Drawable for Ditherer<T> {
                     }
                     let creator = canvas.texture_creator();
                     let mut texture = creator
-                        .create_texture_target(None, self.inner.width() as u32, self.inner.height() as u32)
-                        .expect("Can't make texture");
+                        .create_texture_target(
+                            None,
+                            self.inner.width() as u32,
+                            self.inner.height() as u32,
+                        ).expect("Can't make texture");
 
                     texture.set_blend_mode(BlendMode::Blend);
 
@@ -391,15 +418,10 @@ impl <T: ImageContainer> Drawable for Ditherer<T> {
 
                     self.cached.set(cached);
 
-                    let rect = pos.into_rect_with_size(self.inner.width() as u32, self.inner.height() as u32);
+                    let rect = pos
+                        .into_rect_with_size(self.inner.width() as u32, self.inner.height() as u32);
 
-                    canvas
-                        .copy(
-                            &texture,
-                            None,
-                            rect,
-                        )
-                        .expect("Can't copy");
+                    canvas.copy(&texture, None, rect).expect("Can't copy");
                 } else {
                     self.inner.draw(canvas, pos, settings);
                 }

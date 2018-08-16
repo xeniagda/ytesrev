@@ -3,8 +3,8 @@ extern crate sdl2;
 use sdl2::render::Canvas;
 use sdl2::video::Window;
 
+use drawable::{DrawSettings, Drawable, Position, State};
 use window::YEvent;
-use drawable::{Drawable, Position, State, DrawSettings};
 
 #[allow(unused)]
 pub enum Action {
@@ -21,12 +21,13 @@ pub trait Scene {
     fn as_mut_drawable(&mut self) -> &mut dyn Drawable;
 }
 
-
 #[allow(unused)]
 pub struct DrawableWrapper<T: Drawable>(pub T);
 
-impl <T: Drawable> Scene for DrawableWrapper<T> {
-    fn update(&mut self, dt: f64) { self.0.update(dt); }
+impl<T: Drawable> Scene for DrawableWrapper<T> {
+    fn update(&mut self, dt: f64) {
+        self.0.update(dt);
+    }
     fn event(&mut self, event: YEvent) {
         match event {
             YEvent::Step => {
@@ -44,11 +45,15 @@ impl <T: Drawable> Scene for DrawableWrapper<T> {
         }
     }
 
-    fn as_drawable(&self) -> &dyn Drawable { self }
-    fn as_mut_drawable(&mut self) -> &mut dyn Drawable { self }
+    fn as_drawable(&self) -> &dyn Drawable {
+        self
+    }
+    fn as_mut_drawable(&mut self) -> &mut dyn Drawable {
+        self
+    }
 }
 
-impl <T: Drawable> Drawable for DrawableWrapper<T> {
+impl<T: Drawable> Drawable for DrawableWrapper<T> {
     fn draw(&mut self, canvas: &mut Canvas<Window>, position: &Position, settings: DrawSettings) {
         self.0.draw(canvas, position, settings);
     }

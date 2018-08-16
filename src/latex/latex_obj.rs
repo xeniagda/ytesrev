@@ -1,10 +1,9 @@
 extern crate sdl2;
 
-use sdl2::{render::Canvas, video::Window, pixels::Color};
-use image::{PngImage, KnownSize, ImageContainer};
-use drawable::{Drawable, Position, State, DrawSettings};
-use super::render::{register_equation, read_image, LatexIdx};
-
+use super::render::{read_image, register_equation, LatexIdx};
+use drawable::{DrawSettings, Drawable, Position, State};
+use image::{ImageContainer, KnownSize, PngImage};
+use sdl2::{pixels::Color, render::Canvas, video::Window};
 
 pub struct LatexObj {
     pub inner: Option<PngImage>,
@@ -77,16 +76,16 @@ impl LatexObj {
 impl Drawable for LatexObj {
     fn content(&self) -> Vec<&dyn Drawable> {
         if let Some(ref inner) = self.inner {
-            vec![ inner ]
+            vec![inner]
         } else {
-            vec![ ]
+            vec![]
         }
     }
     fn content_mut(&mut self) -> Vec<&mut dyn Drawable> {
         if let Some(ref mut inner) = self.inner {
-            vec![ inner ]
+            vec![inner]
         } else {
-            vec![ ]
+            vec![]
         }
     }
 
@@ -111,7 +110,10 @@ impl Drawable for LatexObj {
                     self.inner = Some(image);
                 }
                 Err(e) => {
-                    eprintln!("Couldn't load image for expression `{}`: {:?}", self.expr, e);
+                    eprintln!(
+                        "Couldn't load image for expression `{}`: {:?}",
+                        self.expr, e
+                    );
                 }
             }
         } else {
@@ -120,5 +122,7 @@ impl Drawable for LatexObj {
     }
 
     fn step(&mut self) {}
-    fn state(&self) -> State { State::Final }
+    fn state(&self) -> State {
+        State::Final
+    }
 }

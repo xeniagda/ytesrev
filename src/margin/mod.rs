@@ -1,9 +1,9 @@
-use sdl2::rect::{Rect, Point};
 use sdl2::pixels::Color;
+use sdl2::rect::{Point, Rect};
 use sdl2::render::Canvas;
 use sdl2::video::Window;
 
-use drawable::{Drawable, Position, State, DrawSettings};
+use drawable::{DrawSettings, Drawable, Position, State};
 use image::KnownSize;
 
 pub struct Margin<T: Drawable + KnownSize> {
@@ -11,12 +11,9 @@ pub struct Margin<T: Drawable + KnownSize> {
     pub inner: T,
 }
 
-impl <T: Drawable + KnownSize> Margin<T> {
+impl<T: Drawable + KnownSize> Margin<T> {
     pub fn new(margin: (u32, u32, u32, u32), inner: T) -> Margin<T> {
-        Margin {
-            margin,
-            inner,
-        }
+        Margin { margin, inner }
     }
     pub fn new_vert_hor(vertical: u32, horizontal: u32, inner: T) -> Margin<T> {
         Margin {
@@ -26,8 +23,7 @@ impl <T: Drawable + KnownSize> Margin<T> {
     }
 }
 
-impl <T: Drawable + KnownSize> Drawable for Margin<T> {
-
+impl<T: Drawable + KnownSize> Drawable for Margin<T> {
     fn content(&self) -> Vec<&dyn Drawable> {
         vec![&self.inner]
     }
@@ -55,15 +51,15 @@ impl <T: Drawable + KnownSize> Drawable for Margin<T> {
     fn draw(&mut self, canvas: &mut Canvas<Window>, pos: &Position, settings: DrawSettings) {
         match pos {
             Position::Rect(r) => {
-                let r2 =
-                    Rect::new(
-                        r.x() + self.margin.1 as i32,
-                        r.y() + self.margin.0 as i32,
-                        r.width()  - self.margin.1 - self.margin.3,
-                        r.height() - self.margin.0 - self.margin.2,
-                    );
+                let r2 = Rect::new(
+                    r.x() + self.margin.1 as i32,
+                    r.y() + self.margin.0 as i32,
+                    r.width() - self.margin.1 - self.margin.3,
+                    r.height() - self.margin.0 - self.margin.2,
+                );
 
-                if settings.notes_view { // TODO: Fewer expects
+                if settings.notes_view {
+                    // TODO: Fewer expects
                     canvas.set_draw_color(Color::RGB(0, 255, 0));
                     canvas.draw_rect(*r).expect("Can't draw");
                     canvas.set_draw_color(Color::RGB(255, 0, 0));
@@ -71,19 +67,23 @@ impl <T: Drawable + KnownSize> Drawable for Margin<T> {
 
                     canvas.set_draw_color(Color::RGB(0, 0, 255));
 
-                    let functions: [&dyn for<'r> Fn(&'r Rect) -> Point; 4] =
-                        [&Rect::top_left,
-                         &Rect::top_right,
-                         &Rect::bottom_left,
-                         &Rect::bottom_right];
+                    let functions: [&dyn for<'r> Fn(&'r Rect) -> Point; 4] = [
+                        &Rect::top_left,
+                        &Rect::top_right,
+                        &Rect::bottom_left,
+                        &Rect::bottom_right,
+                    ];
 
                     for f in &functions {
                         let p1 = f(r);
                         let p2 = f(&r2);
                         canvas.draw_line(p2, p1).expect("Can't draw");
-                        canvas.draw_line(p2, Point::new((p2.x() + p1.x()) / 2, p2.y())).expect("Can't draw");
-                        canvas.draw_line(p2, Point::new(p2.x(), (p2.y() + p1.y()) / 2)).expect("Can't draw");
-
+                        canvas
+                            .draw_line(p2, Point::new((p2.x() + p1.x()) / 2, p2.y()))
+                            .expect("Can't draw");
+                        canvas
+                            .draw_line(p2, Point::new(p2.x(), (p2.y() + p1.y()) / 2))
+                            .expect("Can't draw");
                     }
                 }
 
@@ -96,7 +96,7 @@ impl <T: Drawable + KnownSize> Drawable for Margin<T> {
     }
 }
 
-impl <T: Drawable + KnownSize> KnownSize for Margin<T> {
+impl<T: Drawable + KnownSize> KnownSize for Margin<T> {
     fn width(&self) -> usize {
         self.inner.width() + (self.margin.1 + self.margin.3) as usize
     }

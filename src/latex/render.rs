@@ -2,13 +2,13 @@ extern crate sdl2;
 
 use sdl2::pixels::Color;
 
-use std::sync::Mutex;
-use std::process::{Command, exit};
-use std::fs::{File, create_dir, remove_dir_all};
-use std::path::{Path, PathBuf};
-use std::io::{Result as IResult, Error, ErrorKind, Write};
-use std::time::Instant;
+use std::fs::{create_dir, remove_dir_all, File};
+use std::io::{Error, ErrorKind, Result as IResult, Write};
 use std::mem::drop;
+use std::path::{Path, PathBuf};
+use std::process::{exit, Command};
+use std::sync::Mutex;
+use std::time::Instant;
 
 use image::PngImage;
 
@@ -24,7 +24,8 @@ pub enum LatexError {
 pub struct LatexIdx(usize);
 
 lazy_static! {
-    static ref EQUATIONS: Mutex<Vec<(&'static str, bool, Option<PngImage>)>> = Mutex::new(Vec::new());
+    static ref EQUATIONS: Mutex<Vec<(&'static str, bool, Option<PngImage>)>> =
+        Mutex::new(Vec::new());
 }
 
 pub fn register_equation(equation: &'static str, is_text: bool) -> LatexIdx {
@@ -91,10 +92,8 @@ pub fn render_all_eqations() -> IResult<()> {
 }
 
 fn create_tex(tex_path: &Path) -> IResult<()> {
-
     let mut tex_file = File::create(tex_path)?;
     writeln!(tex_file, "{}", LATEX_PRELUDE)?;
-
 
     if let Ok(eqs) = EQUATIONS.lock() {
         for equation in eqs.iter() {
@@ -115,10 +114,10 @@ fn create_tex(tex_path: &Path) -> IResult<()> {
 
 fn render_tex(tex_path: &Path, pdf_path: &Path, crop_path: &Path, raw_path: &Path) -> IResult<()> {
     let out = Command::new("pdflatex")
-            .current_dir(tex_path.parent().unwrap())
-            .arg(tex_path.file_name().unwrap())
-            .output()
-            .expect("Can't make command");
+        .current_dir(tex_path.parent().unwrap())
+        .arg(tex_path.file_name().unwrap())
+        .output()
+        .expect("Can't make command");
 
     if !out.status.success() {
         eprintln!("Latex compile error:");
@@ -127,10 +126,10 @@ fn render_tex(tex_path: &Path, pdf_path: &Path, crop_path: &Path, raw_path: &Pat
     }
 
     let out = Command::new("pdfcrop")
-            .arg(pdf_path.as_os_str())
-            .arg(crop_path.as_os_str())
-            .output()
-            .expect("Can't make command");
+        .arg(pdf_path.as_os_str())
+        .arg(crop_path.as_os_str())
+        .output()
+        .expect("Can't make command");
 
     if !out.status.success() {
         eprintln!("pdfcrop error:");
@@ -139,13 +138,13 @@ fn render_tex(tex_path: &Path, pdf_path: &Path, crop_path: &Path, raw_path: &Pat
     }
 
     let out = Command::new("pdftoppm")
-            .arg(crop_path.as_os_str())
-            .arg(raw_path.as_os_str())
-            .arg("-r")
-            .arg("250")
-            .arg("-png")
-            .output()
-            .expect("Can't make command");
+        .arg(crop_path.as_os_str())
+        .arg(raw_path.as_os_str())
+        .arg("-r")
+        .arg("250")
+        .arg("-png")
+        .output()
+        .expect("Can't make command");
 
     if !out.status.success() {
         eprintln!("pdftoppm error");
@@ -167,11 +166,9 @@ fn read_pngs(path: &Path) -> IResult<()> {
             img_path.push(format!("tmp-crop-{}.png", num));
 
             *im = Some(
-                PngImage::load_from_path_transform(
-                    File::open(img_path)?,
-                    white_transparent)
-                .map_err(|e| Error::new(ErrorKind::InvalidData, e))
-                ?);
+                PngImage::load_from_path_transform(File::open(img_path)?, white_transparent)
+                    .map_err(|e| Error::new(ErrorKind::InvalidData, e))?,
+            );
         }
     }
     Ok(())
@@ -179,7 +176,12 @@ fn read_pngs(path: &Path) -> IResult<()> {
 
 fn white_transparent(col: Color) -> Color {
     let max_channel = col.r.min(col.g).min(col.b);
-    Color { r: 0, g: 0, b: 0, a: 255 - max_channel }
+    Color {
+        r: 0,
+        g: 0,
+        b: 0,
+        a: 255 - max_channel,
+    }
 }
 
 fn zero_pad(n: String, len: usize) -> String {

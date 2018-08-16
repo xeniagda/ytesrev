@@ -2,18 +2,18 @@ extern crate sdl2;
 
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
-use sdl2::render::Canvas;
 use sdl2::pixels::Color;
-use sdl2::video::Window;
 use sdl2::rect::Rect;
+use sdl2::render::Canvas;
+use sdl2::video::Window;
 use sdl2::EventPump;
 
-use std::time::{Duration, Instant};
 use std::thread::sleep;
+use std::time::{Duration, Instant};
 
-use scene::{Scene, Action};
-use latex::render_all_eqations;
 use drawable::{Position, SETTINGS_MAIN, SETTINGS_NOTES};
+use latex::render_all_eqations;
+use scene::{Action, Scene};
 
 const SIZE: (usize, usize) = (1200, 800);
 const BACKGROUND: (u8, u8, u8) = (255, 248, 234);
@@ -38,7 +38,6 @@ pub struct WindowManager {
     tick: usize,
 }
 
-
 struct TimeManager {
     last_time: Instant,
 
@@ -48,8 +47,8 @@ struct TimeManager {
 
 impl WindowManager {
     pub fn init_window(
-            mut curr_scene: Box<dyn Scene>,
-            mut other_scenes: Vec<Box<dyn Scene>>
+        mut curr_scene: Box<dyn Scene>,
+        mut other_scenes: Vec<Box<dyn Scene>>,
     ) -> WindowManager {
         // Load everything
 
@@ -69,11 +68,11 @@ impl WindowManager {
         }
         println!("Done!");
 
-
         let sdl_context = sdl2::init().unwrap();
         let video_subsystem = sdl_context.video().unwrap();
 
-        let main_window = video_subsystem.window("Ytesrev", SIZE.0 as u32, SIZE.1 as u32)
+        let main_window = video_subsystem
+            .window("Ytesrev", SIZE.0 as u32, SIZE.1 as u32)
             .position_centered()
             .resizable()
             .build()
@@ -83,7 +82,8 @@ impl WindowManager {
 
         let notes_canvas =
             if NOTES {
-                let notes_window = video_subsystem.window("Ytesrev - Notes", SIZE.0 as u32 / 2, SIZE.1 as u32 / 2)
+                let notes_window = video_subsystem
+                    .window("Ytesrev - Notes", SIZE.0 as u32 / 2, SIZE.1 as u32 / 2)
                     .position_centered()
                     .resizable()
                     .build()
@@ -92,7 +92,6 @@ impl WindowManager {
             } else {
                 None
             };
-
 
         let event_pump = sdl_context.event_pump().unwrap();
 
@@ -125,33 +124,33 @@ impl WindowManager {
 
                 for event in self.event_pump.poll_iter() {
                     match event {
-                        Event::Quit {..} |
-                        Event::KeyDown { keycode: Some(Keycode::Escape), .. } => {
-                            return false
-                        },
+                        Event::Quit { .. }
+                        | Event::KeyDown {
+                            keycode: Some(Keycode::Escape),
+                            ..
+                        } => return false,
                         _ => {}
                     }
 
-
                     match event {
-                        Event::KeyDown { keycode: Some(Keycode::Return), ..} => {
+                        Event::KeyDown {
+                            keycode: Some(Keycode::Return),
+                            ..
+                        } => {
                             if self.other_scenes.is_empty() {
                                 return false;
                             }
                             self.curr_scene = self.other_scenes.remove(0);
                         }
-                        Event::KeyDown { keycode: Some(Keycode::Space), ..}
-                        | Event::MouseButtonDown { ..} => {
-                            self.curr_scene.event(YEvent::Step)
+                        Event::KeyDown {
+                            keycode: Some(Keycode::Space),
+                            ..
                         }
-                        e => {
-                            self.curr_scene.event(YEvent::Other(e))
-                        }
+                        | Event::MouseButtonDown { .. } => self.curr_scene.event(YEvent::Step),
+                        e => self.curr_scene.event(YEvent::Other(e)),
                     };
-
                 }
-
-            },
+            }
             None => {
                 self.time_manager = Some(TimeManager::new());
             }
@@ -161,24 +160,35 @@ impl WindowManager {
     }
 
     pub fn draw(&mut self) {
-
-        self.canvas.set_draw_color(Color::RGBA(BACKGROUND.0, BACKGROUND.1, BACKGROUND.2, 255));
+        self.canvas
+            .set_draw_color(Color::RGBA(BACKGROUND.0, BACKGROUND.1, BACKGROUND.2, 255));
         self.canvas.clear();
 
         let (w, h) = self.canvas.window().size();
-        self.curr_scene.as_mut_drawable().draw(&mut self.canvas, &Position::Rect(Rect::new(0, 0, w, h)), SETTINGS_MAIN);
+        self.curr_scene.as_mut_drawable().draw(
+            &mut self.canvas,
+            &Position::Rect(Rect::new(0, 0, w, h)),
+            SETTINGS_MAIN,
+        );
 
         self.canvas.present();
 
         if let Some(ref mut notes_canvas) = self.notes_canvas {
             if self.tick % 5 == 0 {
-                notes_canvas.set_draw_color(Color::RGBA(BACKGROUND.0, BACKGROUND.1, BACKGROUND.2, 255));
+                notes_canvas.set_draw_color(Color::RGBA(
+                    BACKGROUND.0,
+                    BACKGROUND.1,
+                    BACKGROUND.2,
+                    255,
+                ));
                 notes_canvas.clear();
 
                 let (w, h) = notes_canvas.window().size();
-                self.curr_scene
-                    .as_mut_drawable()
-                    .draw(notes_canvas, &Position::Rect(Rect::new(0, 0, w, h)), SETTINGS_NOTES);
+                self.curr_scene.as_mut_drawable().draw(
+                    notes_canvas,
+                    &Position::Rect(Rect::new(0, 0, w, h)),
+                    SETTINGS_NOTES,
+                );
 
                 notes_canvas.present();
             }
@@ -203,7 +213,7 @@ impl TimeManager {
         TimeManager {
             last_time: Instant::now(),
             last_fps_print: Instant::now(),
-            durs: Vec::new()
+            durs: Vec::new(),
         }
     }
 
@@ -229,4 +239,3 @@ impl TimeManager {
         diff.as_secs() as f64 + diff.as_millis() as f64 / 1000.
     }
 }
-

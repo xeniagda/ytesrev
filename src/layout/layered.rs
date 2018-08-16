@@ -3,7 +3,7 @@ extern crate sdl2;
 use sdl2::render::Canvas;
 use sdl2::video::Window;
 
-use drawable::{Drawable, Position, State, DrawSettings};
+use drawable::{DrawSettings, Drawable, Position, State};
 
 /// I'm not sure why this is needed, but when just storing the dyn Drawable, the compiler complains about
 /// Layered::content_mut
@@ -14,7 +14,7 @@ pub trait Layerable: Drawable {
     fn as_drawable_mut(&mut self) -> &mut dyn Drawable;
 }
 
-impl <T: Drawable> Layerable for T {
+impl<T: Drawable> Layerable for T {
     fn as_drawable(&self) -> &dyn Drawable {
         self
     }
@@ -29,10 +29,7 @@ pub struct Layered {
 }
 
 impl Layered {
-    pub fn new(
-        update_seq: bool,
-        content: Vec<Box<dyn Layerable>>,
-    ) -> Layered {
+    pub fn new(update_seq: bool, content: Vec<Box<dyn Layerable>>) -> Layered {
         Layered {
             content,
             update_seq,
@@ -46,7 +43,10 @@ impl Drawable for Layered {
     }
 
     fn content_mut(&mut self) -> Vec<&mut dyn Drawable> {
-        self.content.iter_mut().map(|x| x.as_drawable_mut()).collect()
+        self.content
+            .iter_mut()
+            .map(|x| x.as_drawable_mut())
+            .collect()
     }
 
     fn draw(&mut self, canvas: &mut Canvas<Window>, pos: &Position, settings: DrawSettings) {
@@ -77,7 +77,10 @@ impl Drawable for Layered {
     }
 
     fn state(&self) -> State {
-        self.content.iter().map(|x| x.state()).min().unwrap_or(State::Hidden)
+        self.content
+            .iter()
+            .map(|x| x.state())
+            .min()
+            .unwrap_or(State::Hidden)
     }
 }
-

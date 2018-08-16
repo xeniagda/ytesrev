@@ -1,16 +1,15 @@
-extern crate sdl2;
 extern crate png;
-
+extern crate sdl2;
 
 use sdl2::pixels::Color;
-use sdl2::render::{Canvas, BlendMode};
+use sdl2::render::{BlendMode, Canvas};
 use sdl2::video::Window;
 
-use self::png::{Decoder, ColorType, DecodingError};
+use self::png::{ColorType, Decoder, DecodingError};
 
 use std::io::Read;
 
-use drawable::{Drawable, Position, State, DrawSettings};
+use drawable::{DrawSettings, Drawable, Position, State};
 
 #[derive(Clone)]
 pub struct PngImage {
@@ -26,9 +25,10 @@ impl PngImage {
     }
 
     #[allow(unused)]
-    pub fn load_from_path_transform<R: Read, F: Fn(Color) -> Color>(r: R, transform: F)
-            -> Result<Self, DecodingError>
-    {
+    pub fn load_from_path_transform<R: Read, F: Fn(Color) -> Color>(
+        r: R,
+        transform: F,
+    ) -> Result<Self, DecodingError> {
         let (info, mut reader) = Decoder::new(r).read_info()?;
 
         let (width, height) = (info.width as usize, info.height as usize);
@@ -40,11 +40,10 @@ impl PngImage {
                 assert_eq!(row.len(), width * info.color_type.samples());
 
                 for (x, col) in row.chunks(info.color_type.samples()).enumerate() {
-
                     let sdl_col = match info.color_type {
-                        ColorType::RGB  => { Color::RGB(col[0], col[1], col[2]) },
-                        ColorType::RGBA => { Color::RGBA(col[0], col[1], col[2], col[3]) },
-                        _ => { unimplemented!() }
+                        ColorType::RGB  => Color::RGB(col[0], col[1], col[2]),
+                        ColorType::RGBA => Color::RGBA(col[0], col[1], col[2], col[3]),
+                        _ => unimplemented!(),
                     };
 
                     let sdl_col = transform(sdl_col);
@@ -63,12 +62,15 @@ impl PngImage {
             data,
         })
     }
-
 }
 
 impl Drawable for PngImage {
-    fn content(&self) -> Vec<&dyn Drawable> { vec![] }
-    fn content_mut(&mut self) -> Vec<&mut dyn Drawable> { vec![] }
+    fn content(&self) -> Vec<&dyn Drawable> {
+        vec![]
+    }
+    fn content_mut(&mut self) -> Vec<&mut dyn Drawable> {
+        vec![]
+    }
 
     fn draw(&mut self, canvas: &mut Canvas<Window>, pos: &Position, _settings: DrawSettings) {
         let creator = canvas.texture_creator();
@@ -84,17 +86,13 @@ impl Drawable for PngImage {
 
         let rect = pos.into_rect_with_size_unbounded(self.width as u32, self.height as u32);
 
-        canvas
-            .copy(
-                &texture,
-                None,
-                rect,
-            )
-            .expect("Can't copy");
+        canvas.copy(&texture, None, rect).expect("Can't copy");
     }
 
     fn step(&mut self) {}
-    fn state(&self) -> State { State::Final }
+    fn state(&self) -> State {
+        State::Final
+    }
 }
 
 pub trait KnownSize: Drawable {
@@ -106,16 +104,28 @@ pub trait ImageContainer: KnownSize + Sized {
     fn get_data(&self) -> &Vec<u8>;
     fn get_data_mut(&mut self) -> &mut Vec<u8>;
     fn into_data(self) -> Vec<u8>;
-    fn as_knownsize(&self) -> &dyn KnownSize { self }
+    fn as_knownsize(&self) -> &dyn KnownSize {
+        self
+    }
 }
 
 impl KnownSize for PngImage {
-    fn width(&self)  -> usize { self.width  }
-    fn height(&self) -> usize { self.height }
+    fn width(&self) -> usize {
+        self.width
+    }
+    fn height(&self) -> usize {
+        self.height
+    }
 }
 
 impl ImageContainer for PngImage {
-    fn get_data(&self)         -> &Vec<u8>     { &self.data }
-    fn get_data_mut(&mut self) -> &mut Vec<u8> { &mut self.data }
-    fn into_data(self)         -> Vec<u8>      { self.data }
+    fn get_data(&self) -> &Vec<u8> {
+        &self.data
+    }
+    fn get_data_mut(&mut self) -> &mut Vec<u8> {
+        &mut self.data
+    }
+    fn into_data(self) -> Vec<u8> {
+        self.data
+    }
 }

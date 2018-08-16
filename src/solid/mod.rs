@@ -2,20 +2,16 @@ use sdl2::pixels::Color;
 use sdl2::render::Canvas;
 use sdl2::video::Window;
 
-use drawable::{Drawable, State, Position, DrawSettings};
-
+use drawable::{DrawSettings, Drawable, Position, State};
 
 pub struct Solid {
     pub color: Color,
-    shown: bool
+    shown: bool,
 }
 
 impl Solid {
     pub fn new_sdl2(color: Color) -> Solid {
-        Solid {
-            color,
-            shown: true,
-        }
+        Solid { color, shown: true }
     }
 
     pub fn new_rgba(r: u8, g: u8, b: u8, a: u8) -> Solid {
@@ -27,8 +23,12 @@ impl Solid {
 }
 
 impl Drawable for Solid {
-    fn content(&self) -> Vec<&dyn Drawable> { vec![] }
-    fn content_mut(&mut self) -> Vec<&mut dyn Drawable> { vec![] }
+    fn content(&self) -> Vec<&dyn Drawable> {
+        vec![]
+    }
+    fn content_mut(&mut self) -> Vec<&mut dyn Drawable> {
+        vec![]
+    }
 
     fn step(&mut self) {
         self.shown = false;

@@ -1,10 +1,9 @@
-use sdl2::rect::{Rect, Point};
+use sdl2::rect::{Point, Rect};
 use sdl2::render::Canvas;
 use sdl2::video::Window;
 
-use drawable::{Drawable, Position, State, DrawSettings};
+use drawable::{DrawSettings, Drawable, Position, State};
 use image::KnownSize;
-
 
 pub enum AnchorDirection {
     North,
@@ -23,16 +22,13 @@ pub struct Anchor<T: Drawable + KnownSize> {
     pub direction: AnchorDirection,
 }
 
-impl <T: Drawable + KnownSize> Anchor<T> {
+impl<T: Drawable + KnownSize> Anchor<T> {
     pub fn new(direction: AnchorDirection, inner: T) -> Anchor<T> {
-        Anchor {
-            direction,
-            inner,
-        }
+        Anchor { direction, inner }
     }
 }
 
-impl <T: Drawable + KnownSize> Drawable for Anchor<T> {
+impl<T: Drawable + KnownSize> Drawable for Anchor<T> {
     fn content(&self) -> Vec<&dyn Drawable> {
         vec![&self.inner]
     }
@@ -58,14 +54,13 @@ impl <T: Drawable + KnownSize> Drawable for Anchor<T> {
     }
 
     fn draw(&mut self, canvas: &mut Canvas<Window>, pos: &Position, settings: DrawSettings) {
-        let rect =
-            match pos {
-                Position::Rect(r) => r,
-                _ => {
-                    self.inner.draw(canvas, pos, settings);
-                    return;
-                }
-            };
+        let rect = match pos {
+            Position::Rect(r) => r,
+            _ => {
+                self.inner.draw(canvas, pos, settings);
+                return;
+            }
+        };
 
         let (iwidth, iheight) = (self.width() as i32, self.height() as i32);
         let (rwidth, rheight) = (rect.width() as i32, rect.height() as i32);
@@ -103,7 +98,7 @@ impl <T: Drawable + KnownSize> Drawable for Anchor<T> {
     }
 }
 
-impl <T: Drawable + KnownSize> KnownSize for Anchor<T> {
+impl<T: Drawable + KnownSize> KnownSize for Anchor<T> {
     fn width(&self) -> usize {
         self.inner.width()
     }

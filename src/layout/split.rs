@@ -1,11 +1,11 @@
 extern crate sdl2;
 
-use sdl2::rect::Rect;
 use sdl2::pixels::Color;
+use sdl2::rect::Rect;
 use sdl2::render::Canvas;
 use sdl2::video::Window;
 
-use drawable::{Drawable, Position, State, DrawSettings};
+use drawable::{DrawSettings, Drawable, Position, State};
 
 use super::Orientation;
 
@@ -24,7 +24,7 @@ pub struct SplitPrec<T: Drawable, U: Drawable> {
     pub second: U,
 }
 
-impl <T: Drawable, U: Drawable> SplitPrec<T, U> {
+impl<T: Drawable, U: Drawable> SplitPrec<T, U> {
     pub fn new(
         prec: f64,
         orientation: Orientation,
@@ -42,7 +42,7 @@ impl <T: Drawable, U: Drawable> SplitPrec<T, U> {
     }
 }
 
-impl <T: Drawable, U: Drawable> Drawable for SplitPrec<T, U> {
+impl<T: Drawable, U: Drawable> Drawable for SplitPrec<T, U> {
     fn content(&self) -> Vec<&dyn Drawable> {
         vec![&self.first, &self.second]
     }
@@ -60,12 +60,7 @@ impl <T: Drawable, U: Drawable> Drawable for SplitPrec<T, U> {
                 let (first_rect, second_rect) = match self.orientation {
                     Orientation::Vertical => {
                         let first_height = (rect.height() as f64 * self.prec) as u32;
-                        let first_rect = Rect::new(
-                            rect.x,
-                            rect.y,
-                            rect.width(),
-                            first_height
-                        );
+                        let first_rect = Rect::new(rect.x, rect.y, rect.width(), first_height);
                         let second_rect = Rect::new(
                             rect.x,
                             rect.y + first_height as i32,
@@ -76,12 +71,7 @@ impl <T: Drawable, U: Drawable> Drawable for SplitPrec<T, U> {
                     }
                     Orientation::Horisontal => {
                         let first_width = (rect.width() as f64 * self.prec) as u32;
-                        let first_rect = Rect::new(
-                            rect.x,
-                            rect.y,
-                            first_width,
-                            rect.height(),
-                        );
+                        let first_rect = Rect::new(rect.x, rect.y, first_width, rect.height());
                         let second_rect = Rect::new(
                             rect.x + first_width as i32,
                             rect.y,
@@ -92,8 +82,10 @@ impl <T: Drawable, U: Drawable> Drawable for SplitPrec<T, U> {
                     }
                 };
 
-                self.first.draw(canvas, &Position::Rect(first_rect), settings);
-                self.second.draw(canvas, &Position::Rect(second_rect), settings);
+                self.first
+                    .draw(canvas, &Position::Rect(first_rect), settings);
+                self.second
+                    .draw(canvas, &Position::Rect(second_rect), settings);
 
                 if settings.notes_view {
                     canvas.set_draw_color(Color::RGB(255, 0, 0));
