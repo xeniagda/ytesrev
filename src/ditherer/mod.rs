@@ -348,25 +348,28 @@ impl <T: ImageContainer> Drawable for Ditherer<T> {
 
                             let data = self.inner.get_data();
                             if settings.notes_view {
-                                let col =
+                                let nmult_min = 0.2;
+                                let nmult = mult * (1. - nmult_min) + nmult_min;
+
+                                let (r, g, b) =
                                     if self.dithering == DitherState::Nothing {
-                                        (0.5, 0.5, 0.5)
+                                        (1., nmult_min, nmult_min)
                                     } else if !self.is_dithered_in() {
-                                        (0.5, 1., 1.)
+                                        (1. - mult, nmult, nmult_min)
                                     } else if self.is_dithered_in() && self.dithering == DitherState::DitherIn {
-                                        (0.5, 1., 0.5)
+                                        (0., 1., nmult_min)
                                     } else if self.dithering == DitherState::DitherOut {
-                                        (1., 1., 0.5)
+                                        (0., mult, 1. - nmult)
                                     } else {
-                                        (1., 0.5, 0.5)
+                                        (0., 0., 1.)
                                     };
 
                                 let avg = data[idx] / 3 + data[idx + 1] / 3 + data[idx + 2] / 3;
 
-                                cached[idx    ] = (255. - (col.0 * (255. - (mult * 0.5 + 0.5) * avg as f64))) as u8;
-                                cached[idx + 1] = (255. - (col.1 * (255. - (mult * 0.5 + 0.5) * avg as f64))) as u8;
-                                cached[idx + 2] = (255. - (col.2 * (255. - (mult * 0.5 + 0.5) * avg as f64))) as u8;
-                                cached[idx + 3] = ((mult * 0.5 + 0.5) * data[idx + 3] as f64) as u8;
+                                cached[idx    ] = (b * (255. - avg as f64)) as u8;
+                                cached[idx + 1] = (g * (255. - avg as f64)) as u8;
+                                cached[idx + 2] = (r * (255. - avg as f64)) as u8;
+                                cached[idx + 3] = (data[idx + 3] as f64) as u8;
                             } else {
                                 cached[idx    ] = (mult * data[idx    ] as f64) as u8;
                                 cached[idx + 1] = (mult * data[idx + 1] as f64) as u8;

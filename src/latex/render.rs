@@ -142,7 +142,7 @@ fn render_tex(tex_path: &Path, pdf_path: &Path, crop_path: &Path, raw_path: &Pat
             .arg(crop_path.as_os_str())
             .arg(raw_path.as_os_str())
             .arg("-r")
-            .arg("300")
+            .arg("250")
             .arg("-png")
             .output()
             .expect("Can't make command");
