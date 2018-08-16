@@ -1,4 +1,5 @@
 use sdl2::rect::Rect;
+use sdl2::pixels::Color;
 use sdl2::render::Canvas;
 use sdl2::video::Window;
 
@@ -61,6 +62,20 @@ impl <T: Drawable + KnownSize> Drawable for Margin<T> {
                         r.width()  - self.margin.1 - self.margin.3,
                         r.height() - self.margin.0 - self.margin.2,
                     );
+
+                if settings.notes_view { // TODO: Fewer expects
+                    canvas.set_draw_color(Color::RGB(0, 255, 0));
+                    canvas.draw_rect(*r).expect("Can't draw");
+                    canvas.set_draw_color(Color::RGB(255, 0, 0));
+                    canvas.draw_rect(r2).expect("Can't draw");
+
+                    canvas.set_draw_color(Color::RGB(0, 0, 255));
+                    canvas.draw_line(r.top_left(), r2.top_left()).expect("Can't draw");
+                    canvas.draw_line(r.top_right(), r2.top_right()).expect("Can't draw");
+                    canvas.draw_line(r.bottom_left(), r2.bottom_left()).expect("Can't draw");
+                    canvas.draw_line(r.bottom_right(), r2.bottom_right()).expect("Can't draw");
+                }
+
                 self.inner.draw(canvas, &Position::Rect(r2), settings);
             }
             _ => {
