@@ -95,7 +95,7 @@ impl <T: Drawable, U: Drawable> Drawable for SplitPrec<T, U> {
                 self.first.draw(canvas, &Position::Rect(first_rect), settings);
                 self.second.draw(canvas, &Position::Rect(second_rect), settings);
 
-                if super::DRAW_BOXES {
+                if settings.notes_view {
                     canvas.set_draw_color(Color::RGB(255, 0, 0));
                     canvas.draw_rect(first_rect).expect("Can't draw");
                     canvas.draw_rect(second_rect).expect("Can't draw");

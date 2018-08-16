@@ -62,7 +62,7 @@ impl <'a> Drawable for Stack {
     fn draw(&mut self, canvas: &mut Canvas<Window>, pos: &Position, settings: DrawSettings) {
         let rect = pos.into_rect_with_size(self.width() as u32, self.height() as u32);
         let corner = rect.top_left();
-        if super::DRAW_BOXES {
+        if settings.notes_view {
             canvas.set_draw_color(Color::RGB(0, 255, 0));
             canvas.draw_rect(rect).expect("Can't draw");
         }
@@ -85,7 +85,7 @@ impl <'a> Drawable for Stack {
                         };
                     let pos = Position::TopLeftCorner(corner);
 
-                    if super::DRAW_BOXES {
+                    if settings.notes_view {
                         canvas.set_draw_color(Color::RGB(255, 0, 0));
                         canvas.draw_rect(
                             pos.into_rect_with_size(obj.width() as u32, obj.height() as u32)
@@ -111,7 +111,7 @@ impl <'a> Drawable for Stack {
                         };
                     let pos = Position::TopLeftCorner(corner);
 
-                    if super::DRAW_BOXES {
+                    if settings.notes_view {
                         canvas.set_draw_color(Color::RGB(255, 0, 0));
                         canvas.draw_rect(
                             pos.into_rect_with_size(obj.width() as u32, obj.height() as u32)
