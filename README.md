@@ -18,17 +18,20 @@ pretty much constant, where ytesrev has to have a dynamic layout engine and an e
 
 ## Usage
 
-An example of a presentation with ytesrev can be found in the `src/main.rs` file. ytesrev will become more of a library
-in the future, but currently to use this you have to clone the repository and modify the source. This will be changed in the
-future.
+Check out the `src/example/` folder.
 
 
 ## Project structure
 
-* `src/window/`: Contains the `WindowManager` which is responsible for creating the window, managing events and timings and keeping track of the slides
-* `src/scene/`: Abstract definitions of a scene (slide) and a wrapper for `Drawable`s
+* `src/anchor/`: To keep things anchored to one side of the screen
+* `src/ditherer/`: To create those cool text 'whoosh' effects
 * `src/drawable/` Abstract definitions of drawable objects as well as drawing positions
-* `src/layout/`: Definitions and implementations of layouts (stacking and splitting)
+* `src/empty/`: The empty object
 * `src/image/`: Loading PNGs
 * `src/latex/`: Rendering LaTeX expressions
-* `src/ditherer/`: To create those cool text 'whoosh' effects
+* `src/layout/`: Definitions and implementations of layouts (stacking and splitting)
+* `src/margin/`: To give some object a margin
+* `src/scene/`: Abstract definitions of a scene (slide) and a wrapper for `Drawable`s
+* `src/solid/`: A rectangle of a solid color
+* `src/window/`: Contains the `WindowManager` which is responsible for creating the window, managing events and timings and keeping track of the slides
+* `src/withsize/`: Give an object a constant size
