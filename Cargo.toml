@@ -2,6 +2,15 @@
 name = "ytesrev"
 version = "0.1.0"
 authors = ["loovjo <jonathan.loov@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+keywords = ["presentation", "graphics"]
+repository = "https://github.com/loovjo/ytesrev"
+homepage = "https://github.com/loovjo/ytesrev"
+documentation = "docs.rs/ytesrev/0.1.0/ytesrev"
+description = """
+A presentation tool written in rust, based on sdl2
+"""
 
 [lib]
 name = "ytesrev"
@@ -12,7 +21,7 @@ name = "ytesrev-sample"
 path = "src/example/showcase.rs"
 
 [dependencies]
-sdl2 = "0.31.0"
-rand = "0.5.4"
-png = "0.12.0"
-lazy_static = "1.0.2"
+sdl2 = "0.31"
+rand = "0.5"
+png = "0.12"
+lazy_static = "1.0"
