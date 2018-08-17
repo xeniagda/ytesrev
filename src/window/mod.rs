@@ -242,13 +242,13 @@ impl TimeManager {
 
             let avg_dur: Duration = self.durs.drain(..).sum::<Duration>() / num_dur;
 
-            let fps = Duration::from_secs(1).as_millis() as f64 / avg_dur.as_millis() as f64;
+            let fps = 1. / (avg_dur.as_secs() as f64 + avg_dur.subsec_millis() as f64 / 1000.);
 
             eprintln!("FPS: {:.2}", fps);
 
             self.last_fps_print = now;
         }
 
-        diff.as_secs() as f64 + diff.as_millis() as f64 / 1000.
+        diff.as_secs() as f64 + diff.subsec_millis() as f64 / 1000.
     }
 }

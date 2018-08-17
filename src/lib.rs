@@ -6,8 +6,6 @@
 //! [manim]: https://github.com/3b1b/manim
 
 
-#![feature(duration_as_u128)]
-
 #![warn(missing_docs)]
 
 #[macro_use]
