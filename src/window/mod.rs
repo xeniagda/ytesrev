@@ -71,16 +71,16 @@ impl WindowManager {
             scene.as_mut_drawable().register();
         }
 
-        println!("Loading...");
+        eprintln!("Loading...");
         render_all_equations().expect("Can't render!");
 
-        println!("Scene 1...");
+        eprintln!("Scene 1...");
         curr_scene.as_mut_drawable().load();
         for (i, scene) in other_scenes.iter_mut().enumerate() {
-            println!("Scene {}...", i + 2);
+            eprintln!("Scene {}...", i + 2);
             scene.as_mut_drawable().load();
         }
-        println!("Done!");
+        eprintln!("Done!");
 
         let sdl_context = sdl2::init().unwrap();
         let video_subsystem = sdl_context.video().unwrap();
