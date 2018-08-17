@@ -1,3 +1,5 @@
+//! Manage the windows on screen
+
 extern crate sdl2;
 
 use sdl2::event::Event;
@@ -12,7 +14,7 @@ use std::thread::sleep;
 use std::time::{Duration, Instant};
 
 use drawable::{Position, SETTINGS_MAIN, SETTINGS_NOTES};
-use latex::render_all_eqations;
+use latex::render::render_all_equations;
 use scene::{Action, Scene};
 
 const SIZE: (usize, usize) = (1200, 800);
@@ -21,17 +23,26 @@ const FPS_PRINT_RATE: Duration = Duration::from_millis(1000);
 
 const NOTES: bool = true;
 
+/// An event. Passed into the `Drawable::event` and `Scene::event` functions
 pub enum YEvent {
+    /// A special event that is emmitted when the user advances the state of the presentation
     Step,
+    /// Anything else
     Other(Event),
 }
 
+/// The manager of the entire presentation.
 pub struct WindowManager {
+    /// The canvas of the main window
     pub canvas: Canvas<Window>,
+    /// The (optinal) canvas of the notes window
     pub notes_canvas: Option<Canvas<Window>>,
+    /// The event pump
     pub event_pump: EventPump,
 
+    /// A list of the scenes that is not currently presented, or has been presented, in order
     pub other_scenes: Vec<Box<dyn Scene>>,
+    /// The current scene that is being presented
     pub curr_scene: Box<dyn Scene>,
 
     time_manager: Option<TimeManager>,
@@ -46,6 +57,9 @@ struct TimeManager {
 }
 
 impl WindowManager {
+    /// Create a window manager
+    ///
+    /// This loads all scences and creates the main and notes window
     pub fn init_window(
         mut curr_scene: Box<dyn Scene>,
         mut other_scenes: Vec<Box<dyn Scene>>,
@@ -58,7 +72,7 @@ impl WindowManager {
         }
 
         println!("Loading...");
-        render_all_eqations().expect("Can't render!");
+        render_all_equations().expect("Can't render!");
 
         println!("Scene 1...");
         curr_scene.as_mut_drawable().load();
@@ -106,7 +120,7 @@ impl WindowManager {
         }
     }
 
-    pub fn process_events(&mut self) -> bool {
+    fn process_events(&mut self) -> bool {
         match &mut self.time_manager {
             Some(ref mut tm) => {
                 let dt = tm.dt();
@@ -159,7 +173,7 @@ impl WindowManager {
         true
     }
 
-    pub fn draw(&mut self) {
+    fn draw(&mut self) {
         self.canvas
             .set_draw_color(Color::RGBA(BACKGROUND.0, BACKGROUND.1, BACKGROUND.2, 255));
         self.canvas.clear();
@@ -195,6 +209,8 @@ impl WindowManager {
         }
     }
 
+    /// Starts the entire presentation. This will block the current thread until the presentation
+    /// has ended.
     pub fn start(&mut self) {
         loop {
             self.tick += 1;

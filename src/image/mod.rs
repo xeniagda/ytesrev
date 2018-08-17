@@ -1,3 +1,5 @@
+//! Utilities to load PNG images
+
 extern crate png;
 extern crate sdl2;
 
@@ -9,22 +11,28 @@ use self::png::{ColorType, Decoder, DecodingError};
 
 use std::io::Read;
 
-use drawable::{DrawSettings, Drawable, Position, State};
+use drawable::{DrawSettings, Drawable, Position, State, KnownSize};
 
+/// A PNG image. Currently only supports RGB and RGBA color types
 #[derive(Clone)]
 pub struct PngImage {
+    /// The width of the image
     pub width: usize,
+    /// The height of the image
     pub height: usize,
+    /// The data in the image, stored in chunks of 4 per pixel, containing the image in ABGR order
     pub data: Vec<u8>,
 }
 
 impl PngImage {
-    #[allow(unused)]
+    /// Load an image from a specified source.
     pub fn load_from_path<R: Read>(r: R) -> Result<Self, DecodingError> {
         PngImage::load_from_path_transform(r, |x| x)
     }
 
-    #[allow(unused)]
+    /// Load an image and apply a function to each pixel. Mostly used by [`LatexObj`] to fix alpha
+    ///
+    /// [`LatexObj`]: ../latex/latex_obj/struct.LatexObj.html
     pub fn load_from_path_transform<R: Read, F: Fn(Color) -> Color>(
         r: R,
         transform: F,
@@ -95,15 +103,19 @@ impl Drawable for PngImage {
     }
 }
 
-pub trait KnownSize: Drawable {
-    fn width(&self)  -> usize;
-    fn height(&self) -> usize;
-}
-
+/// Something that can act as, or contains, an image.
 pub trait ImageContainer: KnownSize + Sized {
+    /// Retrieve the data in the image
     fn get_data(&self) -> &Vec<u8>;
+
+    /// Retrieve the data in the image, mutably
     fn get_data_mut(&mut self) -> &mut Vec<u8>;
+
+    /// Retrieve the data in the image, consuming the object
     fn into_data(self) -> Vec<u8>;
+
+    /// Convert the object to a dynamic KnownSize object, as rust doesn't support calling KnownSize
+    /// -methods directly on this object
     fn as_knownsize(&self) -> &dyn KnownSize {
         self
     }

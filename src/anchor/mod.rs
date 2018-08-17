@@ -1,10 +1,13 @@
+//! An anchor that sticks an object to a specific side or corner of the screen
+
 use sdl2::rect::{Point, Rect};
 use sdl2::render::Canvas;
 use sdl2::video::Window;
 
-use drawable::{DrawSettings, Drawable, Position, State};
-use image::KnownSize;
+use drawable::{DrawSettings, Drawable, Position, State, KnownSize};
 
+/// The direction to anchor the object to
+#[allow(missing_docs)]
 pub enum AnchorDirection {
     North,
     East,
@@ -17,12 +20,16 @@ pub enum AnchorDirection {
     NorthWest,
 }
 
+/// An anchor instance
 pub struct Anchor<T: Drawable + KnownSize> {
+    /// The inner object to be anchored
     pub inner: T,
+    /// The direction to anchor to
     pub direction: AnchorDirection,
 }
 
 impl<T: Drawable + KnownSize> Anchor<T> {
+    /// Create a new Anchor instance
     pub fn new(direction: AnchorDirection, inner: T) -> Anchor<T> {
         Anchor { direction, inner }
     }

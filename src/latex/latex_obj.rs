@@ -1,14 +1,21 @@
+//! Register and load LaTeX in a high level way
+
 extern crate sdl2;
 
 use super::render::{read_image, register_equation, LatexIdx};
-use drawable::{DrawSettings, Drawable, Position, State};
-use image::{ImageContainer, KnownSize, PngImage};
+use drawable::{DrawSettings, Drawable, Position, State, KnownSize};
+use image::{ImageContainer, PngImage};
 use sdl2::{pixels::Color, render::Canvas, video::Window};
 
+/// Represents a LaTeX expression. When loaded, this will create a PNG of the expression and load
+/// it.
 pub struct LatexObj {
+    /// The rendered document
     pub inner: Option<PngImage>,
-    pub id: Option<LatexIdx>,
+    id: Option<LatexIdx>,
+    /// The LaTeX expression that will be rendered
     pub expr: &'static str,
+    /// A LaTeX expression can either be text or math, with math being surrounded by dollar sings
     pub is_text: bool,
 }
 
@@ -54,6 +61,15 @@ impl ImageContainer for LatexObj {
 }
 
 impl LatexObj {
+    /// Create a LaTeX object containing math
+    ///
+    /// ```
+    /// use ytesrev::latex::LatexObj;
+    ///
+    /// let e_mc2 = LatexObj::math("E = mc^2");
+    /// assert!(!e_mc2.is_text);
+    /// assert_eq!(e_mc2.expr, "E = mc^2");
+    /// ```
     pub fn math(expr: &'static str) -> LatexObj {
         LatexObj {
             inner: None,
@@ -63,6 +79,15 @@ impl LatexObj {
         }
     }
 
+    /// Create a LaTeX object containing text
+    ///
+    /// ```
+    /// use ytesrev::latex::LatexObj;
+    ///
+    /// let lorem = LatexObj::text("Lorem Ipsum");
+    /// assert!(lorem.is_text);
+    /// assert_eq!(lorem.expr, "Lorem Ipsum");
+    /// ```
     pub fn text(expr: &'static str) -> LatexObj {
         LatexObj {
             inner: None,

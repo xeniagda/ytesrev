@@ -1,15 +1,20 @@
+//! Make an object have a static size
+
 use sdl2::render::Canvas;
 use sdl2::video::Window;
 
-use drawable::{DrawSettings, Drawable, Position, State};
-use image::KnownSize;
+use drawable::{DrawSettings, Drawable, Position, State, KnownSize};
 
+/// A wrapper that makes an object have a known size
 pub struct WithSize<T: Drawable> {
+    /// The size of the object
     pub size: (u32, u32),
+    /// The inner object
     pub inner: T,
 }
 
 impl<T: Drawable> WithSize<T> {
+    /// Create a new WithSize wrapper
     pub fn new(size: (u32, u32), inner: T) -> WithSize<T> {
         WithSize { size, inner }
     }

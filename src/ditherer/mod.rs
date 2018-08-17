@@ -1,3 +1,5 @@
+//! A dithering effect, useful for fading images and text, in and out.
+
 use std::cell::Cell;
 use std::{f64, u64};
 
@@ -6,8 +8,8 @@ use sdl2::video::Window;
 
 use super::rand::{thread_rng, Rng};
 
-use drawable::{DrawSettings, Drawable, Position, State};
-use image::{ImageContainer, KnownSize};
+use drawable::{DrawSettings, Drawable, Position, State, KnownSize};
+use image::ImageContainer;
 
 const DITHER_SPEED: f64 = 350.;
 const DITHER_ALPHA_SPEED: f64 = 140.;
@@ -20,8 +22,9 @@ enum DitherState {
     DitherOut,
 }
 
+/// The direction to dither
 #[derive(PartialEq, Copy, Clone)]
-#[allow(unused)]
+#[allow(unused,missing_docs)]
 pub enum DitherDirection {
     Leftwards,
     Rightwards,
@@ -32,6 +35,7 @@ pub enum DitherDirection {
 }
 
 impl DitherDirection {
+    /// At what time should this pixel be faded in?
     pub fn value(&self, pos: (usize, usize), size: (usize, usize)) -> usize {
         match self {
             DitherDirection::Rightwards => pos.0,
@@ -48,6 +52,8 @@ impl DitherDirection {
     }
 }
 
+/// A dithering function that is useful for images with transparency in them, fading regions with
+/// high alpha gradient first
 pub fn alpha_dither_fn<T: ImageContainer + KnownSize>(image: &T, (x, y): (usize, usize)) -> u64 {
     let alpha = move |x: usize, y: usize| {
         let x = x.max(0).min(image.width() - 1);
@@ -61,6 +67,7 @@ pub fn alpha_dither_fn<T: ImageContainer + KnownSize>(image: &T, (x, y): (usize,
     delta_alpha_y.max(delta_alpha_x) as u64
 }
 
+/// A dithering function that dithers based on color deviation gradient
 pub fn color_dither_fn<T: ImageContainer + KnownSize>(img: &T, pos: (usize, usize)) -> u64 {
     let r = img.get_data()[(pos.1 * img.width() + pos.0) * 4    ] as f64;
     let g = img.get_data()[(pos.1 * img.width() + pos.0) * 4 + 1] as f64;
@@ -74,14 +81,21 @@ pub fn color_dither_fn<T: ImageContainer + KnownSize>(img: &T, pos: (usize, usiz
     dev as u64
 }
 
+/// The ditherer itself. The inner type `T` is the thing to be dithered
 pub struct Ditherer<T: ImageContainer + 'static> {
+    /// The inner object to be dithered
     pub inner: T,
+    /// The time each pixel will be dithered in
     pub dither: Option<Vec<Vec<u64>>>,
     max_time: u64,
     cached: Cell<Vec<u8>>,
+    /// How long the ditherer has been dithering in for
     pub dither_in_time: f64,
+    /// How long the ditherer has been dithering out for
     pub dither_out_time: f64,
+    /// The function to determine what regionso to dither first
     pub dither_fn: Box<Fn(&T, (usize, usize)) -> u64>,
+    /// The direction to dither in
     pub direction: DitherDirection,
     dithering: DitherState,
 }
@@ -108,7 +122,8 @@ impl<T: ImageContainer + KnownSize> ImageContainer for Ditherer<T> {
 }
 
 impl<T: ImageContainer> Ditherer<T> {
-    pub fn dithered_out(inner: T) -> Ditherer<T> {
+    /// Create a new ditherer instance
+    pub fn new(inner: T) -> Ditherer<T> {
         let dither = None;
 
         Ditherer {
@@ -124,6 +139,7 @@ impl<T: ImageContainer> Ditherer<T> {
         }
     }
 
+    /// Create a new ditherer that is already dithered in
     pub fn dithered_in(inner: T) -> Ditherer<T> {
         let dither = None;
 
@@ -140,6 +156,7 @@ impl<T: ImageContainer> Ditherer<T> {
         }
     }
 
+    /// Convert a ditherer to use a specific dither function
     pub fn with_dither_fn<F: Fn(&T, (usize, usize)) -> u64>(self, f: F) -> Ditherer<T>
     where
         F: 'static,
@@ -150,6 +167,7 @@ impl<T: ImageContainer> Ditherer<T> {
         }
     }
 
+    /// Convert a ditherer to use a specific direction function
     pub fn with_direction(self, dir: DitherDirection) -> Ditherer<T> {
         Ditherer {
             direction: dir,
@@ -157,18 +175,22 @@ impl<T: ImageContainer> Ditherer<T> {
         }
     }
 
+    /// Start dither in this object
     pub fn dither_in(&mut self) {
         self.dithering = DitherState::DitherIn;
     }
 
+    /// Start dither out this object
     pub fn dither_out(&mut self) {
         self.dithering = DitherState::DitherOut;
     }
 
+    /// Is the ditherer dithered in?
     fn is_dithered_in(&self) -> bool {
         self.dither_in_time * DITHER_SPEED > self.max_time as f64
     }
 
+    /// Is the ditherer dithered out?
     fn is_dithered_out(&self) -> bool {
         self.dither_out_time * DITHER_SPEED > self.max_time as f64
     }

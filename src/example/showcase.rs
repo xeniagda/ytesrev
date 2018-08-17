@@ -1,3 +1,5 @@
+#![allow(missing_docs)]
+
 extern crate ytesrev;
 
 use std::fs::File;
@@ -25,20 +27,20 @@ fn make_first_scene() -> impl Scene {
         ElementPositioning::Centered,
         true,
         vec![
-            Box::new(Ditherer::dithered_out(LatexObj::text("Thing 1"))),
-            Box::new(Ditherer::dithered_out(LatexObj::text("Thing 2"))),
+            Box::new(Ditherer::new(LatexObj::text("Thing 1"))),
+            Box::new(Ditherer::new(LatexObj::text("Thing 2"))),
             Box::new(WithSize::new((0, 40), Empty)),
-            Box::new(Ditherer::dithered_out(LatexObj::text(
+            Box::new(Ditherer::new(LatexObj::text(
                 "Thing 3 - a bit down",
             ))),
             Box::new(Stack::new(
                 100,
-                Orientation::Horisontal,
+                Orientation::Horizontal,
                 ElementPositioning::TopLeftCornered,
                 true,
                 vec![
-                    Box::new(Ditherer::dithered_out(LatexObj::text("Stack"))),
-                    Box::new(Ditherer::dithered_out(LatexObj::text("\\emph{in} a stack"))),
+                    Box::new(Ditherer::new(LatexObj::text("Stack"))),
+                    Box::new(Ditherer::new(LatexObj::text("\\emph{in} a stack"))),
                 ],
             )),
         ],
@@ -55,7 +57,7 @@ fn make_second_scene() -> impl Scene {
             false,
             vec![
                 Box::new(Solid::new_rgba(255, 0, 0, 255)),
-                Box::new(Ditherer::dithered_out(LatexObj::math(
+                Box::new(Ditherer::new(LatexObj::math(
                     "sin^2\\theta + cos^2\\theta = 1",
                 ))),
             ],
@@ -71,15 +73,15 @@ fn make_third_scene() -> impl Scene {
         Ditherer::dithered_in(LatexObj::text("\\huge Third page")),
         Stack::new(
             0,
-            Orientation::Horisontal,
+            Orientation::Horizontal,
             ElementPositioning::TopLeftCornered,
             false,
             vec![
-                Box::new(Ditherer::dithered_out(LatexObj::text(
+                Box::new(Ditherer::new(LatexObj::text(
                     "Cool image $ \\Rightarrow $",
                 ))),
                 Box::new(
-                    Ditherer::dithered_out(
+                    Ditherer::new(
                         PngImage::load_from_path(File::open("image.png").unwrap()).unwrap(),
                     ).with_dither_fn(color_dither_fn)
                     .with_direction(DitherDirection::Outwards),
@@ -98,7 +100,7 @@ fn make_fourth_scene() -> impl Scene {
                 40,
                 Anchor::new(
                     AnchorDirection::North,
-                    Ditherer::dithered_out(LatexObj::text("North")),
+                    Ditherer::new(LatexObj::text("North")),
                 ),
             )),
             Box::new(Margin::new_vert_hor(
@@ -106,7 +108,7 @@ fn make_fourth_scene() -> impl Scene {
                 40,
                 Anchor::new(
                     AnchorDirection::East,
-                    Ditherer::dithered_out(LatexObj::text("East")),
+                    Ditherer::new(LatexObj::text("East")),
                 ),
             )),
             Box::new(Margin::new_vert_hor(
@@ -114,7 +116,7 @@ fn make_fourth_scene() -> impl Scene {
                 40,
                 Anchor::new(
                     AnchorDirection::South,
-                    Ditherer::dithered_out(LatexObj::text("South")),
+                    Ditherer::new(LatexObj::text("South")),
                 ),
             )),
             Box::new(Margin::new_vert_hor(
@@ -122,7 +124,7 @@ fn make_fourth_scene() -> impl Scene {
                 40,
                 Anchor::new(
                     AnchorDirection::West,
-                    Ditherer::dithered_out(LatexObj::text("West")),
+                    Ditherer::new(LatexObj::text("West")),
                 ),
             )),
             Box::new(Margin::new_vert_hor(
@@ -130,7 +132,7 @@ fn make_fourth_scene() -> impl Scene {
                 40,
                 Anchor::new(
                     AnchorDirection::NorthEast,
-                    Ditherer::dithered_out(LatexObj::text("NorthEast")),
+                    Ditherer::new(LatexObj::text("NorthEast")),
                 ),
             )),
             Box::new(Margin::new_vert_hor(
@@ -138,7 +140,7 @@ fn make_fourth_scene() -> impl Scene {
                 40,
                 Anchor::new(
                     AnchorDirection::SouthEast,
-                    Ditherer::dithered_out(LatexObj::text("SouthEast")),
+                    Ditherer::new(LatexObj::text("SouthEast")),
                 ),
             )),
             Box::new(Margin::new_vert_hor(
@@ -146,7 +148,7 @@ fn make_fourth_scene() -> impl Scene {
                 40,
                 Anchor::new(
                     AnchorDirection::SouthWest,
-                    Ditherer::dithered_out(LatexObj::text("SouthWest")),
+                    Ditherer::new(LatexObj::text("SouthWest")),
                 ),
             )),
             Box::new(Margin::new_vert_hor(
@@ -154,7 +156,7 @@ fn make_fourth_scene() -> impl Scene {
                 40,
                 Anchor::new(
                     AnchorDirection::NorthWest,
-                    Ditherer::dithered_out(LatexObj::text("NorthWest")),
+                    Ditherer::new(LatexObj::text("NorthWest")),
                 ),
             )),
         ],

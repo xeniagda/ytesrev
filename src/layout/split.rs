@@ -1,3 +1,5 @@
+//! Split a region into two parts
+
 extern crate sdl2;
 
 use sdl2::pixels::Color;
@@ -9,22 +11,30 @@ use drawable::{DrawSettings, Drawable, Position, State};
 
 use super::Orientation;
 
-#[allow(unused)]
+/// The order to update the content in
+#[allow(missing_docs)]
 pub enum UpdateOrder {
     Simultaneous,
     FirstSecond,
     SecondFirst,
 }
 
+/// A split at a centain percent
 pub struct SplitPrec<T: Drawable, U: Drawable> {
+    /// The split raito (must be between 0 and 1)
     pub prec: f64,
+    /// The orientation to split
     pub orientation: Orientation,
+    /// The stepping order
     pub order: UpdateOrder,
+    /// The first content
     pub first: T,
+    /// The second content
     pub second: U,
 }
 
 impl<T: Drawable, U: Drawable> SplitPrec<T, U> {
+    /// Create a new SplitPrec
     pub fn new(
         prec: f64,
         orientation: Orientation,
@@ -69,7 +79,7 @@ impl<T: Drawable, U: Drawable> Drawable for SplitPrec<T, U> {
                         );
                         (first_rect, second_rect)
                     }
-                    Orientation::Horisontal => {
+                    Orientation::Horizontal => {
                         let first_width = (rect.width() as f64 * self.prec) as u32;
                         let first_rect = Rect::new(rect.x, rect.y, first_width, rect.height());
                         let second_rect = Rect::new(

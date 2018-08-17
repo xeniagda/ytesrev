@@ -1,20 +1,28 @@
+//! Give an object a margin
+
 use sdl2::pixels::Color;
 use sdl2::rect::{Point, Rect};
 use sdl2::render::Canvas;
 use sdl2::video::Window;
 
-use drawable::{DrawSettings, Drawable, Position, State};
-use image::KnownSize;
+use drawable::{DrawSettings, Drawable, Position, State, KnownSize};
 
+/// A wrapper around a Drawable with KnownSize, giving it a margin on all sides
 pub struct Margin<T: Drawable + KnownSize> {
-    pub margin: (u32, u32, u32, u32), // Top, right, bottom, left
+    /// The margin: (top, right, bottom, left)
+    pub margin: (u32, u32, u32, u32),
+    /// The thing to be marginalized
     pub inner: T,
 }
 
 impl<T: Drawable + KnownSize> Margin<T> {
+    /// Create a new Margin
     pub fn new(margin: (u32, u32, u32, u32), inner: T) -> Margin<T> {
         Margin { margin, inner }
     }
+
+    /// Create a new Margin with the same top and bottom, as well as the same left and
+    /// right
     pub fn new_vert_hor(vertical: u32, horizontal: u32, inner: T) -> Margin<T> {
         Margin {
             margin: (vertical, horizontal, vertical, horizontal),

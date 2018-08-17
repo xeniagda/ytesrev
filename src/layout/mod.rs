@@ -1,9 +1,22 @@
+//! Positioning objects on the screen
+
 pub mod layered;
 pub mod split;
 pub mod stack;
 
-#[allow(unused)]
+/// In what direction something is facing
 pub enum Orientation {
+    /// Like this:
+    /// ```
+    ///    ^
+    ///    |
+    ///    |
+    ///    |
+    /// ```
     Vertical,
-    Horisontal,
+    /// Like this:
+    /// ```
+    /// --->
+    /// ```
+    Horizontal,
 }

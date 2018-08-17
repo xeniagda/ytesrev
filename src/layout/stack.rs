@@ -1,3 +1,5 @@
+//! An array of items after one another
+
 extern crate sdl2;
 
 use sdl2::pixels::Color;
@@ -6,14 +8,17 @@ use sdl2::render::Canvas;
 use sdl2::video::Window;
 
 use super::Orientation;
-use drawable::{DrawSettings, Drawable, Position, State};
-use image::KnownSize;
+use drawable::{DrawSettings, Drawable, Position, State, KnownSize};
 
+/// Positioning the elements
+#[allow(missing_docs)]
 pub enum ElementPositioning {
     TopLeftCornered,
     Centered,
 }
 
+/// Represent an object that can be in a stack
+#[allow(missing_docs)]
 pub trait Stackable: Drawable + KnownSize {
     fn as_drawable(&self) -> &dyn Drawable;
     fn as_drawable_mut(&mut self) -> &mut dyn Drawable;
@@ -28,15 +33,22 @@ impl<T: Drawable + KnownSize> Stackable for T {
     }
 }
 
+/// The stack
 pub struct Stack {
-    margin: u32,
-    orientation: Orientation,
-    positioning: ElementPositioning,
-    update_seq: bool,
-    content: Vec<Box<dyn Stackable>>,
+    /// The margin between each element
+    pub margin: u32,
+    /// Which way the stack faces
+    pub orientation: Orientation,
+    /// Positioning of each element
+    pub positioning: ElementPositioning,
+    /// Update sequentially or all at once
+    pub update_seq: bool,
+    /// The content in the stack
+    pub content: Vec<Box<dyn Stackable>>,
 }
 
 impl Stack {
+    /// Create a new Stack
     pub fn new(
         margin: u32,
         orientation: Orientation,
@@ -101,7 +113,7 @@ impl<'a> Drawable for Stack {
                     y += obj.height() as i32 + self.margin as i32;
                 }
             }
-            Orientation::Horisontal => {
+            Orientation::Horizontal => {
                 let mut x = corner.x;
                 for obj in &mut self.content {
                     let corner = match self.positioning {
@@ -160,7 +172,7 @@ impl<'a> Drawable for Stack {
 impl KnownSize for Stack {
     fn width(&self) -> usize {
         match self.orientation {
-            Orientation::Horisontal => {
+            Orientation::Horizontal => {
                 let content_size = self.content.iter().map(|x| x.width()).sum::<usize>();
                 let margins = self.margin as usize * (self.content.len() - 1);
                 content_size + margins
@@ -176,7 +188,7 @@ impl KnownSize for Stack {
                 let margins = self.margin as usize * (self.content.len() - 1);
                 content_size + margins
             }
-            Orientation::Horisontal => self.content.iter().map(|x| x.height()).max().unwrap_or(0),
+            Orientation::Horizontal => self.content.iter().map(|x| x.height()).max().unwrap_or(0),
         }
     }
 }

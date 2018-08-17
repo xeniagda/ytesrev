@@ -1,3 +1,5 @@
+//! Like onions
+
 extern crate sdl2;
 
 use sdl2::render::Canvas;
@@ -9,6 +11,7 @@ use drawable::{DrawSettings, Drawable, Position, State};
 /// Layered::content_mut
 ///
 /// Please ignore this
+#[allow(missing_docs)]
 pub trait Layerable: Drawable {
     fn as_drawable(&self) -> &dyn Drawable;
     fn as_drawable_mut(&mut self) -> &mut dyn Drawable;
@@ -23,12 +26,17 @@ impl<T: Drawable> Layerable for T {
     }
 }
 
+/// A list of object on top of each other
 pub struct Layered {
+    /// Should the items be stepped in order, i.e. sequentially, or should they be
+    /// stepped all at the same time?
     update_seq: bool,
+    /// The object to be layered
     content: Vec<Box<dyn Layerable>>,
 }
 
 impl Layered {
+    /// Create a new Layered
     pub fn new(update_seq: bool, content: Vec<Box<dyn Layerable>>) -> Layered {
         Layered {
             content,

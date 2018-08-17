@@ -1,3 +1,19 @@
+//! The LaTeX renderer. This is quite low level, and you probably don't want to use this. Instead,
+//! use [`LatexObj`], which contains a better, more high-level way to handle LaTeX in your
+//! presentation.
+//!
+//! ---
+//!
+//! ## The rendereing process:
+//!
+//! 1. Collect all LaTeX expressions into a file, saved in /tmp/ytesrev/tmp.tex
+//! 2. Run `pdflatex` on the file
+//! 3. Run `pdfcrop` on to make all expressions the right size
+//! 4. Run `pdftoppm` on the resulting `.pdf`-files to generate `.png`-files of all the expressions
+//! 5. (Done for each `LatexObj`) Load the `.png`-file into a `PngImage`
+//!
+//! [`LatexObj`]: ../latex_obj/struct.LatexObj.html
+
 extern crate sdl2;
 
 use sdl2::pixels::Color;
@@ -15,12 +31,23 @@ use image::PngImage;
 const LATEX_PRELUDE:  &str = include_str!("latex_prelude.tex");
 const LATEX_POSTLUDE: &str = "\\end{document}";
 
-#[derive(Debug)]
+/// An error that might occur when rendering LaTeX expressions
+#[derive(Debug, PartialEq)]
 pub enum LatexError {
-    NotExist,
+    /// The specified LaTeX expression wasn't registered. This error should be impossible to get,
+    /// as to get it you need an invalid index. See [`LatexIdx`]
+    ///
+    /// [`LatexIdx`]: ../latex/latex_obj/struct.LatexObj.html
+    NotExisting,
+    /// The LaTeX document hasn't been rendered yet. Run the [`render_all_equations`]
     NotLoaded,
 }
 
+/// An index given to each [`LatexObj`], as they are all rendered in the same document
+/// The only way to obtain an index is to register an equation using `register_equation`,
+/// and as such, an invalid index should be impossible to obtain.
+///
+/// [`LatexObj`]: ../latex_obj/struct.LatexObj.html
 pub struct LatexIdx(usize);
 
 lazy_static! {
@@ -28,6 +55,20 @@ lazy_static! {
         Mutex::new(Vec::new());
 }
 
+/// Register an equation to be rendered. To render, use the [`render_all_equations`] method.
+///
+/// ```
+/// use ytesrev::latex::render::*;
+/// # fn make_invalid_idx() -> LatexIdx {
+/// #   use std::mem::transmute;
+/// #   unsafe { transmute::<usize, LatexIdx>(0) }
+/// # }
+/// let invalid_idx = make_invalid_idx(); // This is impossible to do, this is only for demonstration
+/// assert_eq!(read_image(invalid_idx).err(), Some(LatexError::NotExisting));
+///
+/// let valid_idx = register_equation("a^2 + b^2 = c+2", false);
+/// assert_eq!(read_image(valid_idx).err(), Some(LatexError::NotLoaded));
+/// ```
 pub fn register_equation(equation: &'static str, is_text: bool) -> LatexIdx {
     if let Ok(ref mut eqs) = EQUATIONS.lock() {
         let idx = eqs.len();
@@ -38,6 +79,7 @@ pub fn register_equation(equation: &'static str, is_text: bool) -> LatexIdx {
     }
 }
 
+/// Reads an image from an LatexIdx.
 pub fn read_image(idx: LatexIdx) -> Result<PngImage, LatexError> {
     let res = if let Ok(ref mut eqs) = EQUATIONS.lock() {
         if let Some(ref mut x) = eqs.get_mut(idx.0) {
@@ -47,7 +89,7 @@ pub fn read_image(idx: LatexIdx) -> Result<PngImage, LatexError> {
                 Err(LatexError::NotLoaded)
             }
         } else {
-            Err(LatexError::NotExist)
+            Err(LatexError::NotExisting)
         }
     } else {
         Err(LatexError::NotLoaded)
@@ -56,7 +98,13 @@ pub fn read_image(idx: LatexIdx) -> Result<PngImage, LatexError> {
     res
 }
 
-pub fn render_all_eqations() -> IResult<()> {
+/// Run the rendering process. This takes a few seconds.
+///
+/// As with everything in this module, you probably don't want to do this yourself as this is
+/// automatically handled by the [`WindowManager`].
+///
+/// [`WindowManager`]: ../../window/struct.WindowManager.html
+pub fn render_all_equations() -> IResult<()> {
     let mut path = PathBuf::new();
     path.push("/tmp/ytesrev");
 
