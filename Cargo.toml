@@ -7,7 +7,6 @@ readme = "README.md"
 keywords = ["presentation", "graphics"]
 repository = "https://github.com/loovjo/ytesrev"
 homepage = "https://github.com/loovjo/ytesrev"
-documentation = "docs.rs/ytesrev/0.1.0/ytesrev"
 description = """
 A presentation tool written in rust, based on sdl2
 """
