@@ -229,6 +229,7 @@ impl<T: ImageContainer> Drawable for Ditherer<T> {
                     .value((x, y), (self.inner.width(), self.inner.height()))
                     as u64;
                 let val = val as u64 + rng.gen_range(0, 100);
+
                 if x == 0 || x == self.inner.width() - 1 || y == 0 || y == self.inner.height() - 1 {
                     dither[y][x] = val;
                     continue;
@@ -252,11 +253,6 @@ impl<T: ImageContainer> Drawable for Ditherer<T> {
 
             for y in 0..self.inner.height() {
                 for x in 0..self.inner.width() {
-                    let alpha = self.inner.get_data()[(y * self.inner.width() + x) * 4 + 3];
-                    if alpha == 0 {
-                        continue;
-                    }
-
                     let mut around = vec![];
                     for dy in -1..=2 {
                         for dx in -1..=1 {
