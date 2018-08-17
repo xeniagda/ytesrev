@@ -3,6 +3,15 @@
 //! Ytesrev is a library to create presentations programmatically in rust. It is inspiered by
 //! the tool [manim] by 3Blue1Brown, but can be used in live situations where dynamicity matters.
 //!
+//! ---
+//!
+//! ## Important Note:
+//!
+//! Ytesrev is *extremely* slow on debug build, please run it release mode by running
+//! `cargo run --release`. On debug build, ytesrev can go down to as low as ~3 FPS and take over 5
+//! minutes to load a simple presentation, while in release mode, it never drops below 60 FPS, and
+//! takes under 15 seconds to load.
+//!
 //! [manim]: https://github.com/3b1b/manim
 
 
