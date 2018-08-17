@@ -121,53 +121,50 @@ impl WindowManager {
     }
 
     fn process_events(&mut self) -> bool {
-        match &mut self.time_manager {
-            Some(ref mut tm) => {
-                let dt = tm.dt();
+        if let Some(ref mut tm) = self.time_manager {
+            let dt = tm.dt();
 
-                self.curr_scene.update(dt);
-                match self.curr_scene.action() {
-                    Action::Next => {
+            self.curr_scene.update(dt);
+            match self.curr_scene.action() {
+                Action::Next => {
+                    if self.other_scenes.is_empty() {
+                        return false;
+                    }
+                    self.curr_scene = self.other_scenes.remove(0);
+                }
+                Action::Continue => {}
+            }
+
+            for event in self.event_pump.poll_iter() {
+                match event {
+                    Event::Quit { .. }
+                    | Event::KeyDown {
+                        keycode: Some(Keycode::Escape),
+                        ..
+                    } => return false,
+                    _ => {}
+                }
+
+                match event {
+                    Event::KeyDown {
+                        keycode: Some(Keycode::Return),
+                        ..
+                    } => {
                         if self.other_scenes.is_empty() {
                             return false;
                         }
                         self.curr_scene = self.other_scenes.remove(0);
                     }
-                    Action::Continue => {}
-                }
-
-                for event in self.event_pump.poll_iter() {
-                    match event {
-                        Event::Quit { .. }
-                        | Event::KeyDown {
-                            keycode: Some(Keycode::Escape),
-                            ..
-                        } => return false,
-                        _ => {}
+                    Event::KeyDown {
+                        keycode: Some(Keycode::Space),
+                        ..
                     }
-
-                    match event {
-                        Event::KeyDown {
-                            keycode: Some(Keycode::Return),
-                            ..
-                        } => {
-                            if self.other_scenes.is_empty() {
-                                return false;
-                            }
-                            self.curr_scene = self.other_scenes.remove(0);
-                        }
-                        Event::KeyDown {
-                            keycode: Some(Keycode::Space),
-                            ..
-                        }
-                        | Event::MouseButtonDown { .. } => self.curr_scene.event(YEvent::Step),
-                        e => self.curr_scene.event(YEvent::Other(e)),
-                    };
-                }
+                    | Event::MouseButtonDown { .. } => self.curr_scene.event(YEvent::Step),
+                    e => self.curr_scene.event(YEvent::Other(e)),
+                };
             }
-            None => {
-                self.time_manager = Some(TimeManager::new());
-            }
+        } else {
+            self.time_manager = Some(TimeManager::new());
         }
 
         true
