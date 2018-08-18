@@ -53,6 +53,7 @@ pub struct LatexIdx(usize);
 lazy_static! {
     static ref EQUATIONS: Mutex<Vec<(&'static str, bool, Option<PngImage>)>> =
         Mutex::new(Vec::new());
+    static ref PRELUDE: Mutex<Vec<&'static str>> = Mutex::new(Vec::new());
 }
 
 /// Register an equation to be rendered. To render, use the [`render_all_equations`] method.
@@ -77,6 +78,23 @@ pub fn register_equation(equation: &'static str, is_text: bool) -> LatexIdx {
     } else {
         panic!("Can't eqs");
     }
+}
+
+/// Add prelude to the LaTeX render.
+///
+/// ```
+/// use ytesrev::latex::render::add_prelude;
+///
+/// add_prelude("\\usepackage{skull}");
+/// ```
+///
+/// By default, amsmath is loaded, but nothing else.
+///
+pub fn add_prelude(prelude: &'static str) {
+    if let Ok(ref mut preludes) = PRELUDE.lock() {
+        preludes.push(prelude);
+    }
+    // TODO: Handle Mutex lock fail
 }
 
 /// Reads an image from an LatexIdx.
@@ -141,7 +159,15 @@ pub fn render_all_equations() -> IResult<()> {
 
 fn create_tex(tex_path: &Path) -> IResult<()> {
     let mut tex_file = File::create(tex_path)?;
-    writeln!(tex_file, "{}", LATEX_PRELUDE)?;
+    let mut added_prelude = String::new();
+    if let Ok(prelude) = PRELUDE.lock() {
+        prelude.iter().for_each(|prelude| {
+            added_prelude.push_str(prelude);
+            added_prelude.push('\n');
+        });
+    }
+
+    writeln!(tex_file, "{}", LATEX_PRELUDE.replace("$PRELUDE", &added_prelude))?;
 
     if let Ok(eqs) = EQUATIONS.lock() {
         for equation in eqs.iter() {

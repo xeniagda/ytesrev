@@ -4,10 +4,13 @@ extern crate ytesrev;
 
 use std::fs::File;
 
-use ytesrev::ditherer::color_dither_fn;
 use ytesrev::prelude::*;
+use ytesrev::latex::render::add_prelude;
+use ytesrev::ditherer::color_dither_fn;
 
 fn main() {
+    add_prelude("\\usepackage{skull}");
+
     let mut wmng = WindowManager::init_window(
         Box::new(make_first_scene()),
         vec![
@@ -58,7 +61,7 @@ fn make_second_scene() -> impl Scene {
             vec![
                 Box::new(Solid::new_rgba(255, 0, 0, 255)),
                 Box::new(Ditherer::new(LatexObj::math(
-                    "sin^2\\theta + cos^2\\theta = 1",
+                    "sin^2\\skull + cos^2\\skull = 1",
                 ))),
             ],
         ),
