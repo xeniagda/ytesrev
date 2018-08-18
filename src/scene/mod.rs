@@ -24,7 +24,7 @@ pub enum Action {
 /// [`DrawableWrapper`] around your [`Drawable`]s should do fine.
 ///
 /// [`Drawable`]: ../drawable/struct.Drawable.html
-pub trait Scene {
+pub trait Scene: Send {
     /// Do a tick
     fn update(&mut self, _dt: f64);
     /// Called when an event occured

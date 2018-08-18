@@ -1,6 +1,9 @@
 //! Manage the windows on screen
 
 extern crate sdl2;
+extern crate rayon;
+
+use rayon::prelude::*;
 
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
@@ -75,15 +78,24 @@ impl WindowManager {
         eprintln!("Loading...");
         render_all_equations().expect("Can't render!");
 
-        eprintln!("Scene 1...");
-        curr_scene.as_mut_drawable().load();
-        for (i, scene) in other_scenes.iter_mut().enumerate() {
-            eprintln!("Scene {}...", i + 2);
-            scene.as_mut_drawable().load();
-        }
+        let (curr_scene, other_scenes) = rayon::join(
+            move || {
+                eprintln!("Scene 1...");
+                curr_scene.as_mut_drawable().load();
+                curr_scene
+            },
+            move || {
+                other_scenes.into_par_iter().enumerate()
+                    .map(|(i, mut scene)| {
+                        eprintln!("Scene {}...", i + 2);
+                        scene.as_mut_drawable().load();
+                        scene
+                    })
+                    .collect::<Vec<Box<dyn Scene>>>()
+            });
+
         let delta = Instant::now() - start;
         eprintln!("Done! Took {:.2}s", delta.as_secs() as f64 + delta.subsec_millis() as f64 / 1000.);
-
 
         let sdl_context = sdl2::init().unwrap();
         let video_subsystem = sdl_context.video().unwrap();

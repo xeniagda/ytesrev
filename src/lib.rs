@@ -22,6 +22,7 @@ extern crate lazy_static;
 extern crate png;
 extern crate rand;
 extern crate sdl2;
+extern crate rayon;
 
 pub mod anchor;
 pub mod ditherer;

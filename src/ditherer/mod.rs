@@ -118,6 +118,8 @@ pub struct Ditherer<T: ImageContainer + 'static> {
     dithering: DitherState,
 }
 
+unsafe impl<T: ImageContainer> Send for Ditherer<T> {}
+
 impl<T: ImageContainer + KnownSize> KnownSize for Ditherer<T> {
     fn width(&self) -> usize {
         self.inner.width()

@@ -140,7 +140,7 @@ impl Position {
 }
 
 /// An object that can be drawn
-pub trait Drawable {
+pub trait Drawable: Send {
     /// What this object contains
     fn content(&self) -> Vec<&dyn Drawable>;
     /// What this object contains, mutably
