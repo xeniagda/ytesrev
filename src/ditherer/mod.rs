@@ -67,18 +67,36 @@ pub fn alpha_dither_fn<T: ImageContainer + KnownSize>(image: &T, (x, y): (usize,
     delta_alpha_y.max(delta_alpha_x) as u64
 }
 
+fn color_diff(c1: (u8, u8, u8, u8), c2: (u8, u8, u8, u8)) -> u64 {
+    let r_diff = c1.0 as f64 - c2.0 as f64;
+    let g_diff = c1.1 as f64 - c2.1 as f64;
+    let b_diff = c1.2 as f64 - c2.2 as f64;
+    let a_diff = c1.3 as f64 - c2.3 as f64;
+
+    let r_dev = r_diff * r_diff;
+    let g_dev = g_diff * g_diff;
+    let b_dev = b_diff * b_diff;
+    let a_dev = a_diff * a_diff;
+
+    r_dev.max(g_dev).max(b_dev).max(a_dev) as u64
+}
+
 /// A dithering function that dithers based on color deviation gradient
-pub fn color_dither_fn<T: ImageContainer + KnownSize>(img: &T, pos: (usize, usize)) -> u64 {
-    let r = img.get_data()[(pos.1 * img.width() + pos.0) * 4    ] as f64;
-    let g = img.get_data()[(pos.1 * img.width() + pos.0) * 4 + 1] as f64;
-    let b = img.get_data()[(pos.1 * img.width() + pos.0) * 4 + 2] as f64;
-    let a = img.get_data()[(pos.1 * img.width() + pos.0) * 4 + 3] as f64;
-    let avg = (r + b + g + a) / 4.;
-    let dev = (r - avg) * (r - avg)
-        + (g - avg) * (g - avg)
-        + (b - avg) * (b - avg)
-        + (a - avg) * (a - avg);
-    dev as u64
+pub fn color_dither_fn<T: ImageContainer + KnownSize>(image: &T, (x, y): (usize, usize)) -> u64 {
+    let color = move |x: usize, y: usize| {
+        let x = x.max(0).min(image.width() - 1);
+        let y = y.max(0).min(image.height() - 1);
+
+        let r = image.get_data()[(y * image.width() + x) * 4 + 3];
+        let g = image.get_data()[(y * image.width() + x) * 4 + 2];
+        let b = image.get_data()[(y * image.width() + x) * 4 + 1];
+        let a = image.get_data()[(y * image.width() + x) * 4    ];
+        (r, g, b, a)
+    };
+
+    let grad_x = color_diff(color(x.saturating_sub(1), y), color(x + 1, y));
+    let grad_y = color_diff(color(x, y.saturating_sub(1)), color(x, y + 1));
+    grad_x.max(grad_y)
 }
 
 /// The ditherer itself. The inner type `T` is the thing to be dithered
