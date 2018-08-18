@@ -71,6 +71,7 @@ impl WindowManager {
             scene.as_mut_drawable().register();
         }
 
+        let start = Instant::now();
         eprintln!("Loading...");
         render_all_equations().expect("Can't render!");
 
@@ -80,7 +81,9 @@ impl WindowManager {
             eprintln!("Scene {}...", i + 2);
             scene.as_mut_drawable().load();
         }
-        eprintln!("Done!");
+        let delta = Instant::now() - start;
+        eprintln!("Done! Took {:.2}s", delta.as_secs() as f64 + delta.subsec_millis() as f64 / 1000.);
+
 
         let sdl_context = sdl2::init().unwrap();
         let video_subsystem = sdl_context.video().unwrap();
