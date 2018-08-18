@@ -140,7 +140,7 @@ impl<T: ImageContainer + KnownSize> ImageContainer for Ditherer<T> {
 }
 
 impl<T: ImageContainer> Ditherer<T> {
-    /// Create a new ditherer instance
+    /// Create a new ditherer instance, dithering using [`alpha_dither_fn`].
     pub fn new(inner: T) -> Ditherer<T> {
         let dither = None;
 
