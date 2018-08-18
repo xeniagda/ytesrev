@@ -41,11 +41,12 @@ pub mod prelude {
     //! A "prelude" to avoid having to `use` a gazillion different things
     pub use sdl2::rect::{Rect, Point};
     pub use anchor::{Anchor, AnchorDirection};
-    pub use ditherer::{DitherDirection, Ditherer};
+    pub use ditherer::{DitherDirection, Ditherer, alpha_dither_fn, color_dither_fn};
     pub use drawable::Drawable;
     pub use empty::Empty;
     pub use image::PngImage;
     pub use latex::LatexObj;
+    pub use latex::render::add_prelude;
     pub use layout::layered::Layered;
     pub use layout::split::{SplitPrec, UpdateOrder};
     pub use layout::stack::{ElementPositioning, Stack};
