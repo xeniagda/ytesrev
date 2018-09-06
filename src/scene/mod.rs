@@ -4,6 +4,7 @@ extern crate sdl2;
 
 use sdl2::render::Canvas;
 use sdl2::video::Window;
+use sdl2::rect::Rect;
 
 use drawable::{DrawSettings, Drawable, Position, State};
 use window::YEvent;
@@ -27,15 +28,20 @@ pub enum Action {
 pub trait Scene: Send {
     /// Do a tick
     fn update(&mut self, _dt: f64);
+    /// Draw the content of this scene to a `Canvas`.
+    fn draw(&mut self, canvas: &mut Canvas<Window>, settings: DrawSettings);
     /// Called when an event occured
     fn event(&mut self, _event: YEvent);
     /// What to do
     fn action(&self) -> Action;
-
-    /// Convert to a drawable
-    fn as_drawable(&self) -> &dyn Drawable;
-    /// Convert to a mutable drawable
-    fn as_mut_drawable(&mut self) -> &mut dyn Drawable;
+    /// Register everything. The scene equivalent of [`Drawable::register`]
+    ///
+    /// [`Drawable::register`]: ../drawable/struct.Drawable.html#method.register
+    fn register(&mut self);
+    /// Load everything. The scene equivalent of [`Drawable::load`]
+    ///
+    /// [`Drawable::load`]: ../drawable/struct.Drawable.html#method.register
+    fn load(&mut self);
 }
 
 /// A wrapper to make a [`Drawable`] into a [`Scene`]. This is probably all you will need
@@ -49,6 +55,12 @@ impl<T: Drawable> Scene for DrawableWrapper<T> {
     fn update(&mut self, dt: f64) {
         self.0.update(dt);
     }
+
+    fn draw(&mut self, canvas: &mut Canvas<Window>, settings: DrawSettings) {
+        let (w, h) = canvas.window().size();
+        self.0.draw(canvas, &Position::Rect(Rect::new(0, 0, w, h)), settings);
+    }
+
     fn event(&mut self, event: YEvent) {
         match event {
             YEvent::Step => {
@@ -68,32 +80,11 @@ impl<T: Drawable> Scene for DrawableWrapper<T> {
         }
     }
 
-    fn as_drawable(&self) -> &dyn Drawable {
-        self
+    fn register(&mut self) {
+        self.0.register()
     }
-    fn as_mut_drawable(&mut self) -> &mut dyn Drawable {
-        self
-    }
-}
-
-impl<T: Drawable> Drawable for DrawableWrapper<T> {
-    fn draw(&mut self, canvas: &mut Canvas<Window>, position: &Position, settings: DrawSettings) {
-        self.0.draw(canvas, position, settings);
-    }
-
-    fn step(&mut self) {
-        self.0.step();
-    }
-
-    fn state(&self) -> State {
-        self.0.state()
-    }
-
-    fn content(&self) -> Vec<&dyn Drawable> {
-        vec![&self.0]
-    }
-
-    fn content_mut(&mut self) -> Vec<&mut dyn Drawable> {
-        vec![&mut self.0]
+    fn load(&mut self) {
+        self.0.load()
     }
 }
+

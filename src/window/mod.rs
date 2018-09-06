@@ -8,7 +8,6 @@ use rayon::prelude::*;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use sdl2::pixels::Color;
-use sdl2::rect::Rect;
 use sdl2::render::Canvas;
 use sdl2::video::Window;
 use sdl2::EventPump;
@@ -16,7 +15,7 @@ use sdl2::EventPump;
 use std::thread::sleep;
 use std::time::{Duration, Instant};
 
-use drawable::{Position, SETTINGS_MAIN, SETTINGS_NOTES};
+use drawable::{SETTINGS_MAIN, SETTINGS_NOTES};
 use latex::render::render_all_equations;
 use scene::{Action, Scene};
 
@@ -69,9 +68,9 @@ impl WindowManager {
     ) -> WindowManager {
         // Load everything
 
-        curr_scene.as_mut_drawable().register();
+        curr_scene.register();
         for scene in &mut other_scenes {
-            scene.as_mut_drawable().register();
+            scene.register();
         }
 
         let start = Instant::now();
@@ -81,14 +80,14 @@ impl WindowManager {
         let (curr_scene, other_scenes) = rayon::join(
             move || {
                 eprintln!("Scene 1...");
-                curr_scene.as_mut_drawable().load();
+                curr_scene.load();
                 curr_scene
             },
             move || {
                 other_scenes.into_par_iter().enumerate()
                     .map(|(i, mut scene)| {
                         eprintln!("Scene {}...", i + 2);
-                        scene.as_mut_drawable().load();
+                        scene.load();
                         scene
                     })
                     .collect::<Vec<Box<dyn Scene>>>()
@@ -190,10 +189,8 @@ impl WindowManager {
             .set_draw_color(Color::RGBA(BACKGROUND.0, BACKGROUND.1, BACKGROUND.2, 255));
         self.canvas.clear();
 
-        let (w, h) = self.canvas.window().size();
-        self.curr_scene.as_mut_drawable().draw(
+        self.curr_scene.draw(
             &mut self.canvas,
-            &Position::Rect(Rect::new(0, 0, w, h)),
             SETTINGS_MAIN,
         );
 
@@ -209,10 +206,8 @@ impl WindowManager {
                 ));
                 notes_canvas.clear();
 
-                let (w, h) = notes_canvas.window().size();
-                self.curr_scene.as_mut_drawable().draw(
+                self.curr_scene.draw(
                     notes_canvas,
-                    &Position::Rect(Rect::new(0, 0, w, h)),
                     SETTINGS_NOTES,
                 );
 
