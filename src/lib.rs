@@ -21,7 +21,7 @@
 extern crate lazy_static;
 extern crate png;
 extern crate rand;
-extern crate sdl2;
+pub extern crate sdl2;
 extern crate rayon;
 
 pub mod anchor;
@@ -36,7 +36,6 @@ pub mod scene;
 pub mod solid;
 pub mod window;
 pub mod withsize;
-pub use sdl2::rect::{Rect, Point};
 
 pub mod prelude {
     //! A "prelude" to avoid having to `use` a gazillion different things
