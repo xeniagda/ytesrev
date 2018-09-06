@@ -54,7 +54,9 @@ impl<T: Drawable> Scene for DrawableWrapper<T> {
             YEvent::Step => {
                 self.0.step();
             }
-            _ => {}
+            YEvent::Other(e) => {
+                self.0.event(e);
+            }
         }
     }
 

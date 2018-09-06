@@ -5,6 +5,7 @@ extern crate sdl2;
 use sdl2::rect::{Point, Rect};
 use sdl2::render::Canvas;
 use sdl2::video::Window;
+use sdl2::event::Event;
 
 /// Where to draw a specific object.
 #[allow(unused)]
@@ -166,6 +167,9 @@ pub trait Drawable: Send {
     /// When the user presses space, the state of the presentation is advanced. This
     /// method is what is called.
     fn step(&mut self);
+
+    /// When any event occurs
+    fn event(&mut self, _event: Event) {}
 
     /// What state the object is in
     fn state(&self) -> State;
