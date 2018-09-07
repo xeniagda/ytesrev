@@ -73,7 +73,7 @@ struct TimeManager {
 impl WindowManager {
     /// Shorthand for `WindowManager::init_window(scenes, vec![SETTINGS_MAIN, SETTINGS_NOTES])`,
     /// creating two windows, one for the main presentation and one for notes
-    pub fn init_main_note(scenes: Vec<Box<dyn Scene>>, title: String) -> WindowManager {
+    pub fn init_main_notes(scenes: Vec<Box<dyn Scene>>, title: String) -> WindowManager {
         let mut notes_title = title.clone();
         notes_title.push_str(" - Notes");
         WindowManager::init_window(
