@@ -48,7 +48,7 @@ pub mod prelude {
     pub use latex::LatexObj;
     pub use latex::render::add_prelude;
     pub use layout::layered::Layered;
-    pub use layout::split::{SplitPrec, UpdateOrder};
+    pub use layout::split::{Split, UpdateOrder};
     pub use layout::stack::{ElementPositioning, Stack};
     pub use layout::Orientation;
     pub use margin::Margin;

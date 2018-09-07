@@ -20,9 +20,11 @@ pub enum UpdateOrder {
 }
 
 /// A split at a centain percent
-pub struct SplitPrec<T: Drawable, U: Drawable> {
-    /// The split raito (must be between 0 and 1)
-    pub prec: f64,
+pub struct Split<T: Drawable, U: Drawable> {
+    /// How to split the window. The argument is the size of the window in the splitting direction
+    /// (horizortal gives width, vertical gives height), and the return value is how many pixels
+    /// the first element should take
+    pub amount: Box<Fn(u32) -> u32>,
     /// The orientation to split
     pub orientation: Orientation,
     /// The stepping order
@@ -33,17 +35,54 @@ pub struct SplitPrec<T: Drawable, U: Drawable> {
     pub second: U,
 }
 
-impl<T: Drawable, U: Drawable> SplitPrec<T, U> {
-    /// Create a new SplitPrec
+unsafe impl <T: Drawable, U: Drawable> Send for Split<T, U> {}
+
+impl<T: Drawable, U: Drawable> Split<T, U> {
+    /// Create a new `Split`
     pub fn new(
-        prec: f64,
+        amount: Box<Fn(u32) -> u32>,
         orientation: Orientation,
         order: UpdateOrder,
         first: T,
         second: U,
-    ) -> SplitPrec<T, U> {
-        SplitPrec {
-            prec,
+    ) -> Split<T, U> {
+        Split {
+            amount,
+            orientation,
+            order,
+            first,
+            second,
+        }
+    }
+
+    /// Create a new `Split` that splits by a ratio. The ratio must be between 0 and 1.
+    pub fn new_ratio(
+        ratio: f64,
+        orientation: Orientation,
+        order: UpdateOrder,
+        first: T,
+        second: U,
+    ) -> Split<T, U> {
+        debug_assert!(ratio >= 0. && ratio <= 1.);
+        Split {
+            amount: Box::new(move |size| (size as f64 * ratio) as u32),
+            orientation,
+            order,
+            first,
+            second,
+        }
+    }
+
+    /// Create a new `Split` that split by a constant number of pixels.
+    pub fn new_const(
+        pixels: u32,
+        orientation: Orientation,
+        order: UpdateOrder,
+        first: T,
+        second: U,
+    ) -> Split<T, U> {
+        Split {
+            amount: Box::new(move |_| pixels),
             orientation,
             order,
             first,
@@ -52,7 +91,7 @@ impl<T: Drawable, U: Drawable> SplitPrec<T, U> {
     }
 }
 
-impl<T: Drawable, U: Drawable> Drawable for SplitPrec<T, U> {
+impl<T: Drawable, U: Drawable> Drawable for Split<T, U> {
     fn content(&self) -> Vec<&dyn Drawable> {
         vec![&self.first, &self.second]
     }
@@ -69,7 +108,7 @@ impl<T: Drawable, U: Drawable> Drawable for SplitPrec<T, U> {
             Position::Rect(rect) => {
                 let (first_rect, second_rect) = match self.orientation {
                     Orientation::Vertical => {
-                        let first_height = (rect.height() as f64 * self.prec) as u32;
+                        let first_height = (*self.amount)(rect.height());
                         let first_rect = Rect::new(rect.x, rect.y, rect.width(), first_height);
                         let second_rect = Rect::new(
                             rect.x,
@@ -80,7 +119,7 @@ impl<T: Drawable, U: Drawable> Drawable for SplitPrec<T, U> {
                         (first_rect, second_rect)
                     }
                     Orientation::Horizontal => {
-                        let first_width = (rect.width() as f64 * self.prec) as u32;
+                        let first_width = (*self.amount)(rect.width());
                         let first_rect = Rect::new(rect.x, rect.y, first_width, rect.height());
                         let second_rect = Rect::new(
                             rect.x + first_width as i32,

@@ -52,7 +52,7 @@ fn make_first_scene() -> impl Scene {
 }
 
 fn make_second_scene() -> impl Scene {
-    DrawableWrapper(SplitPrec::new(
+    DrawableWrapper(Split::new_ratio(
         0.2,
         Orientation::Vertical,
         UpdateOrder::SecondFirst,
@@ -70,7 +70,7 @@ fn make_second_scene() -> impl Scene {
 }
 
 fn make_third_scene() -> impl Scene {
-    DrawableWrapper(SplitPrec::new(
+    DrawableWrapper(Split::new_ratio(
         0.2,
         Orientation::Vertical,
         UpdateOrder::SecondFirst,
