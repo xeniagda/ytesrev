@@ -11,13 +11,15 @@ use ytesrev::ditherer::color_dither_fn;
 fn main() {
     add_prelude("\\usepackage{skull}");
 
-    let mut wmng = WindowManager::init_main_notes(
-        vec![
+    let slist = SceneList::new(vec![
             Box::new(make_first_scene()),
             Box::new(make_second_scene()),
             Box::new(make_third_scene()),
             Box::new(make_fourth_scene()),
-        ],
+        ]);
+
+    let mut wmng = WindowManager::init_main_notes(
+        slist,
         "Example".to_string(),
     );
 

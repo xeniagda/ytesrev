@@ -1,9 +1,6 @@
 //! Manage the windows on screen
 
-extern crate rayon;
 extern crate sdl2;
-
-use rayon::prelude::*;
 
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
@@ -48,16 +45,14 @@ pub const WSETTINGS_NOTES: WindowSettings = WindowSettings {
 };
 
 /// The manager of the entire presentation.
-pub struct WindowManager {
+pub struct WindowManager<T: Scene> {
     /// All canvases, together with their respective settings
     pub canvases: Vec<(WindowSettings, Canvas<Window>)>,
     /// The event pump
     pub event_pump: EventPump,
 
-    /// A list of the scenes that is not currently presented, or has been presented, in order
-    pub other_scenes: Vec<Box<dyn Scene>>,
-    /// The current scene that is being presented
-    pub curr_scene: Box<dyn Scene>,
+    /// The scene being presented
+    pub scene: T,
 
     time_manager: Option<TimeManager>,
     tick: usize,
@@ -70,14 +65,14 @@ struct TimeManager {
     durs: Vec<Duration>,
 }
 
-impl WindowManager {
+impl <T: Scene> WindowManager<T> {
     /// Shorthand for `WindowManager::init_window(scenes, vec![SETTINGS_MAIN, SETTINGS_NOTES])`,
     /// creating two windows, one for the main presentation and one for notes
-    pub fn init_main_notes(scenes: Vec<Box<dyn Scene>>, title: String) -> WindowManager {
+    pub fn init_main_notes(scene: T, title: String) -> WindowManager<T> {
         let mut notes_title = title.clone();
         notes_title.push_str(" - Notes");
         WindowManager::init_window(
-            scenes,
+            scene,
             vec![(title, WSETTINGS_MAIN), (notes_title, WSETTINGS_NOTES)],
         )
     }
@@ -85,27 +80,17 @@ impl WindowManager {
     ///
     /// This loads all scences and creates the windows according to the settings
     pub fn init_window(
-        mut scenes: Vec<Box<dyn Scene>>,
+        mut scene: T,
         windows: Vec<(String, WindowSettings)>,
-    ) -> WindowManager {
+    ) -> WindowManager<T> {
         // Load everything
-
-        for scene in &mut scenes {
-            scene.register();
-        }
+        scene.register();
 
         let start = Instant::now();
         eprintln!("Loading...");
         render_all_equations().expect("Can't render!");
 
-        let mut scenes = scenes
-            .into_par_iter()
-            .enumerate()
-            .map(|(i, mut scene)| {
-                eprintln!("Scene {}...", i + 1);
-                scene.load();
-                scene
-            }).collect::<Vec<Box<dyn Scene>>>();
+        scene.load();
 
         let delta = Instant::now() - start;
         eprintln!(
@@ -132,13 +117,10 @@ impl WindowManager {
 
         let event_pump = sdl_context.event_pump().unwrap();
 
-        let curr_scene = scenes.remove(0);
-
         WindowManager {
             canvases,
             event_pump,
-            curr_scene,
-            other_scenes: scenes,
+            scene,
             time_manager: None,
             tick: 0,
         }
@@ -148,15 +130,12 @@ impl WindowManager {
         if let Some(ref mut tm) = self.time_manager {
             let dt = tm.dt();
 
-            self.curr_scene.update(dt);
-            match self.curr_scene.action() {
-                Action::Next => {
-                    if self.other_scenes.is_empty() {
-                        return false;
-                    }
-                    self.curr_scene = self.other_scenes.remove(0);
+            self.scene.update(dt);
+            match self.scene.action() {
+                Action::Done => {
+                    return false;
                 }
-                Action::Continue => {}
+                _ => {}
             }
 
             for event in self.event_pump.poll_iter() {
@@ -171,20 +150,11 @@ impl WindowManager {
 
                 match event {
                     Event::KeyDown {
-                        keycode: Some(Keycode::Return),
-                        ..
-                    } => {
-                        if self.other_scenes.is_empty() {
-                            return false;
-                        }
-                        self.curr_scene = self.other_scenes.remove(0);
-                    }
-                    Event::KeyDown {
                         keycode: Some(Keycode::Space),
                         ..
                     }
-                    | Event::MouseButtonDown { .. } => self.curr_scene.event(YEvent::Step),
-                    e => self.curr_scene.event(YEvent::Other(e)),
+                    | Event::MouseButtonDown { .. } => self.scene.event(YEvent::Step),
+                    e => self.scene.event(YEvent::Other(e)),
                 };
             }
         } else {
@@ -204,7 +174,7 @@ impl WindowManager {
             ));
             canvas.clear();
 
-            self.curr_scene.draw(canvas, settings.draw_settings);
+            self.scene.draw(canvas, settings.draw_settings);
 
             canvas.present();
         }

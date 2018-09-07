@@ -52,7 +52,7 @@ pub mod prelude {
     pub use layout::stack::{ElementPositioning, Stack};
     pub use layout::Orientation;
     pub use margin::Margin;
-    pub use scene::{DrawableWrapper, Scene};
+    pub use scene::{DrawableWrapper, SceneList, Scene};
     pub use solid::Solid;
     pub use window::WindowManager;
     pub use withsize::WithSize;
