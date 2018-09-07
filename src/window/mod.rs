@@ -15,11 +15,10 @@ use sdl2::EventPump;
 use std::thread::sleep;
 use std::time::{Duration, Instant};
 
-use drawable::{DrawSettings, SETTINGS_MAIN, SETTINGS_NOTES};
+use drawable::{DrawSettings, DSETTINGS_MAIN, DSETTINGS_NOTES};
 use latex::render::render_all_equations;
 use scene::{Action, Scene};
 
-const SIZE: (usize, usize) = (1200, 800);
 const BACKGROUND: (u8, u8, u8) = (255, 248, 234);
 const FPS_PRINT_RATE: Duration = Duration::from_millis(1000);
 
@@ -31,10 +30,28 @@ pub enum YEvent {
     Other(Event),
 }
 
+/// Settings for how a window should behave
+pub struct WindowSettings {
+    draw_settings: DrawSettings,
+    window_size: (u32, u32),
+}
+
+/// The default window settings for the main window
+pub const WSETTINGS_MAIN: WindowSettings = WindowSettings {
+    draw_settings: DSETTINGS_MAIN,
+    window_size: (1200, 800),
+};
+
+/// The default window settings for the notes window
+pub const WSETTINGS_NOTES: WindowSettings = WindowSettings {
+    draw_settings: DSETTINGS_NOTES,
+    window_size: (600, 400),
+};
+
 /// The manager of the entire presentation.
 pub struct WindowManager {
     /// All canvases, together with their respective settings
-    pub canvases: Vec<(DrawSettings, Canvas<Window>)>,
+    pub canvases: Vec<(WindowSettings, Canvas<Window>)>,
     /// The event pump
     pub event_pump: EventPump,
 
@@ -57,15 +74,20 @@ struct TimeManager {
 impl WindowManager {
     /// Shorthand for `WindowManager::init_window(scenes, vec![SETTINGS_MAIN, SETTINGS_NOTES])`,
     /// creating two windows, one for the main presentation and one for notes
-    pub fn init_main_note(scenes: Vec<Box<dyn Scene>>) -> WindowManager {
-        WindowManager::init_window(scenes, vec![SETTINGS_MAIN, SETTINGS_NOTES])
+    pub fn init_main_note(scenes: Vec<Box<dyn Scene>>, title: String) -> WindowManager {
+        let mut notes_title = title.clone();
+        notes_title.push_str(" - Notes");
+        WindowManager::init_window(
+            scenes,
+            vec![(title, WSETTINGS_MAIN), (notes_title, WSETTINGS_NOTES)],
+        )
     }
     /// Create a window manager
     ///
     /// This loads all scences and creates the windows according to the settings
     pub fn init_window(
         mut scenes: Vec<Box<dyn Scene>>,
-        windows: Vec<DrawSettings>,
+        windows: Vec<(String, WindowSettings)>,
     ) -> WindowManager {
         // Load everything
 
@@ -97,9 +119,9 @@ impl WindowManager {
         let sdl_context = sdl2::init().unwrap();
         let video_subsystem = sdl_context.video().unwrap();
 
-        for settings in windows {
+        for (title, settings) in windows {
             let window = video_subsystem
-                .window("Ytesrev", SIZE.0 as u32, SIZE.1 as u32)
+                .window(&title, settings.window_size.0, settings.window_size.1)
                 .position_centered()
                 .resizable()
                 .build()
@@ -178,7 +200,7 @@ impl WindowManager {
             canvas.set_draw_color(Color::RGBA(BACKGROUND.0, BACKGROUND.1, BACKGROUND.2, 255));
             canvas.clear();
 
-            self.curr_scene.draw(canvas, *settings);
+            self.curr_scene.draw(canvas, settings.draw_settings);
 
             canvas.present();
         }

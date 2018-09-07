@@ -18,6 +18,7 @@ fn main() {
             Box::new(make_third_scene()),
             Box::new(make_fourth_scene()),
         ],
+        "Example".to_string(),
     );
 
     wmng.start();

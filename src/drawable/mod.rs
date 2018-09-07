@@ -29,10 +29,10 @@ pub struct DrawSettings {
 }
 
 /// The default settings for the main window
-pub const SETTINGS_MAIN: DrawSettings = DrawSettings { notes_view: false };
+pub const DSETTINGS_MAIN: DrawSettings = DrawSettings { notes_view: false };
 
 /// The default settings for the notes window
-pub const SETTINGS_NOTES: DrawSettings = DrawSettings { notes_view: true };
+pub const DSETTINGS_NOTES: DrawSettings = DrawSettings { notes_view: true };
 
 /// The state for a specific object on screen, used in the [`Drawable::state()`]
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug)]
