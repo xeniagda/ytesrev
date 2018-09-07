@@ -1,7 +1,7 @@
 //! Manage the windows on screen
 
-extern crate sdl2;
 extern crate rayon;
+extern crate sdl2;
 
 use rayon::prelude::*;
 
@@ -15,15 +15,13 @@ use sdl2::EventPump;
 use std::thread::sleep;
 use std::time::{Duration, Instant};
 
-use drawable::{SETTINGS_MAIN, SETTINGS_NOTES};
+use drawable::{DrawSettings, SETTINGS_MAIN, SETTINGS_NOTES};
 use latex::render::render_all_equations;
 use scene::{Action, Scene};
 
 const SIZE: (usize, usize) = (1200, 800);
 const BACKGROUND: (u8, u8, u8) = (255, 248, 234);
 const FPS_PRINT_RATE: Duration = Duration::from_millis(1000);
-
-const NOTES: bool = true;
 
 /// An event. Passed into the `Drawable::event` and `Scene::event` functions
 pub enum YEvent {
@@ -35,10 +33,8 @@ pub enum YEvent {
 
 /// The manager of the entire presentation.
 pub struct WindowManager {
-    /// The canvas of the main window
-    pub canvas: Canvas<Window>,
-    /// The (optinal) canvas of the notes window
-    pub notes_canvas: Option<Canvas<Window>>,
+    /// All canvases, together with their respective settings
+    pub canvases: Vec<(DrawSettings, Canvas<Window>)>,
     /// The event pump
     pub event_pump: EventPump,
 
@@ -59,17 +55,21 @@ struct TimeManager {
 }
 
 impl WindowManager {
+    /// Shorthand for `WindowManager::init_window(scenes, vec![SETTINGS_MAIN, SETTINGS_NOTES])`,
+    /// creating two windows, one for the main presentation and one for notes
+    pub fn init_main_note(scenes: Vec<Box<dyn Scene>>) -> WindowManager {
+        WindowManager::init_window(scenes, vec![SETTINGS_MAIN, SETTINGS_NOTES])
+    }
     /// Create a window manager
     ///
-    /// This loads all scences and creates the main and notes window
+    /// This loads all scences and creates the windows according to the settings
     pub fn init_window(
-        mut curr_scene: Box<dyn Scene>,
-        mut other_scenes: Vec<Box<dyn Scene>>,
+        mut scenes: Vec<Box<dyn Scene>>,
+        windows: Vec<DrawSettings>,
     ) -> WindowManager {
         // Load everything
 
-        curr_scene.register();
-        for scene in &mut other_scenes {
+        for scene in &mut scenes {
             scene.register();
         }
 
@@ -77,58 +77,47 @@ impl WindowManager {
         eprintln!("Loading...");
         render_all_equations().expect("Can't render!");
 
-        let (curr_scene, other_scenes) = rayon::join(
-            move || {
-                eprintln!("Scene 1...");
-                curr_scene.load();
-                curr_scene
-            },
-            move || {
-                other_scenes.into_par_iter().enumerate()
-                    .map(|(i, mut scene)| {
-                        eprintln!("Scene {}...", i + 2);
-                        scene.load();
-                        scene
-                    })
-                    .collect::<Vec<Box<dyn Scene>>>()
-            });
+        let mut scenes = scenes
+            .into_par_iter()
+            .enumerate()
+            .map(|(i, mut scene)| {
+                eprintln!("Scene {}...", i + 1);
+                scene.load();
+                scene
+            }).collect::<Vec<Box<dyn Scene>>>();
 
         let delta = Instant::now() - start;
-        eprintln!("Done! Took {:.2}s", delta.as_secs() as f64 + delta.subsec_millis() as f64 / 1000.);
+        eprintln!(
+            "Done! Took {:.2}s",
+            delta.as_secs() as f64 + delta.subsec_millis() as f64 / 1000.
+        );
+
+        let mut canvases = Vec::with_capacity(windows.len());
 
         let sdl_context = sdl2::init().unwrap();
         let video_subsystem = sdl_context.video().unwrap();
 
-        let main_window = video_subsystem
-            .window("Ytesrev", SIZE.0 as u32, SIZE.1 as u32)
-            .position_centered()
-            .resizable()
-            .build()
-            .unwrap();
+        for settings in windows {
+            let window = video_subsystem
+                .window("Ytesrev", SIZE.0 as u32, SIZE.1 as u32)
+                .position_centered()
+                .resizable()
+                .build()
+                .unwrap();
+            let canvas = window.into_canvas().build().unwrap();
 
-        let canvas = main_window.into_canvas().build().unwrap();
-
-        let notes_canvas =
-            if NOTES {
-                let notes_window = video_subsystem
-                    .window("Ytesrev - Notes", SIZE.0 as u32 / 2, SIZE.1 as u32 / 2)
-                    .position_centered()
-                    .resizable()
-                    .build()
-                    .unwrap();
-                Some(notes_window.into_canvas().build().unwrap())
-            } else {
-                None
-            };
+            canvases.push((settings, canvas));
+        }
 
         let event_pump = sdl_context.event_pump().unwrap();
 
+        let curr_scene = scenes.remove(0);
+
         WindowManager {
-            canvas,
-            notes_canvas,
+            canvases,
             event_pump,
-            other_scenes,
             curr_scene,
+            other_scenes: scenes,
             time_manager: None,
             tick: 0,
         }
@@ -185,34 +174,13 @@ impl WindowManager {
     }
 
     fn draw(&mut self) {
-        self.canvas
-            .set_draw_color(Color::RGBA(BACKGROUND.0, BACKGROUND.1, BACKGROUND.2, 255));
-        self.canvas.clear();
+        for (ref mut settings, ref mut canvas) in &mut self.canvases {
+            canvas.set_draw_color(Color::RGBA(BACKGROUND.0, BACKGROUND.1, BACKGROUND.2, 255));
+            canvas.clear();
 
-        self.curr_scene.draw(
-            &mut self.canvas,
-            SETTINGS_MAIN,
-        );
+            self.curr_scene.draw(canvas, *settings);
 
-        self.canvas.present();
-
-        if let Some(ref mut notes_canvas) = self.notes_canvas {
-            if self.tick % 5 == 0 {
-                notes_canvas.set_draw_color(Color::RGBA(
-                    BACKGROUND.0,
-                    BACKGROUND.1,
-                    BACKGROUND.2,
-                    255,
-                ));
-                notes_canvas.clear();
-
-                self.curr_scene.draw(
-                    notes_canvas,
-                    SETTINGS_NOTES,
-                );
-
-                notes_canvas.present();
-            }
+            canvas.present();
         }
     }
 
