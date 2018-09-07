@@ -19,7 +19,6 @@ use drawable::{DrawSettings, DSETTINGS_MAIN, DSETTINGS_NOTES};
 use latex::render::render_all_equations;
 use scene::{Action, Scene};
 
-const BACKGROUND: (u8, u8, u8) = (255, 248, 234);
 const FPS_PRINT_RATE: Duration = Duration::from_millis(1000);
 
 /// An event. Passed into the `Drawable::event` and `Scene::event` functions
@@ -197,7 +196,12 @@ impl WindowManager {
 
     fn draw(&mut self) {
         for (ref mut settings, ref mut canvas) in &mut self.canvases {
-            canvas.set_draw_color(Color::RGBA(BACKGROUND.0, BACKGROUND.1, BACKGROUND.2, 255));
+            canvas.set_draw_color(Color::RGBA(
+                settings.draw_settings.background_color.0,
+                settings.draw_settings.background_color.1,
+                settings.draw_settings.background_color.2,
+                255,
+            ));
             canvas.clear();
 
             self.curr_scene.draw(canvas, settings.draw_settings);

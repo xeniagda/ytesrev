@@ -26,13 +26,15 @@ pub struct DrawSettings {
     /// Is the object being drawed in the notes window, or the main window? In the notes window,
     /// more debug information is drawed.
     pub notes_view: bool,
+    /// Color of the background in RGB order
+    pub background_color: (u8, u8, u8),
 }
 
-/// The default settings for the main window
-pub const DSETTINGS_MAIN: DrawSettings = DrawSettings { notes_view: false };
+/// The default draw settings for the main window
+pub const DSETTINGS_MAIN: DrawSettings = DrawSettings { notes_view: false, background_color: (255, 248, 234) };
 
-/// The default settings for the notes window
-pub const DSETTINGS_NOTES: DrawSettings = DrawSettings { notes_view: true };
+/// The default draw settings for the notes window
+pub const DSETTINGS_NOTES: DrawSettings = DrawSettings { notes_view: true, ..DSETTINGS_MAIN };
 
 /// The state for a specific object on screen, used in the [`Drawable::state()`]
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug)]
