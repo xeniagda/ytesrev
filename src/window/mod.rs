@@ -64,8 +64,7 @@ struct TimeManager {
     last_fps_print: Instant,
     durs: Vec<Duration>,
 }
-
-impl <T: Scene> WindowManager<T> {
+ impl <T: Scene> WindowManager<T> {
     /// Shorthand for `WindowManager::init_window(scenes, vec![SETTINGS_MAIN, SETTINGS_NOTES])`,
     /// creating two windows, one for the main presentation and one for notes
     pub fn init_main_notes(scene: T, title: String) -> WindowManager<T> {
@@ -79,10 +78,7 @@ impl <T: Scene> WindowManager<T> {
     /// Create a window manager
     ///
     /// This loads all scences and creates the windows according to the settings
-    pub fn init_window(
-        mut scene: T,
-        windows: Vec<(String, WindowSettings)>,
-    ) -> WindowManager<T> {
+    pub fn init_window( mut scene: T, windows: Vec<(String, WindowSettings)>, ) -> WindowManager<T> {
         // Load everything
         scene.register();
 
@@ -152,8 +148,7 @@ impl <T: Scene> WindowManager<T> {
                     Event::KeyDown {
                         keycode: Some(Keycode::Space),
                         ..
-                    }
-                    | Event::MouseButtonDown { .. } => self.scene.event(YEvent::Step),
+                    } => self.scene.event(YEvent::Step),
                     e => self.scene.event(YEvent::Other(e)),
                 };
             }
