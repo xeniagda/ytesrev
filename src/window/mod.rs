@@ -28,8 +28,8 @@ pub enum YEvent {
 
 /// Settings for how a window should behave
 pub struct WindowSettings {
-    draw_settings: DrawSettings,
-    window_size: (u32, u32),
+    pub draw_settings: DrawSettings,
+    pub window_size: (u32, u32),
 }
 
 /// The default window settings for the main window
