@@ -123,6 +123,11 @@ pub fn read_image(idx: LatexIdx) -> Result<PngImage, LatexError> {
 ///
 /// [`WindowManager`]: ../../window/struct.WindowManager.html
 pub fn render_all_equations() -> IResult<()> {
+    if let Ok(eqs) = EQUATIONS.lock() {
+        if eqs.len() == 0 {
+            return Ok(());
+        }
+    }
     let mut path = PathBuf::new();
     path.push("/tmp/ytesrev");
 
