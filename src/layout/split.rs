@@ -35,7 +35,7 @@ pub struct Split<T: Drawable, U: Drawable> {
     pub second: U,
 }
 
-unsafe impl <T: Drawable, U: Drawable> Send for Split<T, U> {}
+unsafe impl<T: Drawable, U: Drawable> Send for Split<T, U> {}
 
 impl<T: Drawable, U: Drawable> Split<T, U> {
     /// Create a new `Split`

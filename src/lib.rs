@@ -14,15 +14,14 @@
 //!
 //! [manim]: https://github.com/3b1b/manim
 
-
 #![warn(missing_docs)]
 
 #[macro_use]
 extern crate lazy_static;
 extern crate png;
 extern crate rand;
-pub extern crate sdl2;
 extern crate rayon;
+pub extern crate sdl2;
 
 pub mod anchor;
 pub mod ditherer;
@@ -39,21 +38,21 @@ pub mod withsize;
 
 pub mod prelude {
     //! A "prelude" to avoid having to `use` a gazillion different things
-    pub use sdl2::rect::{Rect, Point};
     pub use anchor::{Anchor, AnchorDirection};
-    pub use ditherer::{DitherDirection, Ditherer, alpha_dither_fn, color_dither_fn};
+    pub use ditherer::{alpha_dither_fn, color_dither_fn, DitherDirection, Ditherer};
     pub use drawable::Drawable;
     pub use empty::Empty;
     pub use image::PngImage;
-    pub use latex::LatexObj;
     pub use latex::render::add_prelude;
+    pub use latex::LatexObj;
     pub use layout::layered::Layered;
     pub use layout::split::{Split, UpdateOrder};
     pub use layout::stack::{ElementPositioning, Stack};
     pub use layout::Orientation;
     pub use margin::Margin;
-    pub use scene::{DrawableWrapper, SceneList, Scene};
+    pub use scene::{DrawableWrapper, Scene, SceneList};
+    pub use sdl2::rect::{Point, Rect};
     pub use solid::Solid;
-    pub use window::{WindowManager, WindowManagerSettings, default_settings};
+    pub use window::{default_settings, WindowManager, WindowManagerSettings};
     pub use withsize::WithSize;
 }

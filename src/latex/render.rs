@@ -28,7 +28,7 @@ use std::time::Instant;
 
 use image::PngImage;
 
-const LATEX_PRELUDE:  &str = include_str!("latex_prelude.tex");
+const LATEX_PRELUDE: &str = include_str!("latex_prelude.tex");
 const LATEX_POSTLUDE: &str = "\\end{document}";
 
 /// An error that might occur when rendering LaTeX expressions
@@ -172,7 +172,11 @@ fn create_tex(tex_path: &Path) -> IResult<()> {
         });
     }
 
-    writeln!(tex_file, "{}", LATEX_PRELUDE.replace("$PRELUDE", &added_prelude))?;
+    writeln!(
+        tex_file,
+        "{}",
+        LATEX_PRELUDE.replace("$PRELUDE", &added_prelude)
+    )?;
 
     if let Ok(eqs) = EQUATIONS.lock() {
         for equation in eqs.iter() {

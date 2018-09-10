@@ -8,7 +8,7 @@ use sdl2::render::Canvas;
 use sdl2::video::Window;
 
 use super::Orientation;
-use drawable::{DrawSettings, Drawable, Position, State, KnownSize};
+use drawable::{DrawSettings, Drawable, KnownSize, Position, State};
 
 /// Positioning the elements
 #[allow(missing_docs)]

@@ -2,10 +2,10 @@
 
 extern crate sdl2;
 
+use sdl2::event::Event;
 use sdl2::rect::{Point, Rect};
 use sdl2::render::Canvas;
 use sdl2::video::Window;
-use sdl2::event::Event;
 
 /// Where to draw a specific object.
 #[allow(unused)]
@@ -31,10 +31,16 @@ pub struct DrawSettings {
 }
 
 /// The default draw settings for the main window
-pub const DSETTINGS_MAIN: DrawSettings = DrawSettings { notes_view: false, background_color: (255, 248, 234) };
+pub const DSETTINGS_MAIN: DrawSettings = DrawSettings {
+    notes_view: false,
+    background_color: (255, 248, 234),
+};
 
 /// The default draw settings for the notes window
-pub const DSETTINGS_NOTES: DrawSettings = DrawSettings { notes_view: true, ..DSETTINGS_MAIN };
+pub const DSETTINGS_NOTES: DrawSettings = DrawSettings {
+    notes_view: true,
+    ..DSETTINGS_MAIN
+};
 
 /// The state for a specific object on screen, used in the [`Drawable::state()`]
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug)]
@@ -83,22 +89,20 @@ impl Position {
                 let center_x = rect.x() + rect.width() as i32 / 2;
                 let center_y = rect.y() + rect.height() as i32 / 2;
 
-                let x = (center_x - width  as i32 / 2).max(rect.x);
+                let x = (center_x - width as i32 / 2).max(rect.x);
                 let y = (center_y - height as i32 / 2).max(rect.y);
 
-                let width =
-                    if x + width as i32 > rect.x + rect.width() as i32 {
-                        rect.width()
-                    } else {
-                        width
-                    };
+                let width = if x + width as i32 > rect.x + rect.width() as i32 {
+                    rect.width()
+                } else {
+                    width
+                };
 
-                let height =
-                    if y + height as i32 > rect.y + rect.height() as i32 {
-                        rect.height()
-                    } else {
-                        height
-                    };
+                let height = if y + height as i32 > rect.y + rect.height() as i32 {
+                    rect.height()
+                } else {
+                    height
+                };
 
                 Rect::new(x, y, width, height)
             }
@@ -123,17 +127,18 @@ impl Position {
     /// ```
     pub fn into_rect_with_size_unbounded(self, width: u32, height: u32) -> Rect {
         match self {
-            Position::TopLeftCorner(point) => {
-                Rect::new(point.x, point.y, width, height)
-            }
-            Position::Center(point) => {
-                Rect::new(point.x - width as i32 / 2, point.y - height as i32 / 2, width, height)
-            }
+            Position::TopLeftCorner(point) => Rect::new(point.x, point.y, width, height),
+            Position::Center(point) => Rect::new(
+                point.x - width as i32 / 2,
+                point.y - height as i32 / 2,
+                width,
+                height,
+            ),
             Position::Rect(rect) => {
                 let center_x = rect.x() + rect.width() as i32 / 2;
                 let center_y = rect.y() + rect.height() as i32 / 2;
 
-                let x = (center_x - width  as i32 / 2).max(rect.x);
+                let x = (center_x - width as i32 / 2).max(rect.x);
                 let y = (center_y - height as i32 / 2).max(rect.y);
 
                 Rect::new(x, y, width, height)
@@ -192,8 +197,7 @@ pub trait Drawable: Send {
 pub trait KnownSize: Drawable {
     /// The width of the object
 
-    fn width(&self)  -> usize;
+    fn width(&self) -> usize;
     /// The height of the object
     fn height(&self) -> usize;
 }
-

@@ -4,7 +4,7 @@ use sdl2::rect::{Point, Rect};
 use sdl2::render::Canvas;
 use sdl2::video::Window;
 
-use drawable::{DrawSettings, Drawable, Position, State, KnownSize};
+use drawable::{DrawSettings, Drawable, KnownSize, Position, State};
 
 /// The direction to anchor the object to
 #[allow(missing_docs)]
@@ -72,36 +72,27 @@ impl<T: Drawable + KnownSize> Drawable for Anchor<T> {
         let (iwidth, iheight) = (self.width() as i32, self.height() as i32);
         let (rwidth, rheight) = (rect.width() as i32, rect.height() as i32);
 
-
-        let corner =
-            match self.direction {
-                AnchorDirection::North => {
-                    Point::new(rect.x + (rwidth - iwidth) / 2, rect.y)
-                }
-                AnchorDirection::East => {
-                    Point::new(rect.x + rwidth - iwidth, rect.y + (rheight - iheight) / 2)
-                }
-                AnchorDirection::South => {
-                    Point::new(rect.x + (rwidth - iwidth) / 2, rect.y + rheight - iheight)
-                }
-                AnchorDirection::West => {
-                    Point::new(rect.x, rect.y + (rheight - iheight) / 2)
-                }
-                AnchorDirection::NorthWest => {
-                    Point::new(rect.x, rect.y)
-                }
-                AnchorDirection::NorthEast => {
-                    Point::new(rect.x + rwidth - iwidth, rect.y)
-                }
-                AnchorDirection::SouthWest => {
-                    Point::new(rect.x, rect.y + rheight - iheight)
-                }
-                AnchorDirection::SouthEast => {
-                    Point::new(rect.x + rwidth - iwidth, rect.y + rheight - iheight)
-                }
-            };
-        self.inner
-            .draw(canvas, &Position::Rect(Rect::new(corner.x, corner.y, iwidth as u32, iheight as u32)), settings);
+        let corner = match self.direction {
+            AnchorDirection::North => Point::new(rect.x + (rwidth - iwidth) / 2, rect.y),
+            AnchorDirection::East => {
+                Point::new(rect.x + rwidth - iwidth, rect.y + (rheight - iheight) / 2)
+            }
+            AnchorDirection::South => {
+                Point::new(rect.x + (rwidth - iwidth) / 2, rect.y + rheight - iheight)
+            }
+            AnchorDirection::West => Point::new(rect.x, rect.y + (rheight - iheight) / 2),
+            AnchorDirection::NorthWest => Point::new(rect.x, rect.y),
+            AnchorDirection::NorthEast => Point::new(rect.x + rwidth - iwidth, rect.y),
+            AnchorDirection::SouthWest => Point::new(rect.x, rect.y + rheight - iheight),
+            AnchorDirection::SouthEast => {
+                Point::new(rect.x + rwidth - iwidth, rect.y + rheight - iheight)
+            }
+        };
+        self.inner.draw(
+            canvas,
+            &Position::Rect(Rect::new(corner.x, corner.y, iwidth as u32, iheight as u32)),
+            settings,
+        );
     }
 }
 

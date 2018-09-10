@@ -11,7 +11,7 @@ use self::png::{ColorType, Decoder, DecodingError};
 
 use std::io::Read;
 
-use drawable::{DrawSettings, Drawable, Position, State, KnownSize};
+use drawable::{DrawSettings, Drawable, KnownSize, Position, State};
 
 /// A PNG image. Currently only supports RGB and RGBA color types
 #[derive(Clone)]
@@ -49,14 +49,14 @@ impl PngImage {
 
                 for (x, col) in row.chunks(info.color_type.samples()).enumerate() {
                     let sdl_col = match info.color_type {
-                        ColorType::RGB  => Color::RGB(col[0], col[1], col[2]),
+                        ColorType::RGB => Color::RGB(col[0], col[1], col[2]),
                         ColorType::RGBA => Color::RGBA(col[0], col[1], col[2], col[3]),
                         _ => unimplemented!(),
                     };
 
                     let sdl_col = transform(sdl_col);
 
-                    data[(y * width + x) * 4    ] = sdl_col.b;
+                    data[(y * width + x) * 4] = sdl_col.b;
                     data[(y * width + x) * 4 + 1] = sdl_col.g;
                     data[(y * width + x) * 4 + 2] = sdl_col.r;
                     data[(y * width + x) * 4 + 3] = sdl_col.a;

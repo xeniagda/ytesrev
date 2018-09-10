@@ -1,16 +1,15 @@
 //! The thing to be rendered every time
 
-extern crate sdl2;
 extern crate rayon;
-
+extern crate sdl2;
 
 use std::mem;
 
 use rayon::prelude::*;
 
+use sdl2::rect::Rect;
 use sdl2::render::Canvas;
 use sdl2::video::Window;
-use sdl2::rect::Rect;
 
 use drawable::{DrawSettings, Drawable, Position, State};
 use window::YEvent;
@@ -64,7 +63,8 @@ impl<T: Drawable> Scene for DrawableWrapper<T> {
 
     fn draw(&mut self, canvas: &mut Canvas<Window>, settings: DrawSettings) {
         let (w, h) = canvas.window().size();
-        self.0.draw(canvas, &Position::Rect(Rect::new(0, 0, w, h)), settings);
+        self.0
+            .draw(canvas, &Position::Rect(Rect::new(0, 0, w, h)), settings);
     }
 
     fn event(&mut self, event: YEvent) {
@@ -101,7 +101,7 @@ pub struct SceneList {
     pub scenes: Vec<Box<dyn Scene>>,
 
     /// The index of the current scene being showed. Garuanteed to always be in bounds
-    current_scene: usize
+    current_scene: usize,
 }
 
 impl SceneList {

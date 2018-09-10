@@ -3,7 +3,7 @@
 use sdl2::render::Canvas;
 use sdl2::video::Window;
 
-use drawable::{DrawSettings, Drawable, Position, State, KnownSize};
+use drawable::{DrawSettings, Drawable, KnownSize, Position, State};
 
 /// A wrapper that makes an object have a known size
 pub struct WithSize<T: Drawable> {

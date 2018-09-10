@@ -5,7 +5,7 @@ use sdl2::rect::{Point, Rect};
 use sdl2::render::Canvas;
 use sdl2::video::Window;
 
-use drawable::{DrawSettings, Drawable, Position, State, KnownSize};
+use drawable::{DrawSettings, Drawable, KnownSize, Position, State};
 
 /// A wrapper around a Drawable with KnownSize, giving it a margin on all sides
 pub struct Margin<T: Drawable + KnownSize> {

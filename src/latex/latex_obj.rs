@@ -3,7 +3,7 @@
 extern crate sdl2;
 
 use super::render::{read_image, register_equation, LatexIdx};
-use drawable::{DrawSettings, Drawable, Position, State, KnownSize};
+use drawable::{DrawSettings, Drawable, KnownSize, Position, State};
 use image::{ImageContainer, PngImage};
 use sdl2::{pixels::Color, render::Canvas, video::Window};
 

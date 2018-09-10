@@ -8,7 +8,7 @@ use sdl2::video::Window;
 
 use super::rand::{thread_rng, Rng};
 
-use drawable::{DrawSettings, Drawable, Position, State, KnownSize};
+use drawable::{DrawSettings, Drawable, KnownSize, Position, State};
 use image::ImageContainer;
 
 const DITHER_SPEED: f64 = 350.;
@@ -24,7 +24,7 @@ enum DitherState {
 
 /// The direction to dither
 #[derive(PartialEq, Copy, Clone)]
-#[allow(unused,missing_docs)]
+#[allow(unused, missing_docs)]
 pub enum DitherDirection {
     Leftwards,
     Rightwards,
@@ -90,7 +90,7 @@ pub fn color_dither_fn<T: ImageContainer + KnownSize>(image: &T, (x, y): (usize,
         let r = image.get_data()[(y * image.width() + x) * 4 + 3];
         let g = image.get_data()[(y * image.width() + x) * 4 + 2];
         let b = image.get_data()[(y * image.width() + x) * 4 + 1];
-        let a = image.get_data()[(y * image.width() + x) * 4    ];
+        let a = image.get_data()[(y * image.width() + x) * 4];
         (r, g, b, a)
     };
 
@@ -353,19 +353,14 @@ impl<T: ImageContainer> Drawable for Ditherer<T> {
                 self.inner.step();
                 self.dither_out();
             }
-            DitherState::DitherOut => {
-            }
+            DitherState::DitherOut => {}
         }
     }
 
     fn state(&self) -> State {
         match self.dithering {
-            DitherState::Nothing => {
-                State::Working
-            }
-            DitherState::DitherIn => {
-                State::Final
-            }
+            DitherState::Nothing => State::Working,
+            DitherState::DitherIn => State::Final,
             DitherState::DitherOut => {
                 if self.is_dithered_out() {
                     State::Hidden
@@ -413,27 +408,28 @@ impl<T: ImageContainer> Drawable for Ditherer<T> {
                                 let nmult_min = 0.2;
                                 let nmult = mult * (1. - nmult_min) + nmult_min;
 
-                                let (r, g, b) =
-                                    if self.dithering == DitherState::Nothing {
-                                        (1., nmult_min, nmult_min)
-                                    } else if !self.is_dithered_in() {
-                                        (1. - mult, nmult, nmult_min)
-                                    } else if self.is_dithered_in() && self.dithering == DitherState::DitherIn {
-                                        (0., 1., nmult_min)
-                                    } else if self.dithering == DitherState::DitherOut {
-                                        (0., mult, 1. - nmult)
-                                    } else {
-                                        (0., 0., 1.)
-                                    };
+                                let (r, g, b) = if self.dithering == DitherState::Nothing {
+                                    (1., nmult_min, nmult_min)
+                                } else if !self.is_dithered_in() {
+                                    (1. - mult, nmult, nmult_min)
+                                } else if self.is_dithered_in()
+                                    && self.dithering == DitherState::DitherIn
+                                {
+                                    (0., 1., nmult_min)
+                                } else if self.dithering == DitherState::DitherOut {
+                                    (0., mult, 1. - nmult)
+                                } else {
+                                    (0., 0., 1.)
+                                };
 
                                 let avg = data[idx] / 3 + data[idx + 1] / 3 + data[idx + 2] / 3;
 
-                                cached[idx    ] = (b * (255. - avg as f64)) as u8;
+                                cached[idx] = (b * (255. - avg as f64)) as u8;
                                 cached[idx + 1] = (g * (255. - avg as f64)) as u8;
                                 cached[idx + 2] = (r * (255. - avg as f64)) as u8;
                                 cached[idx + 3] = (data[idx + 3] as f64) as u8;
                             } else {
-                                cached[idx    ] = (mult * data[idx    ] as f64) as u8;
+                                cached[idx] = (mult * data[idx] as f64) as u8;
                                 cached[idx + 1] = (mult * data[idx + 1] as f64) as u8;
                                 cached[idx + 2] = (mult * data[idx + 2] as f64) as u8;
                                 cached[idx + 3] = (mult * data[idx + 3] as f64) as u8;
