@@ -18,9 +18,9 @@ fn main() {
             Box::new(make_fourth_scene()),
         ]);
 
-    let mut wmng = WindowManager::init_main_notes(
+    let mut wmng = WindowManager::init_window(
         slist,
-        "Example".to_string(),
+        default_settings("Showcase")
     );
 
     wmng.start();

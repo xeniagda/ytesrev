@@ -54,6 +54,6 @@ pub mod prelude {
     pub use margin::Margin;
     pub use scene::{DrawableWrapper, SceneList, Scene};
     pub use solid::Solid;
-    pub use window::WindowManager;
+    pub use window::{WindowManager, WindowManagerSettings, default_settings};
     pub use withsize::WithSize;
 }

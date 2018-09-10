@@ -26,10 +26,38 @@ pub enum YEvent {
     Other(Event),
 }
 
-/// Settings for how a window should behave
+/// Settings for how a single window should behave
 pub struct WindowSettings {
+    /// The inner `DrawSettings` to be used for this window
     pub draw_settings: DrawSettings,
+    /// The size of this window
     pub window_size: (u32, u32),
+}
+
+/// Settings for the manager in general
+pub struct WindowManagerSettings {
+    /// Title and settings of each window
+    pub windows: Vec<(String, WindowSettings)>,
+    /// What events should make the presentation step forward?
+    pub event_step_rule: Box<dyn Fn(Event) -> bool>,
+}
+
+/// Create default settings for a given title
+pub fn default_settings(title: &str) -> WindowManagerSettings {
+    let title = title.to_string();
+    let mut notes_title = title.clone();
+    notes_title.push_str(" - Notes");
+    WindowManagerSettings {
+        windows: vec![(title, WSETTINGS_MAIN), (notes_title, WSETTINGS_NOTES)],
+        event_step_rule: Box::new(|event| match event {
+            Event::KeyDown {
+                keycode: Some(Keycode::Space),
+                ..
+            } => true,
+            Event::MouseButtonDown { .. } => true,
+            _ => false,
+        }),
+    }
 }
 
 /// The default window settings for the main window
@@ -48,6 +76,8 @@ pub const WSETTINGS_NOTES: WindowSettings = WindowSettings {
 pub struct WindowManager<T: Scene> {
     /// All canvases, together with their respective settings
     pub canvases: Vec<(WindowSettings, Canvas<Window>)>,
+    /// What events should make the presentation step forward?
+    pub event_step_rule: Box<dyn Fn(Event) -> bool>,
     /// The event pump
     pub event_pump: EventPump,
 
@@ -64,21 +94,11 @@ struct TimeManager {
     last_fps_print: Instant,
     durs: Vec<Duration>,
 }
- impl <T: Scene> WindowManager<T> {
-    /// Shorthand for `WindowManager::init_window(scenes, vec![SETTINGS_MAIN, SETTINGS_NOTES])`,
-    /// creating two windows, one for the main presentation and one for notes
-    pub fn init_main_notes(scene: T, title: String) -> WindowManager<T> {
-        let mut notes_title = title.clone();
-        notes_title.push_str(" - Notes");
-        WindowManager::init_window(
-            scene,
-            vec![(title, WSETTINGS_MAIN), (notes_title, WSETTINGS_NOTES)],
-        )
-    }
+impl<T: Scene> WindowManager<T> {
     /// Create a window manager
     ///
     /// This loads all scences and creates the windows according to the settings
-    pub fn init_window( mut scene: T, windows: Vec<(String, WindowSettings)>, ) -> WindowManager<T> {
+    pub fn init_window(mut scene: T, settings: WindowManagerSettings) -> WindowManager<T> {
         // Load everything
         scene.register();
 
@@ -94,12 +114,12 @@ struct TimeManager {
             delta.as_secs() as f64 + delta.subsec_millis() as f64 / 1000.
         );
 
-        let mut canvases = Vec::with_capacity(windows.len());
+        let mut canvases = Vec::with_capacity(settings.windows.len());
 
         let sdl_context = sdl2::init().unwrap();
         let video_subsystem = sdl_context.video().unwrap();
 
-        for (title, settings) in windows {
+        for (title, settings) in settings.windows {
             let window = video_subsystem
                 .window(&title, settings.window_size.0, settings.window_size.1)
                 .position_centered()
@@ -115,6 +135,7 @@ struct TimeManager {
 
         WindowManager {
             canvases,
+            event_step_rule: settings.event_step_rule,
             event_pump,
             scene,
             time_manager: None,
@@ -144,13 +165,11 @@ struct TimeManager {
                     _ => {}
                 }
 
-                match event {
-                    Event::KeyDown {
-                        keycode: Some(Keycode::Space),
-                        ..
-                    } => self.scene.event(YEvent::Step),
-                    e => self.scene.event(YEvent::Other(e)),
-                };
+                if (*self.event_step_rule)(event.clone()) {
+                    self.scene.event(YEvent::Step)
+                } else {
+                    self.scene.event(YEvent::Other(event))
+                }
             }
         } else {
             self.time_manager = Some(TimeManager::new());
