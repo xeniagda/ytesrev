@@ -19,6 +19,7 @@ use window::YEvent;
 ///
 /// [`WindowManager`]: ../window/struct.WindowManager.html
 #[allow(unused)]
+#[derive(PartialEq)]
 pub enum Action {
     /// Don't do anything
     Continue,
@@ -121,6 +122,10 @@ impl SceneList {
 impl Scene for SceneList {
     fn update(&mut self, dt: f64) {
         self.scenes[self.current_scene].update(dt);
+
+        if self.scenes[self.current_scene].action() == Action::Done {
+            self.current_scene += 1;
+        }
     }
     fn draw(&mut self, canvas: &mut Canvas<Window>, settings: DrawSettings) {
         self.scenes[self.current_scene].draw(canvas, settings);
@@ -129,13 +134,18 @@ impl Scene for SceneList {
         self.scenes[self.current_scene].event(event);
     }
     fn action(&self) -> Action {
-        self.scenes[self.current_scene].action()
+        if self.current_scene >= self.scenes.len() {
+            Action::Done
+        } else {
+            Action::Continue
+        }
     }
     fn register(&mut self) {
         for scene in &mut self.scenes {
             scene.register();
         }
     }
+
     fn load(&mut self) {
         let scenes = mem::replace(&mut self.scenes, Vec::new());
 
