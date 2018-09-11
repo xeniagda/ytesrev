@@ -16,6 +16,7 @@ fn main() {
         Box::new(make_second_scene()),
         Box::new(make_third_scene()),
         Box::new(make_fourth_scene()),
+        Box::new(make_fifth_scene()),
     ]);
 
     let mut wmng = WindowManager::init_window(slist, default_settings("Showcase"));
@@ -156,4 +157,58 @@ fn make_fourth_scene() -> impl Scene {
     );
 
     DrawableWrapper(background)
+}
+
+use ytesrev::drawable::{DrawSettings, Position, State};
+use ytesrev::sdl2::pixels::Color;
+use ytesrev::sdl2::render::Canvas;
+use ytesrev::sdl2::video::Window;
+
+struct Line(bool);
+
+impl Drawable for Line {
+    fn content(&self) -> Vec<&dyn Drawable> {
+        Vec::new()
+    }
+    fn content_mut(&mut self) -> Vec<&mut dyn Drawable> {
+        Vec::new()
+    }
+    fn step(&mut self) {
+        self.0 = false;
+    }
+    fn state(&self) -> State {
+        if self.0 {
+            State::Final
+        } else {
+            State::Hidden
+        }
+    }
+    fn draw(&mut self, canvas: &mut Canvas<Window>, position: &Position, _: DrawSettings) {
+        let r = match position {
+            Position::Rect(r) => *r,
+            _ => position.into_rect_with_size(100, 100),
+        };
+
+        let (p1, p2) = (r.top_left(), r.bottom_right());
+
+        canvas.set_draw_color(Color::RGB(0, 255, 0));
+
+        if self.0 {
+            utils::line_aa(
+                canvas,
+                (p1.x() as f64, p1.y() as f64),
+                (p2.x() as f64, p2.y() as f64),
+            );
+        }
+    }
+}
+
+fn make_fifth_scene() -> impl Scene {
+    DrawableWrapper(Split::new_ratio(
+        0.2,
+        Orientation::Vertical,
+        UpdateOrder::SecondFirst,
+        Ditherer::new(LatexObj::text("Antialiased lines!")),
+        Line(true),
+    ))
 }

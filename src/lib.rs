@@ -35,6 +35,7 @@ pub mod scene;
 pub mod solid;
 pub mod window;
 pub mod withsize;
+pub mod utils;
 
 pub mod prelude {
     //! A "prelude" to avoid having to `use` a gazillion different things
@@ -55,4 +56,5 @@ pub mod prelude {
     pub use solid::Solid;
     pub use window::{default_settings, WindowManager, WindowManagerSettings};
     pub use withsize::WithSize;
+    pub use utils;
 }
