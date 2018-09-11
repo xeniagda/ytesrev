@@ -159,12 +159,14 @@ fn make_fourth_scene() -> impl Scene {
     DrawableWrapper(background)
 }
 
+use std::mem;
 use ytesrev::drawable::{DrawSettings, Position, State};
 use ytesrev::sdl2::pixels::Color;
 use ytesrev::sdl2::render::Canvas;
 use ytesrev::sdl2::video::Window;
+use ytesrev::sdl2::event::Event;
 
-struct Line(bool);
+struct Line(bool, (f64, f64), (f64, f64));
 
 impl Drawable for Line {
     fn content(&self) -> Vec<&dyn Drawable> {
@@ -183,21 +185,25 @@ impl Drawable for Line {
             State::Hidden
         }
     }
-    fn draw(&mut self, canvas: &mut Canvas<Window>, position: &Position, _: DrawSettings) {
-        let r = match position {
-            Position::Rect(r) => *r,
-            _ => position.into_rect_with_size(100, 100),
-        };
-
-        let (p1, p2) = (r.top_left(), r.bottom_right());
-
+    fn event(&mut self, event: Event) {
+        match event {
+            Event::MouseMotion { x, y, .. } => {
+                self.1 = (x as f64, y as f64);
+            }
+            Event::KeyDown { .. } => {
+                mem::swap(&mut self.1, &mut self.2);
+            }
+            _ => {}
+        }
+    }
+    fn draw(&mut self, canvas: &mut Canvas<Window>, _: &Position, _: DrawSettings) {
         canvas.set_draw_color(Color::RGB(0, 255, 0));
 
         if self.0 {
             utils::line_aa(
                 canvas,
-                (p1.x() as f64, p1.y() as f64),
-                (p2.x() as f64, p2.y() as f64),
+                self.1,
+                self.2,
             );
         }
     }
@@ -209,6 +215,6 @@ fn make_fifth_scene() -> impl Scene {
         Orientation::Vertical,
         UpdateOrder::SecondFirst,
         Ditherer::new(LatexObj::text("Antialiased lines!")),
-        Line(true),
+        Line(true, (0., 0.), (0., 0.,)),
     ))
 }
