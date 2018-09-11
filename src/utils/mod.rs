@@ -13,12 +13,12 @@ pub fn line_aa(canvas: &mut Canvas<Window>, mut start: (f64, f64), mut end: (f64
     let steep = (start.1 - end.1).abs() > (start.0 - end.0).abs();
 
     if steep {
-        start.0 = mem::replace(&mut start.1, start.0);
-        end.0 = mem::replace(&mut end.1, end.0);
+        mem::swap(&mut start.0, &mut start.1);
+        mem::swap(&mut end.0, &mut end.1);
     }
     if start.0 > end.0 {
-        start.0 = mem::replace(&mut end.0, start.0);
-        start.1 = mem::replace(&mut end.1, start.1);
+        mem::swap(&mut start.0, &mut end.0);
+        mem::swap(&mut start.1, &mut end.1);
     }
 
     let dx = end.0 - start.0;
@@ -27,9 +27,8 @@ pub fn line_aa(canvas: &mut Canvas<Window>, mut start: (f64, f64), mut end: (f64
 
     // handle first endpoint
     let xend = start.0.round();
-    let yend = start.0 + grad * (xend - start.0);
+    let yend = start.1 + grad * (xend - start.0);
     let xgap = rfpart(start.0 + 0.5);
-
     let xpxl1 = xend;
     let ypxl1 = yend.floor();
 
