@@ -3,13 +3,68 @@
 use std::mem;
 
 use sdl2::rect::Point;
-use sdl2::render::{Canvas, BlendMode};
+use sdl2::render::{BlendMode, Canvas};
 use sdl2::video::Window;
+
+const EPSILON: f64 = 1e-5;
 
 /// Draw an antialiased line.
 ///
 /// Stolen from https://en.wikipedia.org/wiki/Xiaolin_Wu%27s_line_algorithm
 pub fn line_aa(canvas: &mut Canvas<Window>, mut start: (f64, f64), mut end: (f64, f64)) {
+    // Vertical line
+    if (start.0 - end.0).abs() < EPSILON {
+        let color_orig = canvas.draw_color();
+        let mut col = color_orig.clone();
+        col.a = (fpart(start.1) * 255.) as u8;
+        canvas.set_draw_color(col);
+
+        canvas.draw_line(
+            Point::new(start.0 as i32, start.1 as i32),
+            Point::new(end.0 as i32, end.1 as i32),
+        ).expect("Can't draw!");
+
+        col.a = (rfpart(start.1) * 255.) as u8;
+        canvas.set_draw_color(col);
+
+        canvas.draw_line(
+            Point::new(start.0 as i32 + 1, start.1 as i32),
+            Point::new(end.0 as i32 + 1, end.1 as i32),
+        ).expect("Can't draw!");
+
+        canvas.set_draw_color(color_orig);
+
+        return;
+    }
+
+    // Horizontal line
+    if (start.1 - end.1).abs() < EPSILON {
+        let color_orig = canvas.draw_color();
+        let mut col = color_orig.clone();
+        col.a = (fpart(start.1) * 255.) as u8;
+
+
+        canvas.set_draw_color(col);
+
+        canvas.draw_line(
+            Point::new(start.0 as i32, start.1 as i32),
+            Point::new(end.0 as i32, end.1 as i32),
+        ).expect("Can't draw!");
+
+        col.a = (rfpart(start.1) * 255.) as u8;
+
+        canvas.set_draw_color(col);
+
+        canvas.draw_line(
+            Point::new(start.0 as i32, start.1 as i32 + 1),
+            Point::new(end.0 as i32, end.1 as i32 + 1),
+        ).expect("Can't draw!");
+
+        canvas.set_draw_color(color_orig);
+
+        return;
+    }
+
     let steep = (start.1 - end.1).abs() > (start.0 - end.0).abs();
 
     if steep {
@@ -23,7 +78,10 @@ pub fn line_aa(canvas: &mut Canvas<Window>, mut start: (f64, f64), mut end: (f64
 
     let dx = end.0 - start.0;
     let dy = end.1 - start.1;
-    let grad = if dx == 0. { 1. } else { dy / dx };
+
+
+
+    let grad = dy / dx;
 
     // handle first endpoint
     let xend = start.0.round();
@@ -83,7 +141,9 @@ fn put_pixel(canvas: &mut Canvas<Window>, at: (f64, f64), intensity: f64) {
 
     canvas.set_draw_color(color);
 
-    canvas.draw_point(Point::new(at.0 as i32, at.1 as i32)).expect("Can't draw");
+    canvas
+        .draw_point(Point::new(at.0 as i32, at.1 as i32))
+        .expect("Can't draw");
 
     canvas.set_draw_color(color_orig);
 }
