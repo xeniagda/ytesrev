@@ -176,7 +176,11 @@ pub trait Drawable: Send {
     fn step(&mut self);
 
     /// When any event occurs
-    fn event(&mut self, _event: Event) {}
+    fn event(&mut self, e: Event) {
+        for x in self.content_mut() {
+            x.event(e.clone());
+        }
+    }
 
     /// What state the object is in
     fn state(&self) -> State;
