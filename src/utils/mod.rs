@@ -16,7 +16,7 @@ pub fn line_aa(canvas: &mut Canvas<Window>, mut start: (f64, f64), mut end: (f64
     if (start.0 - end.0).abs() < EPSILON {
         let color_orig = canvas.draw_color();
         let mut col = color_orig.clone();
-        col.a = (fpart(start.1) * 255.) as u8;
+        col.a = (rfpart(start.1) * 255.) as u8;
         canvas.set_draw_color(col);
 
         canvas.draw_line(
@@ -24,7 +24,7 @@ pub fn line_aa(canvas: &mut Canvas<Window>, mut start: (f64, f64), mut end: (f64
             Point::new(end.0 as i32, end.1 as i32),
         ).expect("Can't draw!");
 
-        col.a = (rfpart(start.1) * 255.) as u8;
+        col.a = (fpart(start.1) * 255.) as u8;
         canvas.set_draw_color(col);
 
         canvas.draw_line(
@@ -41,7 +41,7 @@ pub fn line_aa(canvas: &mut Canvas<Window>, mut start: (f64, f64), mut end: (f64
     if (start.1 - end.1).abs() < EPSILON {
         let color_orig = canvas.draw_color();
         let mut col = color_orig.clone();
-        col.a = (fpart(start.1) * 255.) as u8;
+        col.a = (rfpart(start.1) * 255.) as u8;
 
 
         canvas.set_draw_color(col);
@@ -51,7 +51,7 @@ pub fn line_aa(canvas: &mut Canvas<Window>, mut start: (f64, f64), mut end: (f64
             Point::new(end.0 as i32, end.1 as i32),
         ).expect("Can't draw!");
 
-        col.a = (rfpart(start.1) * 255.) as u8;
+        col.a = (fpart(start.1) * 255.) as u8;
 
         canvas.set_draw_color(col);
 
@@ -72,8 +72,7 @@ pub fn line_aa(canvas: &mut Canvas<Window>, mut start: (f64, f64), mut end: (f64
         mem::swap(&mut end.0, &mut end.1);
     }
     if start.0 > end.0 {
-        mem::swap(&mut start.0, &mut end.0);
-        mem::swap(&mut start.1, &mut end.1);
+        mem::swap(&mut start, &mut end);
     }
 
     let dx = end.0 - start.0;
@@ -81,7 +80,7 @@ pub fn line_aa(canvas: &mut Canvas<Window>, mut start: (f64, f64), mut end: (f64
 
 
 
-    let grad = dy / dx;
+    let grad = dy / dx - EPSILON;
 
     // handle first endpoint
     let xend = start.0.round();
@@ -117,13 +116,13 @@ pub fn line_aa(canvas: &mut Canvas<Window>, mut start: (f64, f64), mut end: (f64
 
     // main loop
     if steep {
-        for x in (xpxl1 as i32 + 1)..(xpxl2 as i32 - 1) {
+        for x in (xpxl1 as i32 + 1)..xpxl2 as i32 {
             put_pixel(canvas, (intery.floor(), x as f64), rfpart(intery));
             put_pixel(canvas, (intery.floor() + 1., x as f64), fpart(intery));
             intery = intery + grad;
         }
     } else {
-        for x in (xpxl1 as i32 + 1)..(xpxl2 as i32 - 1) {
+        for x in (xpxl1 as i32 + 1)..xpxl2 as i32 {
             put_pixel(canvas, (x as f64, intery.floor()), rfpart(intery));
             put_pixel(canvas, (x as f64, intery.floor() + 1.), fpart(intery));
             intery = intery + grad;
