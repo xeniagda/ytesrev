@@ -41,7 +41,7 @@ pub mod prelude {
     //! A "prelude" to avoid having to `use` a gazillion different things
     pub use anchor::{Anchor, AnchorDirection};
     pub use ditherer::{alpha_dither_fn, color_dither_fn, DitherDirection, Ditherer};
-    pub use drawable::Drawable;
+    pub use drawable::{Drawable, DrawSettings, Position};
     pub use empty::Empty;
     pub use image::PngImage;
     pub use latex::render::add_prelude;
@@ -51,10 +51,14 @@ pub mod prelude {
     pub use layout::stack::{ElementPositioning, Stack};
     pub use layout::Orientation;
     pub use margin::Margin;
-    pub use scene::{DrawableWrapper, Scene, SceneList};
-    pub use sdl2::rect::{Point, Rect};
+    pub use scene::{DrawableWrapper, Scene, SceneList, Action};
     pub use solid::Solid;
-    pub use window::{default_settings, WindowManager, WindowManagerSettings};
+    pub use window::{default_settings, WindowManager, WindowManagerSettings, YEvent};
     pub use withsize::WithSize;
     pub use utils;
+
+    pub use sdl2::rect::{Point, Rect};
+    pub use sdl2::video::Window;
+    pub use sdl2::render::Canvas;
+    pub use sdl2::pixels::Color;
 }
