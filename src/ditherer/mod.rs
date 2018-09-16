@@ -371,7 +371,7 @@ impl<T: ImageContainer> Drawable for Ditherer<T> {
         }
     }
 
-    fn draw(&mut self, canvas: &mut Canvas<Window>, pos: &Position, settings: DrawSettings) {
+    fn draw(&self, canvas: &mut Canvas<Window>, pos: &Position, settings: DrawSettings) {
         let mut t_mult = 1.;
         if self.max_time as f64 > MAX_TIME * DITHER_SPEED {
             t_mult = self.max_time as f64 / (MAX_TIME * DITHER_SPEED);

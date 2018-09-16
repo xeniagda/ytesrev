@@ -45,7 +45,7 @@ impl<T: Drawable> Drawable for WithSize<T> {
         self.inner.state()
     }
 
-    fn draw(&mut self, canvas: &mut Canvas<Window>, pos: &Position, settings: DrawSettings) {
+    fn draw(&self, canvas: &mut Canvas<Window>, pos: &Position, settings: DrawSettings) {
         self.inner.draw(canvas, pos, settings);
     }
 }

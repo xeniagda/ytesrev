@@ -179,7 +179,7 @@ impl<T: Scene> WindowManager<T> {
     }
 
     fn draw(&mut self) {
-        for (ref mut settings, ref mut canvas) in &mut self.canvases {
+        for (ref settings, ref mut canvas) in &mut self.canvases {
             canvas.set_draw_color(Color::RGBA(
                 settings.draw_settings.background_color.0,
                 settings.draw_settings.background_color.1,

@@ -114,8 +114,8 @@ impl Drawable for LatexObj {
         }
     }
 
-    fn draw(&mut self, canvas: &mut Canvas<Window>, position: &Position, settings: DrawSettings) {
-        if let Some(ref mut img) = self.inner {
+    fn draw(&self, canvas: &mut Canvas<Window>, position: &Position, settings: DrawSettings) {
+        if let Some(ref img) = self.inner {
             img.draw(canvas, position, settings);
         } else {
             canvas.set_draw_color(Color::RGB(255, 0, 255));

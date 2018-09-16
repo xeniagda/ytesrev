@@ -196,7 +196,7 @@ impl Drawable for Line {
             _ => {}
         }
     }
-    fn draw(&mut self, canvas: &mut Canvas<Window>, _: &Position, _: DrawSettings) {
+    fn draw(&self, canvas: &mut Canvas<Window>, _: &Position, _: DrawSettings) {
         canvas.set_draw_color(Color::RGB(0, 255, 0));
 
         if self.0 {

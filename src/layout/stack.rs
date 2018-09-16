@@ -78,7 +78,7 @@ impl<'a> Drawable for Stack {
             .collect()
     }
 
-    fn draw(&mut self, canvas: &mut Canvas<Window>, pos: &Position, settings: DrawSettings) {
+    fn draw(&self, canvas: &mut Canvas<Window>, pos: &Position, settings: DrawSettings) {
         let rect = pos.into_rect_with_size(self.width() as u32, self.height() as u32);
         let corner = rect.top_left();
         if settings.notes_view {
@@ -91,7 +91,7 @@ impl<'a> Drawable for Stack {
         match self.orientation {
             Orientation::Vertical => {
                 let mut y = corner.y;
-                for obj in &mut self.content {
+                for obj in &self.content {
                     let corner = match self.positioning {
                         ElementPositioning::TopLeftCornered => Point::new(corner.x, y),
                         ElementPositioning::Centered => {
@@ -115,7 +115,7 @@ impl<'a> Drawable for Stack {
             }
             Orientation::Horizontal => {
                 let mut x = corner.x;
-                for obj in &mut self.content {
+                for obj in &self.content {
                     let corner = match self.positioning {
                         ElementPositioning::TopLeftCornered => Point::new(x, corner.y),
                         ElementPositioning::Centered => {

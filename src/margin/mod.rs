@@ -56,7 +56,7 @@ impl<T: Drawable + KnownSize> Drawable for Margin<T> {
         self.inner.state()
     }
 
-    fn draw(&mut self, canvas: &mut Canvas<Window>, pos: &Position, settings: DrawSettings) {
+    fn draw(&self, canvas: &mut Canvas<Window>, pos: &Position, settings: DrawSettings) {
         match pos {
             Position::Rect(r) => {
                 let r2 = Rect::new(

@@ -80,7 +80,7 @@ impl Drawable for PngImage {
         vec![]
     }
 
-    fn draw(&mut self, canvas: &mut Canvas<Window>, pos: &Position, _settings: DrawSettings) {
+    fn draw(&self, canvas: &mut Canvas<Window>, pos: &Position, _settings: DrawSettings) {
         let creator = canvas.texture_creator();
         let mut texture = creator
             .create_texture_target(None, self.width as u32, self.height as u32)

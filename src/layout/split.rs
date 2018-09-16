@@ -100,7 +100,7 @@ impl<T: Drawable, U: Drawable> Drawable for Split<T, U> {
         vec![&mut self.first, &mut self.second]
     }
 
-    fn draw(&mut self, canvas: &mut Canvas<Window>, pos: &Position, settings: DrawSettings) {
+    fn draw(&self, canvas: &mut Canvas<Window>, pos: &Position, settings: DrawSettings) {
         match pos {
             Position::TopLeftCorner(_) | Position::Center(_) => {
                 eprintln!("Trying to draw a Splitpane not using a Position::Rect. Please don't");

@@ -28,11 +28,5 @@ impl Drawable for Empty {
         State::Hidden
     }
 
-    fn draw(
-        &mut self,
-        _canvas: &mut Canvas<Window>,
-        _position: &Position,
-        _settings: DrawSettings,
-    ) {
-    }
+    fn draw(&self, _canvas: &mut Canvas<Window>, _position: &Position, _settings: DrawSettings) {}
 }

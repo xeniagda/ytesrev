@@ -57,8 +57,8 @@ impl Drawable for Layered {
             .collect()
     }
 
-    fn draw(&mut self, canvas: &mut Canvas<Window>, pos: &Position, settings: DrawSettings) {
-        for obj in &mut self.content {
+    fn draw(&self, canvas: &mut Canvas<Window>, pos: &Position, settings: DrawSettings) {
+        for obj in &self.content {
             obj.draw(canvas, pos, settings);
         }
     }

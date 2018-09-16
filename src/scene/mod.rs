@@ -35,7 +35,7 @@ pub trait Scene: Send {
     /// Do a tick
     fn update(&mut self, _dt: f64);
     /// Draw the content of this scene to a `Canvas`.
-    fn draw(&mut self, canvas: &mut Canvas<Window>, settings: DrawSettings);
+    fn draw(&self, canvas: &mut Canvas<Window>, settings: DrawSettings);
     /// Called when an event occured
     fn event(&mut self, _event: YEvent);
     /// What to do
@@ -61,7 +61,7 @@ impl<T: Drawable> Scene for DrawableWrapper<T> {
         self.0.update(dt);
     }
 
-    fn draw(&mut self, canvas: &mut Canvas<Window>, settings: DrawSettings) {
+    fn draw(&self, canvas: &mut Canvas<Window>, settings: DrawSettings) {
         let (w, h) = canvas.window().size();
         self.0
             .draw(canvas, &Position::Rect(Rect::new(0, 0, w, h)), settings);
@@ -127,7 +127,7 @@ impl Scene for SceneList {
             self.current_scene += 1;
         }
     }
-    fn draw(&mut self, canvas: &mut Canvas<Window>, settings: DrawSettings) {
+    fn draw(&self, canvas: &mut Canvas<Window>, settings: DrawSettings) {
         self.scenes[self.current_scene].draw(canvas, settings);
     }
     fn event(&mut self, event: YEvent) {
