@@ -38,8 +38,11 @@ pub struct WindowSettings {
 pub struct WindowManagerSettings {
     /// Title and settings of each window
     pub windows: Vec<(String, WindowSettings)>,
-    /// What events should make the presentation step forward?
+    /// What events should make the presentation step forward? Default: The space button or mouse
+    /// press
     pub event_step_rule: Box<dyn Fn(Event) -> bool>,
+    /// At what event should the presentation quit? Default: On escape or the window is closed.
+    pub quit_rule: Box<dyn Fn(Event) -> bool>,
 }
 
 /// Create default settings for a given title
@@ -55,6 +58,14 @@ pub fn default_settings(title: &str) -> WindowManagerSettings {
                 ..
             } => true,
             Event::MouseButtonDown { .. } => true,
+            _ => false,
+        }),
+        quit_rule: Box::new(|event| match event {
+            Event::KeyDown {
+                keycode: Some(Keycode::Escape),
+                ..
+            } => true,
+            Event::Quit { .. } => true,
             _ => false,
         }),
     }
@@ -76,8 +87,12 @@ pub const WSETTINGS_NOTES: WindowSettings = WindowSettings {
 pub struct WindowManager<T: Scene> {
     /// All canvases, together with their respective settings
     pub canvases: Vec<(WindowSettings, Canvas<Window>)>,
+
     /// What events should make the presentation step forward?
     pub event_step_rule: Box<dyn Fn(Event) -> bool>,
+    /// At what event should the presentation quit? Default: On escape or the window is closed.
+    pub quit_rule: Box<dyn Fn(Event) -> bool>,
+
     /// The event pump
     pub event_pump: EventPump,
 
@@ -136,6 +151,7 @@ impl<T: Scene> WindowManager<T> {
         WindowManager {
             canvases,
             event_step_rule: settings.event_step_rule,
+            quit_rule: settings.quit_rule,
             event_pump,
             scene,
             time_manager: None,
@@ -156,16 +172,9 @@ impl<T: Scene> WindowManager<T> {
             }
 
             for event in self.event_pump.poll_iter() {
-                match event {
-                    Event::Quit { .. }
-                    | Event::KeyDown {
-                        keycode: Some(Keycode::Escape),
-                        ..
-                    } => return false,
-                    _ => {}
-                }
-
-                if (*self.event_step_rule)(event.clone()) {
+                if (*self.quit_rule)(event.clone()) {
+                    return false;
+                } else if (*self.event_step_rule)(event.clone()) {
                     self.scene.event(YEvent::Step)
                 } else {
                     self.scene.event(YEvent::Other(event))

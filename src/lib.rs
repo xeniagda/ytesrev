@@ -41,7 +41,7 @@ pub mod prelude {
     //! A "prelude" to avoid having to `use` a gazillion different things
     pub use anchor::{Anchor, AnchorDirection};
     pub use ditherer::{alpha_dither_fn, color_dither_fn, DitherDirection, Ditherer};
-    pub use drawable::{Drawable, DrawSettings, Position};
+    pub use drawable::{Drawable, DrawSettings, Position, State};
     pub use empty::Empty;
     pub use image::PngImage;
     pub use latex::render::add_prelude;
