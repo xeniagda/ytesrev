@@ -16,7 +16,7 @@ pub fn line_aa(canvas: &mut Canvas<Window>, mut start: (f64, f64), mut end: (f64
     if (start.0 - end.0).abs() < EPSILON {
         let color_orig = canvas.draw_color();
         let mut col = color_orig.clone();
-        col.a = (rfpart(start.1) * 255.) as u8;
+        col.a = (rfpart(start.1) * col.a as f64) as u8;
         canvas.set_draw_color(col);
 
         canvas.draw_line(
@@ -24,7 +24,7 @@ pub fn line_aa(canvas: &mut Canvas<Window>, mut start: (f64, f64), mut end: (f64
             Point::new(end.0 as i32, end.1 as i32),
         ).expect("Can't draw!");
 
-        col.a = (fpart(start.1) * 255.) as u8;
+        col.a = (fpart(start.1) * col.a as f64) as u8;
         canvas.set_draw_color(col);
 
         canvas.draw_line(
@@ -41,7 +41,7 @@ pub fn line_aa(canvas: &mut Canvas<Window>, mut start: (f64, f64), mut end: (f64
     if (start.1 - end.1).abs() < EPSILON {
         let color_orig = canvas.draw_color();
         let mut col = color_orig.clone();
-        col.a = (rfpart(start.1) * 255.) as u8;
+        col.a = (rfpart(start.1) * col.a as f64) as u8;
 
 
         canvas.set_draw_color(col);
@@ -51,7 +51,7 @@ pub fn line_aa(canvas: &mut Canvas<Window>, mut start: (f64, f64), mut end: (f64
             Point::new(end.0 as i32, end.1 as i32),
         ).expect("Can't draw!");
 
-        col.a = (fpart(start.1) * 255.) as u8;
+        col.a = (fpart(start.1) * col.a as f64) as u8;
 
         canvas.set_draw_color(col);
 
@@ -136,7 +136,7 @@ fn put_pixel(canvas: &mut Canvas<Window>, at: (f64, f64), intensity: f64) {
 
     canvas.set_blend_mode(BlendMode::Blend);
 
-    color.a = (intensity * 256.) as u8;
+    color.a = (intensity * color.a as f64) as u8;
 
     canvas.set_draw_color(color);
 
