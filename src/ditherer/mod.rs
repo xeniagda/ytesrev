@@ -3,6 +3,7 @@
 use std::cell::Cell;
 use std::{f64, u64};
 
+use sdl2::pixels::PixelFormatEnum;
 use sdl2::render::{BlendMode, Canvas};
 use sdl2::video::Window;
 
@@ -424,9 +425,9 @@ impl<T: ImageContainer> Drawable for Ditherer<T> {
 
                                 let avg = data[idx] / 3 + data[idx + 1] / 3 + data[idx + 2] / 3;
 
-                                cached[idx] = (b * (255. - avg as f64)) as u8;
+                                cached[idx] = (r * (255. - avg as f64)) as u8;
                                 cached[idx + 1] = (g * (255. - avg as f64)) as u8;
-                                cached[idx + 2] = (r * (255. - avg as f64)) as u8;
+                                cached[idx + 2] = (b * (255. - avg as f64)) as u8;
                                 cached[idx + 3] = (data[idx + 3] as f64) as u8;
                             } else {
                                 cached[idx] = (mult * data[idx] as f64) as u8;
@@ -439,10 +440,11 @@ impl<T: ImageContainer> Drawable for Ditherer<T> {
                     let creator = canvas.texture_creator();
                     let mut texture = creator
                         .create_texture_target(
-                            None,
+                            Some(PixelFormatEnum::ABGR8888),
                             self.inner.width() as u32,
                             self.inner.height() as u32,
-                        ).expect("Can't make texture");
+                        )
+                        .expect("Can't make texture");
 
                     texture.set_blend_mode(BlendMode::Blend);
 

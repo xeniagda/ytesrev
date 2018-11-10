@@ -3,7 +3,7 @@
 extern crate png;
 extern crate sdl2;
 
-use sdl2::pixels::Color;
+use sdl2::pixels::{Color, PixelFormatEnum};
 use sdl2::render::{BlendMode, Canvas};
 use sdl2::video::Window;
 
@@ -20,7 +20,7 @@ pub struct PngImage {
     pub width: usize,
     /// The height of the image
     pub height: usize,
-    /// The data in the image, stored in chunks of 4 per pixel, containing the image in ABGR order
+    /// The data in the image, stored in chunks of 4 per pixel, containing the image in RGBA order
     pub data: Vec<u8>,
 }
 
@@ -56,9 +56,9 @@ impl PngImage {
 
                     let sdl_col = transform(sdl_col);
 
-                    data[(y * width + x) * 4] = sdl_col.b;
+                    data[(y * width + x) * 4] = sdl_col.r;
                     data[(y * width + x) * 4 + 1] = sdl_col.g;
-                    data[(y * width + x) * 4 + 2] = sdl_col.r;
+                    data[(y * width + x) * 4 + 2] = sdl_col.b;
                     data[(y * width + x) * 4 + 3] = sdl_col.a;
                 }
             }
@@ -83,7 +83,13 @@ impl Drawable for PngImage {
     fn draw(&self, canvas: &mut Canvas<Window>, pos: &Position, _settings: DrawSettings) {
         let creator = canvas.texture_creator();
         let mut texture = creator
-            .create_texture_target(None, self.width as u32, self.height as u32)
+            .create_texture_target(
+                // The pixels are stored in RGBA order in self.data, but using
+                // PixelFormatEnum::RGBA8888 gives the wrong image for some odd reason.
+                Some(PixelFormatEnum::ABGR8888),
+                self.width as u32,
+                self.height as u32,
+            )
             .expect("Can't make texture");
 
         texture.set_blend_mode(BlendMode::Blend);
