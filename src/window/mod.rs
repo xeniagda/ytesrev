@@ -8,6 +8,7 @@ use sdl2::pixels::Color;
 use sdl2::render::Canvas;
 use sdl2::video::Window;
 use sdl2::EventPump;
+use sdl2::Sdl;
 
 use std::thread::sleep;
 use std::time::{Duration, Instant};
@@ -85,6 +86,9 @@ pub const WSETTINGS_NOTES: WindowSettings = WindowSettings {
 
 /// The manager of the entire presentation.
 pub struct WindowManager<T: Scene> {
+    /// The sdl context from `sdl2::init`
+    pub context: Sdl,
+
     /// All canvases, together with their respective settings
     pub canvases: Vec<(WindowSettings, Canvas<Window>)>,
 
@@ -149,6 +153,7 @@ impl<T: Scene> WindowManager<T> {
         let event_pump = sdl_context.event_pump().unwrap();
 
         WindowManager {
+            context: sdl_context,
             canvases,
             event_step_rule: settings.event_step_rule,
             quit_rule: settings.quit_rule,
