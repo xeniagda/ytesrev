@@ -75,6 +75,7 @@ impl<T: Drawable> Scene for DrawableWrapper<T> {
             YEvent::Other(e) => {
                 self.0.event(e);
             }
+            YEvent::StepSlide => {}
         }
     }
 
@@ -131,7 +132,12 @@ impl Scene for SceneList {
         self.scenes[self.current_scene].draw(canvas, settings);
     }
     fn event(&mut self, event: YEvent) {
-        self.scenes[self.current_scene].event(event);
+        match event {
+            YEvent::StepSlide => self.current_scene += 1,
+            _ => {
+                self.scenes[self.current_scene].event(event);
+            }
+        }
     }
     fn action(&self) -> Action {
         if self.current_scene >= self.scenes.len() {
@@ -156,6 +162,7 @@ impl Scene for SceneList {
                 eprintln!("Loading scene {}...", i + 1);
                 scene.load();
                 scene
-            }).collect::<Vec<Box<dyn Scene>>>();
+            })
+            .collect::<Vec<Box<dyn Scene>>>();
     }
 }

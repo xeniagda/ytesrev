@@ -23,6 +23,8 @@ const FPS_PRINT_RATE: Duration = Duration::from_millis(1000);
 pub enum YEvent {
     /// A special event that is emmitted when the user advances the state of the presentation
     Step,
+    /// Step to the next slide in the presentation
+    StepSlide,
     /// Anything else
     Other(Event),
 }
@@ -42,6 +44,8 @@ pub struct WindowManagerSettings {
     /// What events should make the presentation step forward? Default: The space button or mouse
     /// press
     pub event_step_rule: Box<dyn Fn(Event) -> bool>,
+    /// What events should make the presentation go forward one slide? Default: enter
+    pub event_step_slide_rule: Box<dyn Fn(Event) -> bool>,
     /// At what event should the presentation quit? Default: On escape or the window is closed.
     pub quit_rule: Box<dyn Fn(Event) -> bool>,
 }
@@ -59,6 +63,13 @@ pub fn default_settings(title: &str) -> WindowManagerSettings {
                 ..
             } => true,
             Event::MouseButtonDown { .. } => true,
+            _ => false,
+        }),
+        event_step_slide_rule: Box::new(|event| match event {
+            Event::KeyDown {
+                keycode: Some(Keycode::Return),
+                ..
+            } => true,
             _ => false,
         }),
         quit_rule: Box::new(|event| match event {
@@ -94,6 +105,8 @@ pub struct WindowManager<T: Scene> {
 
     /// What events should make the presentation step forward?
     pub event_step_rule: Box<dyn Fn(Event) -> bool>,
+    /// What events should make the presentation step one slide forward?
+    pub event_step_slide_rule: Box<dyn Fn(Event) -> bool>,
     /// At what event should the presentation quit? Default: On escape or the window is closed.
     pub quit_rule: Box<dyn Fn(Event) -> bool>,
 
@@ -156,6 +169,7 @@ impl<T: Scene> WindowManager<T> {
             context: sdl_context,
             canvases,
             event_step_rule: settings.event_step_rule,
+            event_step_slide_rule: settings.event_step_slide_rule,
             quit_rule: settings.quit_rule,
             event_pump,
             scene,
@@ -179,6 +193,8 @@ impl<T: Scene> WindowManager<T> {
             for event in self.event_pump.poll_iter() {
                 if (*self.quit_rule)(event.clone()) {
                     return false;
+                } else if (*self.event_step_slide_rule)(event.clone()) {
+                    self.scene.event(YEvent::StepSlide)
                 } else if (*self.event_step_rule)(event.clone()) {
                     self.scene.event(YEvent::Step)
                 } else {
