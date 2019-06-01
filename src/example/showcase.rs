@@ -62,7 +62,7 @@ fn make_third_scene() -> impl Scene {
         0.2,
         Orientation::Vertical,
         UpdateOrder::SecondFirst,
-        Ditherer::dithered_in(LatexObj::text("\\huge Second page")),
+        Ditherer::dithered_in(LatexObj::text("\\huge Third page")),
         Layered::new(
             false,
             vec![
@@ -80,9 +80,9 @@ fn make_fourth_scene() -> impl Scene {
         0.2,
         Orientation::Vertical,
         UpdateOrder::SecondFirst,
-        Ditherer::dithered_in(LatexObj::text("\\huge Third page")),
+        Ditherer::dithered_in(LatexObj::text("\\huge Fourth page")),
         Stack::new(
-            0,
+            10,
             Orientation::Horizontal,
             ElementPositioning::TopLeftCornered,
             false,
@@ -101,7 +101,7 @@ fn make_fourth_scene() -> impl Scene {
 }
 
 fn make_fifth_scene() -> impl Scene {
-    let background = Layered::new(
+    let directions = Layered::new(
         false,
         vec![
             Box::new(Margin::new_vert_hor(
@@ -165,7 +165,14 @@ fn make_fifth_scene() -> impl Scene {
         ],
     );
 
-    DrawableWrapper(background)
+    let compass = Ditherer::dithering_in(
+        PngImage::load_from_path(File::open("compass.png").unwrap()).unwrap(),
+    );
+
+    DrawableWrapper(Layered::new(
+        true,
+        vec![Box::new(compass), Box::new(directions)],
+    ))
 }
 
 use ytesrev::drawable::{DrawSettings, Position, State};
