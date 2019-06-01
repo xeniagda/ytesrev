@@ -183,8 +183,8 @@ use ytesrev::sdl2::video::Window;
 
 struct Line(bool, f64);
 
-const NR_LINES: usize = 10;
-const SIZE: f64 = 100.;
+const NR_LINES: usize = 20;
+const SIZE: f64 = 200.;
 
 impl Drawable for Line {
     fn content(&self) -> Vec<&dyn Drawable> {
@@ -214,22 +214,26 @@ impl Drawable for Line {
 
     fn draw(&self, canvas: &mut Canvas<Window>, pos: &Position, _: DrawSettings) {
         if self.0 {
+
             let cent = pos.into_rect_with_size(10, 10).center();
 
             for line in 0..NR_LINES {
                 let angle = line as f64 / NR_LINES as f64 * PI * 2. + self.1;
 
                 canvas.set_draw_color(Color::RGB(
-                    ((-angle.sin() + 1.) * 127.) as u8,
-                    (((-angle + PI * 2. / 3.).sin() + 1.) * 127.) as u8,
-                    (((-angle + PI * 4. / 3.).sin() + 1.) * 127.) as u8,
+                    ((angle.sin() + 1.) * 127.) as u8,
+                    (((angle + PI * 2. / 3.).sin() + 1.) * 127.) as u8,
+                    (((angle + PI * 4. / 3.).sin() + 1.) * 127.) as u8,
                 ));
 
                 let x = angle.cos() * SIZE;
                 let sx = cent.x() as f64;
                 let y = angle.sin() * SIZE;
                 let sy = cent.y() as f64;
-                utils::line_aa(canvas, (x / 2. + sx, y / 2. + sy), (x + sx, y + sy));
+
+                let start = (x / 2. + sx, y / 2. + sy);
+                let end = (x + sx, y + sy);
+                utils::line_aa_width(canvas, start, end, 10.);
             }
         }
     }
