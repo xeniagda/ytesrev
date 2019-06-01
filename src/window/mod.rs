@@ -193,7 +193,7 @@ impl<T: Scene> WindowManager<T> {
     }
 
     fn draw(&mut self) {
-        for (ref settings, ref mut canvas) in &mut self.canvases {
+        for (ref mut settings, ref mut canvas) in &mut self.canvases {
             canvas.set_draw_color(Color::RGBA(
                 settings.draw_settings.background_color.0,
                 settings.draw_settings.background_color.1,
@@ -201,6 +201,8 @@ impl<T: Scene> WindowManager<T> {
                 255,
             ));
             canvas.clear();
+
+            settings.window_size = canvas.window().size();
 
             self.scene.draw(canvas, settings.draw_settings);
 
