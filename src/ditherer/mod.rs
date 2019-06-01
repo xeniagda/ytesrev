@@ -117,6 +117,7 @@ pub struct Ditherer<T: ImageContainer + 'static> {
     /// The direction to dither in
     pub direction: DitherDirection,
     dithering: DitherState,
+    dither_start: bool,
 }
 
 unsafe impl<T: ImageContainer> Send for Ditherer<T> {}
@@ -157,6 +158,7 @@ impl<T: ImageContainer> Ditherer<T> {
             dither_fn: Box::new(alpha_dither_fn),
             direction: DitherDirection::Rightwards,
             dithering: DitherState::Nothing,
+            dither_start: false
         }
     }
 
@@ -174,6 +176,25 @@ impl<T: ImageContainer> Ditherer<T> {
             dither_fn: Box::new(alpha_dither_fn),
             direction: DitherDirection::Rightwards,
             dithering: DitherState::DitherIn,
+            dither_start: true,
+        }
+    }
+
+    /// Create a new ditherer that is already dithered in
+    pub fn dithering_in(inner: T) -> Ditherer<T> {
+        let dither = None;
+
+        Ditherer {
+            inner,
+            dither,
+            max_time: 0,
+            cached: Cell::new(Vec::new()),
+            dither_in_time: 0.,
+            dither_out_time: 0.,
+            dither_fn: Box::new(alpha_dither_fn),
+            direction: DitherDirection::Rightwards,
+            dithering: DitherState::DitherIn,
+            dither_start: false,
         }
     }
 
@@ -311,7 +332,8 @@ impl<T: ImageContainer> Drawable for Ditherer<T> {
             }
         }
 
-        if self.dithering == DitherState::DitherIn {
+        if self.dither_start {
+            self.dithering = DitherState::DitherIn;
             self.dither_in_time = self.max_time as f64 * DITHER_SPEED;
         }
 

@@ -51,7 +51,7 @@ fn make_first_scene() -> impl Scene {
 }
 
 fn make_second_scene() -> impl Scene {
-    DrawableWrapper(Ditherer::new(LatexObj::text(include_str!("color.tex"))))
+    DrawableWrapper(Ditherer::dithering_in(LatexObj::text(include_str!("color.tex"))))
 }
 
 fn make_third_scene() -> impl Scene {
