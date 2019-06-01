@@ -2,6 +2,7 @@
 
 extern crate ytesrev;
 
+use std::f64::consts::PI;
 use std::fs::File;
 
 use ytesrev::ditherer::color_dither_fn;
@@ -51,7 +52,9 @@ fn make_first_scene() -> impl Scene {
 }
 
 fn make_second_scene() -> impl Scene {
-    DrawableWrapper(Ditherer::dithering_in(LatexObj::text(include_str!("color.tex"))))
+    DrawableWrapper(Ditherer::dithering_in(LatexObj::text(include_str!(
+        "color.tex"
+    ))))
 }
 
 fn make_third_scene() -> impl Scene {
@@ -165,22 +168,26 @@ fn make_fifth_scene() -> impl Scene {
     DrawableWrapper(background)
 }
 
-use std::mem;
 use ytesrev::drawable::{DrawSettings, Position, State};
 use ytesrev::sdl2::event::Event;
 use ytesrev::sdl2::pixels::Color;
 use ytesrev::sdl2::render::Canvas;
 use ytesrev::sdl2::video::Window;
 
-struct Line(bool, (f64, f64), (f64, f64));
+struct Line(bool, f64);
+
+const NR_LINES: usize = 10;
+const SIZE: f64 = 100.;
 
 impl Drawable for Line {
     fn content(&self) -> Vec<&dyn Drawable> {
         Vec::new()
     }
+
     fn content_mut(&mut self) -> Vec<&mut dyn Drawable> {
         Vec::new()
     }
+
     fn step(&mut self) {
         self.0 = false;
     }
@@ -191,22 +198,32 @@ impl Drawable for Line {
             State::Hidden
         }
     }
-    fn event(&mut self, event: Event) {
-        match event {
-            Event::MouseMotion { x, y, .. } => {
-                self.1 = (x as f64, y as f64);
-            }
-            Event::KeyDown { .. } => {
-                mem::swap(&mut self.1, &mut self.2);
-            }
-            _ => {}
-        }
-    }
-    fn draw(&self, canvas: &mut Canvas<Window>, _: &Position, _: DrawSettings) {
-        canvas.set_draw_color(Color::RGB(0, 255, 0));
 
+    fn event(&mut self, _: Event) {}
+
+    fn update(&mut self, dt: f64) {
+        self.1 += dt;
+    }
+
+    fn draw(&self, canvas: &mut Canvas<Window>, pos: &Position, _: DrawSettings) {
         if self.0 {
-            utils::line_aa(canvas, self.1, self.2);
+            let cent = pos.into_rect_with_size(10, 10).center();
+
+            for line in 0..NR_LINES {
+                let angle = line as f64 / NR_LINES as f64 * PI * 2. + self.1;
+
+                canvas.set_draw_color(Color::RGB(
+                    ((-angle.sin() + 1.) * 127.) as u8,
+                    (((-angle + PI * 2. / 3.).sin() + 1.) * 127.) as u8,
+                    (((-angle + PI * 4. / 3.).sin() + 1.) * 127.) as u8,
+                ));
+
+                let x = angle.cos() * SIZE;
+                let sx = cent.x() as f64;
+                let y = angle.sin() * SIZE;
+                let sy = cent.y() as f64;
+                utils::line_aa(canvas, (x / 2. + sx, y / 2. + sy), (x + sx, y + sy));
+            }
         }
     }
 }
@@ -216,7 +233,7 @@ fn make_sixth_scene() -> impl Scene {
         0.2,
         Orientation::Vertical,
         UpdateOrder::SecondFirst,
-        Ditherer::new(LatexObj::text("Antialiased lines!")),
-        Line(true, (0., 0.), (0., 0.)),
+        Ditherer::dithering_in(LatexObj::text("\\large Antialiased lines!")),
+        Line(true, 0.),
     ))
 }
