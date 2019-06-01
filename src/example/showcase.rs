@@ -17,6 +17,7 @@ fn main() {
         Box::new(make_third_scene()),
         Box::new(make_fourth_scene()),
         Box::new(make_fifth_scene()),
+        Box::new(make_sixth_scene()),
     ]);
 
     let mut wmng = WindowManager::init_window(slist, default_settings("Showcase"));
@@ -50,6 +51,10 @@ fn make_first_scene() -> impl Scene {
 }
 
 fn make_second_scene() -> impl Scene {
+    DrawableWrapper(Ditherer::new(LatexObj::text(include_str!("color.tex"))))
+}
+
+fn make_third_scene() -> impl Scene {
     DrawableWrapper(Split::new_ratio(
         0.2,
         Orientation::Vertical,
@@ -67,7 +72,7 @@ fn make_second_scene() -> impl Scene {
     ))
 }
 
-fn make_third_scene() -> impl Scene {
+fn make_fourth_scene() -> impl Scene {
     DrawableWrapper(Split::new_ratio(
         0.2,
         Orientation::Vertical,
@@ -83,7 +88,8 @@ fn make_third_scene() -> impl Scene {
                 Box::new(
                     Ditherer::new(
                         PngImage::load_from_path(File::open("image.png").unwrap()).unwrap(),
-                    ).with_dither_fn(color_dither_fn)
+                    )
+                    .with_dither_fn(color_dither_fn)
                     .with_direction(DitherDirection::Outwards),
                 ),
             ],
@@ -91,7 +97,7 @@ fn make_third_scene() -> impl Scene {
     ))
 }
 
-fn make_fourth_scene() -> impl Scene {
+fn make_fifth_scene() -> impl Scene {
     let background = Layered::new(
         false,
         vec![
@@ -161,10 +167,10 @@ fn make_fourth_scene() -> impl Scene {
 
 use std::mem;
 use ytesrev::drawable::{DrawSettings, Position, State};
+use ytesrev::sdl2::event::Event;
 use ytesrev::sdl2::pixels::Color;
 use ytesrev::sdl2::render::Canvas;
 use ytesrev::sdl2::video::Window;
-use ytesrev::sdl2::event::Event;
 
 struct Line(bool, (f64, f64), (f64, f64));
 
@@ -200,21 +206,17 @@ impl Drawable for Line {
         canvas.set_draw_color(Color::RGB(0, 255, 0));
 
         if self.0 {
-            utils::line_aa(
-                canvas,
-                self.1,
-                self.2,
-            );
+            utils::line_aa(canvas, self.1, self.2);
         }
     }
 }
 
-fn make_fifth_scene() -> impl Scene {
+fn make_sixth_scene() -> impl Scene {
     DrawableWrapper(Split::new_ratio(
         0.2,
         Orientation::Vertical,
         UpdateOrder::SecondFirst,
         Ditherer::new(LatexObj::text("Antialiased lines!")),
-        Line(true, (0., 0.), (0., 0.,)),
+        Line(true, (0., 0.), (0., 0.)),
     ))
 }
