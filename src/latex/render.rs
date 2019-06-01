@@ -16,8 +16,6 @@
 
 extern crate sdl2;
 
-use sdl2::pixels::Color;
-
 use std::fs::{create_dir, remove_dir_all, File};
 use std::io::{Error, ErrorKind, Result as IResult, Write};
 use std::mem::drop;
@@ -266,12 +264,8 @@ fn read_pngs(path: &Path) -> IResult<()> {
                 let rdiff = rr as i16 - br as i16;
                 let bdiff = bb as i16 - rb as i16;
 
-
                 let alpha = 255 - (rdiff + bdiff) / 2;
                 let alpha = alpha.min(255).max(0) as u8;
-
-
-                let alpha_prec = (rdiff + bdiff) as f64 / 512.;
 
                 im_red_res.data[4 * i] = br;
                 im_red_res.data[4 * i + 2] = rb;
