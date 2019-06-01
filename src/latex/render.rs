@@ -142,17 +142,14 @@ pub fn render_all_equations() -> IResult<()> {
     let mut pdf_path = path.clone();
     pdf_path.push("tmp.pdf");
 
-    let mut crop_path = path.clone();
-    crop_path.push("tmp-crop.pdf");
-
     let mut raw_path = path.clone();
-    raw_path.push("tmp-crop");
+    raw_path.push("tmp-res");
 
     let start = Instant::now();
 
     create_tex(&tex_path)?;
 
-    render_tex(&tex_path, &pdf_path, &crop_path, &raw_path)?;
+    render_tex(&tex_path, &pdf_path, &raw_path)?;
 
     read_pngs(&path)?;
 
@@ -180,13 +177,17 @@ fn create_tex(tex_path: &Path) -> IResult<()> {
 
     if let Ok(eqs) = EQUATIONS.lock() {
         for equation in eqs.iter() {
-            writeln!(tex_file, "\\begin{{equation*}}")?;
-            if equation.1 {
-                writeln!(tex_file, "\\text{{ {} }}", equation.0)?;
-            } else {
-                writeln!(tex_file, "{}", equation.0)?;
+            for col in &["red", "blue"] {
+                writeln!(tex_file, "\\begin{{equation*}}")?;
+                writeln!(tex_file, "\\colorbox{{{}}}{{\\makebox[\\linewidth]{{", col)?;
+                if equation.1 {
+                    writeln!(tex_file, "{}", equation.0)?;
+                } else {
+                    writeln!(tex_file, "$ {} $", equation.0)?;
+                }
+                writeln!(tex_file, "}} }}")?;
+                writeln!(tex_file, "\\end{{equation*}}")?;
             }
-            writeln!(tex_file, "\\end{{equation*}}")?;
         }
     }
 
@@ -195,7 +196,7 @@ fn create_tex(tex_path: &Path) -> IResult<()> {
     Ok(())
 }
 
-fn render_tex(tex_path: &Path, pdf_path: &Path, crop_path: &Path, raw_path: &Path) -> IResult<()> {
+fn render_tex(tex_path: &Path, pdf_path: &Path, raw_path: &Path) -> IResult<()> {
     let out = Command::new("pdflatex")
         .current_dir(tex_path.parent().unwrap())
         .arg(tex_path.file_name().unwrap())
@@ -208,20 +209,8 @@ fn render_tex(tex_path: &Path, pdf_path: &Path, crop_path: &Path, raw_path: &Pat
         exit(1);
     }
 
-    let out = Command::new("pdfcrop")
-        .arg(pdf_path.as_os_str())
-        .arg(crop_path.as_os_str())
-        .output()
-        .expect("Can't make command");
-
-    if !out.status.success() {
-        eprintln!("pdfcrop error:");
-        eprintln!("{}", String::from_utf8_lossy(&out.stderr));
-        exit(1);
-    }
-
     let out = Command::new("pdftoppm")
-        .arg(crop_path.as_os_str())
+        .arg(pdf_path.as_os_str())
         .arg(raw_path.as_os_str())
         .arg("-r")
         .arg("250")
@@ -243,28 +232,89 @@ fn read_pngs(path: &Path) -> IResult<()> {
         let digits_max = format!("{}", eqs.len()).len();
 
         for (i, (_, _, ref mut im)) in eqs.iter_mut().enumerate() {
-            let num = zero_pad(format!("{}", i + 1), digits_max);
+            let num_red = zero_pad(format!("{}", 2 * i + 1), digits_max);
+            let num_blue = zero_pad(format!("{}", 2 * i + 2), digits_max);
 
-            let mut img_path = path.to_path_buf();
-            img_path.push(format!("tmp-crop-{}.png", num));
+            let mut img_path_red = path.to_path_buf();
+            img_path_red.push(format!("tmp-res-{}.png", num_red));
 
-            *im = Some(
-                PngImage::load_from_path_transform(File::open(img_path)?, white_transparent)
-                    .map_err(|e| Error::new(ErrorKind::InvalidData, e))?,
-            );
+            let mut img_path_blue = path.to_path_buf();
+            img_path_blue.push(format!("tmp-res-{}.png", num_blue));
+
+            let mut im_red_res = PngImage::load_from_path(File::open(img_path_red)?)
+                .map_err(|e| Error::new(ErrorKind::InvalidData, e))?;
+
+            let im_blue = PngImage::load_from_path(File::open(img_path_blue)?)
+                .map_err(|e| Error::new(ErrorKind::InvalidData, e))?;
+
+            let mut maxx = 0;
+            let mut maxy = 0;
+            let mut minx = im_red_res.width;
+            let mut miny = im_red_res.height;
+
+            for i in 0..im_red_res.width * im_red_res.height {
+                let x = i % im_red_res.width;
+                let y = i / im_red_res.width;
+
+                let rr = im_red_res.data[4 * i];
+                let rg = im_red_res.data[4 * i];
+                let rb = im_red_res.data[4 * i + 2];
+
+                let br = im_blue.data[4 * i];
+                let bb = im_blue.data[4 * i + 2];
+
+                let rdiff = rr as i16 - br as i16;
+                let bdiff = bb as i16 - rb as i16;
+
+
+                let alpha = 255 - (rdiff + bdiff) / 2;
+                let alpha = alpha.min(255).max(0) as u8;
+
+
+                let alpha_prec = (rdiff + bdiff) as f64 / 512.;
+
+                im_red_res.data[4 * i] = br;
+                im_red_res.data[4 * i + 2] = rb;
+                im_red_res.data[4 * i + 3] = alpha;
+
+                if (br < 250 || rg < 250 || rb < 250) && alpha > 250 {
+                    maxx = maxx.max(x + 1);
+                    maxy = maxy.max(y + 1);
+
+                    minx = minx.min(x);
+                    miny = miny.min(y);
+                }
+            }
+            // Margins
+            maxx = (maxx + 3).min(im_red_res.width - 1);
+            maxy = (maxy + 3).min(im_red_res.height - 1);
+            minx = minx.saturating_sub(3);
+            miny = miny.saturating_sub(3);
+
+            let width = maxx - minx;
+            let height = maxy - miny;
+            let mut resdata = vec![0; 4 * width * height];
+
+            for x in 0..width {
+                for y in 0..height {
+                    let i_r = y * width + x;
+                    let i_l = (y + miny) * im_red_res.width + x + minx;
+
+                    resdata[4 * i_r] = im_red_res.data[4 * i_l];
+                    resdata[4 * i_r + 1] = im_red_res.data[4 * i_l + 1];
+                    resdata[4 * i_r + 2] = im_red_res.data[4 * i_l + 2];
+                    resdata[4 * i_r + 3] = im_red_res.data[4 * i_l + 3];
+                }
+            }
+
+            *im = Some(PngImage {
+                data: resdata,
+                width,
+                height,
+            });
         }
     }
     Ok(())
-}
-
-fn white_transparent(col: Color) -> Color {
-    let max_channel = col.r.min(col.g).min(col.b);
-    Color {
-        r: 0,
-        g: 0,
-        b: 0,
-        a: 255 - max_channel,
-    }
 }
 
 fn zero_pad(n: String, len: usize) -> String {
