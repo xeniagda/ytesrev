@@ -24,7 +24,7 @@ pub struct Split<T: Drawable, U: Drawable> {
     /// How to split the window. The argument is the size of the window in the splitting direction
     /// (horizortal gives width, vertical gives height), and the return value is how many pixels
     /// the first element should take
-    pub amount: Box<Fn(u32) -> u32>,
+    pub amount: Box<dyn Fn(u32) -> u32>,
     /// The orientation to split
     pub orientation: Orientation,
     /// The stepping order
@@ -40,7 +40,7 @@ unsafe impl<T: Drawable, U: Drawable> Send for Split<T, U> {}
 impl<T: Drawable, U: Drawable> Split<T, U> {
     /// Create a new `Split`
     pub fn new(
-        amount: Box<Fn(u32) -> u32>,
+        amount: Box<dyn Fn(u32) -> u32>,
         orientation: Orientation,
         order: UpdateOrder,
         first: T,

@@ -113,7 +113,7 @@ pub struct Ditherer<T: ImageContainer + 'static> {
     /// How long the ditherer has been dithering out for
     pub dither_out_time: f64,
     /// The function to determine what regionso to dither first
-    pub dither_fn: Box<Fn(&T, (usize, usize)) -> u64>,
+    pub dither_fn: Box<dyn Fn(&T, (usize, usize)) -> u64>,
     /// The direction to dither in
     pub direction: DitherDirection,
     dithering: DitherState,

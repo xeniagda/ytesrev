@@ -6,8 +6,6 @@ use sdl2::rect::Point;
 use sdl2::render::{BlendMode, Canvas};
 use sdl2::video::Window;
 
-const EPSILON: f64 = 1e-5;
-
 /// Draw an antialiased line.
 pub fn line_aa(canvas: &mut Canvas<Window>, start: (f64, f64), end: (f64, f64)) {
     line_aa_width(canvas, start, end, 1.);
