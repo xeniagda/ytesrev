@@ -3,9 +3,10 @@
 extern crate rayon;
 extern crate sdl2;
 
-use std::mem;
+use std::sync::mpsc::channel;
+use std::thread::spawn;
 
-use rayon::prelude::*;
+use rayon::scope;
 
 use sdl2::rect::Rect;
 use sdl2::render::Canvas;
@@ -153,16 +154,50 @@ impl Scene for SceneList {
     }
 
     fn load(&mut self) {
-        let scenes = mem::replace(&mut self.scenes, Vec::new());
+        let nscenes = self.scenes.len();
 
-        self.scenes = scenes
-            .into_par_iter()
-            .enumerate()
-            .map(|(i, mut scene)| {
-                eprintln!("Loading scene {}...", i + 1);
-                scene.load();
-                scene
-            })
-            .collect::<Vec<Box<dyn Scene>>>();
+        let (tx, rx) = channel::<usize>();
+
+        spawn(move || {
+            let mut statuses = vec![0; nscenes]; // 0 = not loaded, 1 = loading, 2 = loaded
+            print_state(&statuses);
+            let mut count = 0;
+            while let Ok(idx) = rx.recv() {
+                count += 1;
+                statuses[idx] += 1;
+                print!("\x1b[{}A", nscenes); // Clear
+                print_state(&statuses);
+                if count >= 2 * nscenes {
+                    break;
+                }
+            }
+            println!("Done!");
+        });
+
+        let s = &mut self.scenes;
+
+        scope(move |sc| {
+            for (i, scene) in s.iter_mut().enumerate() {
+                let send = tx.clone();
+
+                sc.spawn(move |_| {
+                    send.send(i).unwrap();
+                    scene.load();
+                    send.send(i).unwrap();
+                });
+            }
+        });
+    }
+}
+
+fn print_state(statuses: &[u8]) {
+    for (i, status) in statuses.iter().enumerate() {
+        print!("\x1b[KScene {}: ", i + 1);
+        match status {
+            0 => println!("..."),
+            1 => println!("Loading"),
+            2 => println!("Done"),
+            _ => println!("o no! {}", status),
+        }
     }
 }
