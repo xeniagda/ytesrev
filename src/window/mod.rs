@@ -135,9 +135,10 @@ impl<T: Scene> WindowManager<T> {
         scene.register();
 
         let start = Instant::now();
-        eprintln!("Loading...");
+        eprintln!("Rendering LaTeX...");
         render_all_equations().expect("Can't render!");
 
+        eprintln!("Loading scenes");
         scene.load();
 
         let delta = Instant::now() - start;
@@ -264,7 +265,7 @@ impl TimeManager {
 
             let fps = 1. / (avg_dur.as_secs() as f64 + avg_dur.subsec_millis() as f64 / 1000.);
 
-            eprintln!("FPS: {:.2}", fps);
+            eprintln!("\x1b[KFPS: {:.2}", fps);
 
             self.last_fps_print = now;
         }

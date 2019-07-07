@@ -165,13 +165,12 @@ impl Scene for SceneList {
             while let Ok(idx) = rx.recv() {
                 count += 1;
                 statuses[idx] += 1;
-                print!("\x1b[{}A", nscenes); // Clear
+                eprint!("\x1b[{}A", nscenes); // Clear
                 print_state(&statuses);
                 if count >= 2 * nscenes {
                     break;
                 }
             }
-            println!("Done!");
         });
 
         let s = &mut self.scenes;
@@ -192,12 +191,12 @@ impl Scene for SceneList {
 
 fn print_state(statuses: &[u8]) {
     for (i, status) in statuses.iter().enumerate() {
-        print!("\x1b[KScene {}: ", i + 1);
+        eprint!("\x1b[KScene {}: ", i + 1);
         match status {
-            0 => println!("..."),
-            1 => println!("Loading"),
-            2 => println!("Done"),
-            _ => println!("o no! {}", status),
+            0 => eprintln!("..."),
+            1 => eprintln!("Loading"),
+            2 => eprintln!("Done"),
+            _ => eprintln!("o no! {}", status),
         }
     }
 }
