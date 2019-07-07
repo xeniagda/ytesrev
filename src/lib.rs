@@ -21,6 +21,7 @@ extern crate lazy_static;
 extern crate png;
 extern crate rand;
 extern crate rayon;
+extern crate tempfile;
 pub extern crate sdl2;
 
 pub mod anchor;

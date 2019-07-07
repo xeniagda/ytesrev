@@ -15,16 +15,18 @@
 //! [`LatexObj`]: ../latex_obj/struct.LatexObj.html
 
 extern crate sdl2;
+extern crate tempfile;
 
 use std::fs::{create_dir, remove_dir_all, File};
 use std::io::{Error, ErrorKind, Result as IResult, Write};
 use std::mem::drop;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::process::{exit, Command};
 use std::sync::Mutex;
 use std::time::Instant;
 
 use image::PngImage;
+use tempfile::tempdir;
 
 const LATEX_PRELUDE: &str = include_str!("latex_prelude.tex");
 const LATEX_POSTLUDE: &str = "\\end{document}";
@@ -126,8 +128,10 @@ pub fn render_all_equations() -> IResult<()> {
             return Ok(());
         }
     }
-    let mut path = PathBuf::new();
-    path.push("/tmp/ytesrev");
+    let fallback = Path::new("/tmp/ytesrev").to_path_buf();
+    let path = tempdir().map(|x| x.into_path()).unwrap_or(fallback);
+
+    eprintln!("Rendering in {}", path.display());
 
     if path.exists() {
         remove_dir_all(path.clone())?;
