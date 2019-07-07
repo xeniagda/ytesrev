@@ -1,6 +1,6 @@
 [package]
 name = "ytesrev"
-version = "0.2.5"
+version = "0.2.6"
 authors = ["loovjo <jonathan.loov@gmail.com>"]
 license = "MIT"
 readme = "README.md"
