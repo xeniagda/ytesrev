@@ -214,7 +214,6 @@ impl Drawable for Line {
 
     fn draw(&self, canvas: &mut Canvas<Window>, pos: &Position, _: DrawSettings) {
         if self.0 {
-
             let cent = pos.into_rect_with_size(10, 10).center();
 
             for line in 0..NR_LINES {
@@ -235,6 +234,10 @@ impl Drawable for Line {
                 let end = (x + sx, y + sy);
                 utils::line_aa_width(canvas, start, end, 10.);
             }
+            canvas.set_draw_color(Color::RGB(127, 237, 63));
+            let cent_ = (cent.x() as f64, cent.y() as f64);
+
+            utils::circle_aa(canvas, cent_, 20.);
         }
     }
 }

@@ -6,9 +6,16 @@ use sdl2::rect::Point;
 use sdl2::render::{BlendMode, Canvas};
 use sdl2::video::Window;
 
-/// Draw an antialiased line.
+const EPSILON: f64 = 0.0001;
+
+/// Draw an antialiased line. Uses circles as caps
 pub fn line_aa(canvas: &mut Canvas<Window>, start: (f64, f64), end: (f64, f64)) {
     line_aa_width(canvas, start, end, 1.);
+}
+
+/// Draw an antialiased circle.
+pub fn circle_aa(canvas: &mut Canvas<Window>, center: (f64, f64), rad: f64) {
+    line_aa_width(canvas, center, center, rad);
 }
 
 /// Draw an antialiased line with a specified line width
@@ -18,6 +25,9 @@ pub fn line_aa_width(
     mut end: (f64, f64),
     line_size: f64,
 ) {
+    if start == end {
+        end = (start.0 + EPSILON, start.1 + EPSILON);
+    }
     let steep = (start.1 - end.1).abs() > (start.0 - end.0).abs();
 
     if steep {
