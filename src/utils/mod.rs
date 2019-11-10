@@ -85,7 +85,7 @@ pub fn line_aa_width(
         }
 
         let x_rel = x - end.0;
-        if x_rel > -half_size {
+        if x_rel > -half_size && x_rel.abs() < half_size.abs() {
             let y_rel_sq = half_size * half_size - x_rel * x_rel;
             let y_rel = y_rel_sq.sqrt();
 
